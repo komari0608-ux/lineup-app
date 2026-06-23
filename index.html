@@ -87,7 +87,7 @@
     .card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 9px;border-bottom:1px solid var(--line);background:#fbfdff}
     .order-card .card-head{border:1px solid var(--line);border-radius:13px;background:#fbfdff;box-shadow:0 3px 8px rgba(16,32,51,.05)}
     .card-head h2{margin:0;font-size:14px;line-height:1.1;letter-spacing:.01em}.subhead{color:var(--muted);font-size:11px;font-weight:850;white-space:nowrap}
-    .order-head h2{min-width:0}.order-head-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:0;flex:0 0 auto}.order-reset-btn{height:31px;min-width:76px;border:1px solid #bdd7ef;border-radius:10px;background:#fff;color:var(--blue-dark);font-size:12px;font-weight:950;padding:0 8px;white-space:nowrap;box-shadow:0 2px 7px rgba(16,32,51,.045);touch-action:manipulation}.order-reset-btn:active{opacity:.82;transform:translateZ(0) scale(.98)}
+    .order-head h2{min-width:0}.order-head-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:0;flex:0 0 auto}.order-reset-btn{height:31px;min-width:92px;border:1px solid #bdd7ef;border-radius:10px;background:#fff;color:var(--blue-dark);font-size:12px;font-weight:950;padding:0 8px;white-space:nowrap;box-shadow:0 2px 7px rgba(16,32,51,.045);touch-action:manipulation}.order-reset-btn:active{opacity:.82;transform:translateZ(0) scale(.98)}.order-reset-btn:disabled{opacity:.45;box-shadow:none;pointer-events:none}
     .row-list{background:#fff}
     .order-card .row-list{display:grid;gap:6px;background:transparent;padding:7px 2px 0}
     .order-row{position:relative;background:transparent;border:0}.order-row:last-child{border-bottom:0}
@@ -163,7 +163,7 @@
     @keyframes chipSwapFadeIn{0%{opacity:.55;transform:translateZ(0) scale(.97)}100%{opacity:1;transform:translateZ(0) scale(1)}}
     @media (prefers-reduced-motion: reduce){.player-main-group,.player-card,.defense-card,.pos-chip,.bench-chip,.toast{transition:none!important}.player-main-group.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback,.pos-chip.tap-feedback,.player-main-group.swap-fade-out,.player-main-group.swap-fade-in,.defense-card.swap-fade-out,.defense-card.swap-fade-in,.bench-chip.swap-fade-out,.bench-chip.swap-fade-in,.pos-chip.swap-fade-out,.pos-chip.swap-fade-in{animation:none!important}}
     @media (max-width:560px){.title-text{flex:0 1 128px}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 7px;font-size:12px}.settings-btn{min-width:auto}}
-    @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 8px;font-size:12px}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .card-head{padding:7px}.card-head h2{font-size:13px}.order-head-actions{gap:4px}.order-reset-btn{height:30px;min-width:72px;font-size:11px;padding:0 7px}.order-card .row-list{gap:5px;padding-top:5px}.order-main{grid-template-columns:27px minmax(0,1fr);gap:6px;min-height:44px;padding:0}.player-main-group{grid-template-columns:minmax(0,1fr) minmax(144px,.86fr);gap:6px}.order-no{font-size:20px}.player-card{font-size:13px;padding-left:9px;padding-right:9px}.pos-flow{gap:3px;padding:4px}.pos-chip{height:30px;min-width:34px;font-size:13px;padding:0 7px}.pos-chip.change{height:26px;min-width:28px;font-size:13px;padding:0 5px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select,.date-button{font-size:12px;padding-left:6px;padding-right:6px}.calendar-panel{gap:6px;padding:7px}.calendar-weekdays,.calendar-grid{gap:2px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
+    @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 8px;font-size:12px}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .card-head{padding:7px}.card-head h2{font-size:13px}.order-head-actions{gap:4px}.order-reset-btn{height:30px;min-width:88px;font-size:11px;padding:0 7px}.order-card .row-list{gap:5px;padding-top:5px}.order-main{grid-template-columns:27px minmax(0,1fr);gap:6px;min-height:44px;padding:0}.player-main-group{grid-template-columns:minmax(0,1fr) minmax(144px,.86fr);gap:6px}.order-no{font-size:20px}.player-card{font-size:13px;padding-left:9px;padding-right:9px}.pos-flow{gap:3px;padding:4px}.pos-chip{height:30px;min-width:34px;font-size:13px;padding:0 7px}.pos-chip.change{height:26px;min-width:28px;font-size:13px;padding:0 5px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select,.date-button{font-size:12px;padding-left:6px;padding-right:6px}.calendar-panel{gap:6px;padding:7px}.calendar-weekdays,.calendar-grid{gap:2px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
   </style>
 </head>
 <body>
@@ -188,7 +188,7 @@
             <h2 id="orderTitle">スターティングオーダー</h2>
             <div class="order-head-actions">
               <span class="subhead" id="modeLabel">全員打ち</span>
-              <button type="button" class="order-reset-btn" id="orderResetDefenseBtn">守備初期化</button>
+              <button type="button" class="order-reset-btn" id="orderResetDefenseBtn" hidden disabled>この回を戻す</button>
             </div>
           </div>
           <div class="row-list" id="orderList"></div>
@@ -1097,21 +1097,20 @@
   }
 
   function resetCurrentDefense(){
-    const inning = activeInning();
     selectedSwapId = null;
     selectedDefense = null;
     clearTapFeedback();
     clearSwapAnimationState();
-    if(isInitialMode() || inning <= 1){
-      resetInitialDefensePositions();
-    } else {
-      Object.keys(state.defenseChanges || {}).forEach(pid => {
-        if(!state.defenseChanges[pid]) return;
-        delete state.defenseChanges[pid][inning];
-        if(Object.keys(state.defenseChanges[pid]).length === 0) delete state.defenseChanges[pid];
-      });
+    if(isInitialMode()){
+      render();
+      return;
     }
-    cleanupRedundantChanges();
+    const inning = activeInning();
+    Object.keys(state.defenseChanges || {}).forEach(pid => {
+      if(!state.defenseChanges[pid]) return;
+      delete state.defenseChanges[pid][inning];
+      if(Object.keys(state.defenseChanges[pid]).length === 0) delete state.defenseChanges[pid];
+    });
     ensureStructures();
     saveState();
     render();
@@ -1169,7 +1168,11 @@
     const modeText = state.battingMode === 'all' ? '全員打ち' : '9人制';
     $('modeLabel').textContent = isInitialMode() ? `${modeText}｜初期` : `${modeText}｜${state.selectedInning}回守備`;
     $('orderTitle').textContent = isInitialMode() ? 'スターティングオーダー' : `${state.selectedInning}回の守備変更`;
-    $('orderResetDefenseBtn').setAttribute('aria-label', isInitialMode() ? '初期守備を初期化' : `${state.selectedInning}回の守備変更を初期化`);
+    const resetBtn = $('orderResetDefenseBtn');
+    resetBtn.textContent = 'この回を戻す';
+    resetBtn.hidden = isInitialMode();
+    resetBtn.disabled = isInitialMode();
+    resetBtn.setAttribute('aria-label', isInitialMode() ? '初期モードではこの回を戻すは使えません' : `${state.selectedInning}回の守備変更を戻す`);
   }
 
   function renderInningButtons(){
