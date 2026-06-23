@@ -73,9 +73,9 @@
     .order-row{position:relative;border-bottom:1px solid #edf2f7;background:#fff;transition:background-color .18s ease, box-shadow .18s ease, transform .18s ease}.order-row:last-child{border-bottom:0}
     .order-row.has-change{background:linear-gradient(90deg,rgba(255,247,237,.78),#fff 58%)}
     .order-row.selected,.order-row.is-selected{background:#fff1f2;box-shadow:inset 0 0 0 2px var(--danger),0 8px 18px rgba(180,35,24,.14);transform:translateZ(0) scale(1.006)}
-    .order-row.def-selected,.order-row.is-defense-selected{background:#fff7ed;box-shadow:inset 0 0 0 2px var(--danger),0 8px 18px rgba(180,35,24,.14);transform:translateZ(0) scale(1.006)}
+    .order-row.def-selected,.order-row.is-defense-source-row{background:linear-gradient(90deg,rgba(255,247,237,.86),#fff 72%)}
     .order-row.just-swapped{animation:rowSwapFlash .24s ease-out}
-    .order-row.selected .order-main,.order-row.is-selected .order-main,.order-row.def-selected .order-main,.order-row.is-defense-selected .order-main{border-left-color:var(--danger)!important}
+    .order-row.selected .order-main,.order-row.is-selected .order-main{border-left-color:var(--danger)!important}
     .order-main{position:relative;display:grid;grid-template-columns:28px minmax(0,.95fr) minmax(130px,1.25fr);align-items:center;gap:6px;min-height:38px;padding:4px 7px 4px 8px;border-left:5px solid transparent}
     .order-no{color:var(--blue);font-size:21px;line-height:1;font-weight:950;text-align:center}
     .player-name{min-width:0;border:0;background:transparent;text-align:left;padding:0;font-size:14px;font-weight:950;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -89,7 +89,8 @@
     .pos-chip.start{background:#f5fbff;border-color:#9bc9f0;color:#043e76}
     .pos-chip.change{background:#fff7ed;border-color:#fdba74;color:#7c2d12}
     .pos-chip .inning-mini{font-size:9px;color:var(--warn);font-weight:950;margin-right:1px;line-height:1}
-    .pos-chip.def-selected,.pos-chip.is-defense-selected{background:#fff1f2;border-color:var(--danger);color:var(--danger);box-shadow:0 0 0 3px rgba(180,35,24,.24),0 6px 12px rgba(180,35,24,.14);transform:translateZ(0) scale(1.08)}
+    .pos-chip.def-selected,.pos-chip.is-defense-selected{background:#eaf4ff;border-color:var(--blue);color:var(--blue-dark);box-shadow:0 0 0 3px rgba(8,103,189,.22),0 8px 16px rgba(8,103,189,.16);transform:translate3d(0,-1px,0) scale(1.08)}
+    .pos-chip.just-swapped-defense{animation:defenseChipSwapIn .26s ease-out}
     .pos-chip.current-inning{border-color:#3b94dd}
     .add-pos-chip{min-width:32px;width:32px;height:32px;padding:0;background:#ecfbf2;border-color:#bfe0cc;color:var(--green);font-size:17px}
     .inline-editor{padding:0 7px 7px 41px;margin-top:-1px}
@@ -111,7 +112,8 @@
     .toast{position:fixed;left:50%;bottom:calc(65px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(16px);opacity:0;pointer-events:none;z-index:80;background:#071226;color:#fff;border-radius:999px;padding:9px 14px;font-size:13px;font-weight:900;transition:.2s ease;white-space:nowrap}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
     @keyframes rowSwapFlash{0%{background:#fff1f2;box-shadow:inset 0 0 0 2px var(--danger),0 8px 18px rgba(180,35,24,.14);transform:translateZ(0) scale(1.012)}100%{background:#fff;box-shadow:none;transform:translateZ(0) scale(1)}}
     @keyframes chipSwapFlash{0%{background:#fff1f2;border-color:var(--danger);box-shadow:0 0 0 3px rgba(180,35,24,.22);transform:translateZ(0) scale(1.08)}100%{transform:translateZ(0) scale(1)}}
-    @media (prefers-reduced-motion: reduce){.order-row,.pos-chip,.bench-chip,.toast{transition:none!important}.order-row.just-swapped,.bench-chip.just-swapped{animation:none!important}}
+    @keyframes defenseChipSwapIn{0%{opacity:.65;background:#eaf4ff;border-color:var(--blue);box-shadow:0 0 0 3px rgba(8,103,189,.18);transform:translate3d(0,-1px,0) scale(.96)}55%{opacity:1;box-shadow:0 8px 16px rgba(8,103,189,.16);transform:translate3d(0,-1px,0) scale(1.07)}100%{opacity:1;transform:translateZ(0) scale(1)}}
+    @media (prefers-reduced-motion: reduce){.order-row,.pos-chip,.bench-chip,.toast{transition:none!important}.order-row.just-swapped,.bench-chip.just-swapped,.pos-chip.just-swapped-defense{animation:none!important}}
     @media (max-width:390px){.app{padding-left:6px;padding-right:6px}.toolbar{grid-template-columns:1fr .82fr auto}.toolbar select,.toolbar button{font-size:11px;padding-left:5px;padding-right:5px}.order-main{grid-template-columns:25px minmax(0,.92fr) minmax(118px,1.1fr);gap:5px;min-height:42px;padding-left:6px;padding-right:5px}.order-no{font-size:20px}.player-name{font-size:13px}.pos-chip{height:32px;min-width:36px;font-size:13px;padding:0 7px}.inline-editor{padding-left:36px}.game-line input,.game-line select{font-size:11px;padding-left:4px;padding-right:4px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}}
   </style>
 </head>
@@ -249,7 +251,9 @@
   let selectedSwapId = null;
   let selectedDefense = null;
   let justSwappedIds = new Set();
+  let justSwappedDefenseIds = new Set();
   let justSwappedTimer = null;
+  let justSwappedDefenseTimer = null;
   const $ = (id) => document.getElementById(id);
 
   function clone(value){ return JSON.parse(JSON.stringify(value)); }
@@ -482,6 +486,16 @@
       render();
     }, 260);
   }
+  function markDefenseJustSwapped(...ids){
+    const validIds = ids.filter(id => playerById(id));
+    if(!validIds.length) return;
+    justSwappedDefenseIds = new Set(validIds);
+    clearTimeout(justSwappedDefenseTimer);
+    justSwappedDefenseTimer = setTimeout(() => {
+      justSwappedDefenseIds.clear();
+      render();
+    }, 280);
+  }
 
   function effectivePosition(playerId, inning){
     let pos = state.startPositions[playerId] || 'B';
@@ -693,13 +707,13 @@
     if(inning <= 1){
       state.startPositions[idA] = posB;
       state.startPositions[idB] = posA;
-      markJustSwapped(idA, idB);
+      markDefenseJustSwapped(idA, idB);
       showToast('1回の守備を入替');
       return;
     }
     setRawChange(idA, inning, posB);
     setRawChange(idB, inning, posA);
-    markJustSwapped(idA, idB);
+    markDefenseJustSwapped(idA, idB);
     showToast(`${inning}回から守備入替`);
   }
 
@@ -791,7 +805,7 @@
       const isDefSelected = selectedDefense?.playerId === pid;
       const isJustSwapped = justSwappedIds.has(pid);
       const row = document.createElement('div');
-      row.className = 'order-row' + (hasChange ? ' has-change' : '') + (isSwapSelected ? ' selected is-selected' : '') + (isDefSelected ? ' def-selected is-defense-selected' : '') + (isJustSwapped ? ' just-swapped' : '');
+      row.className = 'order-row' + (hasChange ? ' has-change' : '') + (isSwapSelected ? ' selected is-selected' : '') + (isDefSelected ? ' def-selected is-defense-source-row' : '') + (isJustSwapped ? ' just-swapped' : '');
       const main = document.createElement('div');
       main.className = 'order-main';
       main.style.borderLeftColor = player.color || '#94a3b8';
@@ -816,7 +830,8 @@
         chip.type = 'button';
         const isCurrent = item.pos === currentPos && item.inning <= inning && !flow.some(x => x.inning > item.inning && x.inning <= inning);
         const isSelectedDefenseChip = isDefSelected && isCurrent;
-        chip.className = 'pos-chip ' + (item.start ? 'start' : 'change') + (isSelectedDefenseChip ? ' def-selected is-defense-selected' : '') + (isCurrent ? ' current-inning' : '');
+        const isJustSwappedDefenseChip = justSwappedDefenseIds.has(pid) && isCurrent;
+        chip.className = 'pos-chip ' + (item.start ? 'start' : 'change') + (isSelectedDefenseChip ? ' def-selected is-defense-selected' : '') + (isCurrent ? ' current-inning' : '') + (isJustSwappedDefenseChip ? ' just-swapped-defense' : '');
         chip.setAttribute('aria-label', `${isInitialMode() ? '初期' : state.selectedInning + '回'}の守備を入れ替え`);
         chip.innerHTML = item.start ? `<span>${escapeHtml(posShort(item.pos))}</span>` : `<span class="inning-mini">${item.inning}回</span><span>${escapeHtml(posShort(item.pos))}</span>`;
         chip.addEventListener('click', (e) => {
