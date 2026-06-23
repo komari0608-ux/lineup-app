@@ -92,23 +92,28 @@
     .order-row{position:relative;background:transparent;border:0}.order-row:last-child{border-bottom:0}
     .order-card .order-row{border:0;border-radius:0;box-shadow:none;overflow:visible}
     .order-card .order-row:last-child{border-bottom:0}
-    .order-main{position:relative;display:grid;grid-template-columns:30px minmax(0,1fr) minmax(112px,.64fr);align-items:stretch;gap:7px;min-height:44px;padding:0}
+    .order-main{position:relative;display:grid;grid-template-columns:30px minmax(0,1fr);align-items:stretch;gap:7px;min-height:44px;padding:0}
     .order-no{color:var(--blue);font-size:21px;line-height:1;font-weight:950;text-align:center;display:flex;align-items:center;justify-content:center}
     .player-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .player-main-group{
+      min-width:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(112px,.64fr);gap:7px;border-radius:15px;
+      transition:background-color .14s ease,box-shadow .14s ease,transform .14s ease,opacity .14s ease;
+      touch-action:manipulation;user-select:none;-webkit-user-select:none;
+    }
     .player-card,.defense-card{
       min-width:0;min-height:44px;border:1px solid #bdd7ef;border-radius:12px;background:#fff;color:var(--ink);box-shadow:0 2px 7px rgba(16,32,51,.045);
       transition:background-color .14s ease,border-color .14s ease,box-shadow .14s ease,transform .14s ease,opacity .14s ease;
       touch-action:manipulation;user-select:none;-webkit-user-select:none;
     }
     .player-card{display:flex;align-items:center;justify-content:flex-start;text-align:left;padding:0 10px;font-size:14px;font-weight:950}
-    .player-card:active,.defense-card:active,.bench-chip:active{opacity:.84;transform:translateZ(0) scale(.98)}
-    .player-card.selected,.player-card.is-selected,.bench-chip.selected,.bench-chip.is-selected{border-color:var(--danger);box-shadow:0 0 0 1px rgba(180,35,24,.22),0 4px 10px rgba(180,35,24,.10)}
-    .player-card.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback{animation:tapGhost .16s ease-out}
-    .player-card.swap-fade-out,.defense-card.swap-fade-out,.bench-chip.swap-fade-out{animation:swapFadeOut .105s ease forwards}
-    .player-card.swap-fade-in,.defense-card.swap-fade-in,.bench-chip.swap-fade-in{animation:swapFadeIn .12s ease-out}
+    .player-main-group:active,.player-card:active,.defense-card:active,.bench-chip:active{opacity:.84;transform:translateZ(0) scale(.98)}
+    .player-main-group.is-selected-row,.bench-chip.selected,.bench-chip.is-selected{box-shadow:0 0 0 3px rgba(180,35,24,.88),0 5px 12px rgba(180,35,24,.14);background:rgba(180,35,24,.035)}
+    .player-main-group.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback{animation:tapGhost .16s ease-out}
+    .player-main-group.swap-fade-out,.defense-card.swap-fade-out,.bench-chip.swap-fade-out{animation:swapFadeOut .105s ease forwards}
+    .player-main-group.swap-fade-in,.defense-card.swap-fade-in,.bench-chip.swap-fade-in{animation:swapFadeIn .12s ease-out}
     .pos-flow{min-width:0;display:flex;align-items:center;gap:4px;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;padding:5px;scrollbar-width:none}.pos-flow::-webkit-scrollbar{display:none}
     .defense-card.has-change{background:linear-gradient(90deg,#fff 0%,rgba(255,247,237,.78) 100%)}
-    .defense-card.def-selected,.defense-card.is-defense-selected{background:#fffafa;border-color:var(--danger);box-shadow:0 0 0 2px rgba(180,35,24,.20),0 4px 10px rgba(180,35,24,.12);transform:translate3d(0,-1px,0) scale(1.01)}
+    .defense-card.def-selected,.defense-card.is-defense-selected{background:#fffafa;border-color:var(--danger);box-shadow:0 0 0 3px rgba(180,35,24,.88),0 5px 12px rgba(180,35,24,.14);transform:translate3d(0,-1px,0) scale(1.01)}
     .pos-chip,.add-pos-chip{
       flex:0 0 auto;min-width:36px;height:32px;border-radius:999px;border:1px solid #bdd7ef;background:#fff;color:#07192b;font-size:14px;font-weight:950;display:inline-flex;align-items:center;justify-content:center;gap:2px;padding:0 8px;
       transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease,color .16s ease,opacity .16s ease;
@@ -155,9 +160,9 @@
     @keyframes swapFadeIn{0%{opacity:.55;transform:translateZ(0) scale(.97)}100%{opacity:1;transform:translateZ(0) scale(1)}}
     @keyframes chipSwapFadeOut{0%{opacity:1;transform:translateZ(0) scale(1)}100%{opacity:.55;transform:translateZ(0) scale(.97)}}
     @keyframes chipSwapFadeIn{0%{opacity:.55;transform:translateZ(0) scale(.97)}100%{opacity:1;transform:translateZ(0) scale(1)}}
-    @media (prefers-reduced-motion: reduce){.player-card,.defense-card,.pos-chip,.bench-chip,.toast{transition:none!important}.player-card.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback,.pos-chip.tap-feedback,.player-card.swap-fade-out,.player-card.swap-fade-in,.defense-card.swap-fade-out,.defense-card.swap-fade-in,.bench-chip.swap-fade-out,.bench-chip.swap-fade-in,.pos-chip.swap-fade-out,.pos-chip.swap-fade-in{animation:none!important}}
+    @media (prefers-reduced-motion: reduce){.player-main-group,.player-card,.defense-card,.pos-chip,.bench-chip,.toast{transition:none!important}.player-main-group.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback,.pos-chip.tap-feedback,.player-main-group.swap-fade-out,.player-main-group.swap-fade-in,.defense-card.swap-fade-out,.defense-card.swap-fade-in,.bench-chip.swap-fade-out,.bench-chip.swap-fade-in,.pos-chip.swap-fade-out,.pos-chip.swap-fade-in{animation:none!important}}
     @media (max-width:560px){.title-text{flex:0 1 128px}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 7px;font-size:12px}.settings-btn{min-width:auto}}
-    @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 8px;font-size:12px}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .row-list{gap:5px;padding-top:5px}.order-main{grid-template-columns:27px minmax(0,1fr) minmax(104px,.58fr);gap:6px;min-height:44px;padding:0}.order-no{font-size:20px}.player-card{font-size:13px;padding-left:9px;padding-right:9px}.pos-chip{height:30px;min-width:34px;font-size:13px;padding:0 7px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select,.date-button{font-size:12px;padding-left:6px;padding-right:6px}.calendar-panel{gap:6px;padding:7px}.calendar-weekdays,.calendar-grid{gap:2px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
+    @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 8px;font-size:12px}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .row-list{gap:5px;padding-top:5px}.order-main{grid-template-columns:27px minmax(0,1fr);gap:6px;min-height:44px;padding:0}.player-main-group{grid-template-columns:minmax(0,1fr) minmax(104px,.58fr);gap:6px}.order-no{font-size:20px}.player-card{font-size:13px;padding-left:9px;padding-right:9px}.pos-chip{height:30px;min-width:34px;font-size:13px;padding:0 7px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select,.date-button{font-size:12px;padding-left:6px;padding-right:6px}.calendar-panel{gap:6px;padding:7px}.calendar-weekdays,.calendar-grid{gap:2px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
   </style>
 </head>
 <body>
@@ -1170,7 +1175,7 @@
       const isSwapFadingIn = swapFadeInIds.has(pid);
       const hasTapFeedback = tapFeedbackIds.has(pid);
       const showSwapSelected = isSwapSelected && !hasTapFeedback;
-      const playerCardClass = 'player-name player-card' + (showSwapSelected ? ' selected is-selected' : '') + (hasTapFeedback ? ' tap-feedback' : '') + (isSwapFadingOut ? ' swap-fade-out is-swapping' : '') + (isSwapFadingIn ? ' swap-fade-in is-swapping' : '');
+      const groupClass = 'player-main-group' + (showSwapSelected ? ' is-selected-row' : '') + (hasTapFeedback ? ' tap-feedback' : '') + (isSwapFadingOut ? ' swap-fade-out is-swapping' : '') + (isSwapFadingIn ? ' swap-fade-in is-swapping' : '');
       const row = document.createElement('div');
       row.className = 'order-row' + (hasChange ? ' has-change' : '');
       const main = document.createElement('div');
@@ -1178,8 +1183,10 @@
       const playerLabel = isInitialMode() ? '打順入替で選択' : '交代で選択';
       main.innerHTML = `
         <div class="order-no">${index + 1}</div>
-        <button type="button" class="${playerCardClass}" aria-label="${escapeAttr(displayName(pid))}${playerLabel}">${escapeHtml(displayName(pid))}</button>
-        <div class="pos-flow defense-card" role="button" tabindex="0" aria-label="守備履歴"></div>
+        <div class="${groupClass}">
+          <button type="button" class="player-name player-card" aria-label="${escapeAttr(displayName(pid))}${playerLabel}">${escapeHtml(displayName(pid))}</button>
+          <div class="pos-flow defense-card" role="button" tabindex="0" aria-label="守備履歴"></div>
+        </div>
       `;
       const playerButton = main.querySelector('.player-name');
       playerButton.style.borderLeftColor = player.color || '#94a3b8';
