@@ -1,0 +1,1056 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#072b57" />
+  <title>打順プランナー</title>
+  <style>
+    :root{
+      --bg:#edf6f2;
+      --panel:#ffffff;
+      --ink:#102033;
+      --muted:#667085;
+      --blue:#0867bd;
+      --blue-dark:#043e76;
+      --line:#d8e5f0;
+      --soft:#f5f9fc;
+      --green:#13824f;
+      --warn:#ad5a00;
+      --danger:#b42318;
+      --shadow:0 8px 20px rgba(16,32,51,.10);
+      --radius:15px;
+    }
+    *{box-sizing:border-box}
+    html{-webkit-text-size-adjust:100%; background:var(--bg)}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:var(--bg);
+      color:var(--ink);
+      min-height:100svh;
+      touch-action:manipulation;
+    }
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .app{
+      width:min(560px,100%);
+      margin:0 auto;
+      padding:6px 7px calc(70px + env(safe-area-inset-bottom));
+    }
+    .top{
+      position:sticky;
+      top:0;
+      z-index:20;
+      background:rgba(237,246,242,.96);
+      backdrop-filter:blur(10px);
+      padding:7px 0 6px;
+      border-bottom:1px solid rgba(216,229,240,.72);
+    }
+    .titlebar{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+    .title-text{min-width:0;flex:1;font-weight:950;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .save-chip{color:var(--muted);font-size:11px;font-weight:900;white-space:nowrap}
+    .save-btn,.share-btn{border:0;border-radius:11px;height:32px;padding:0 10px;font-weight:950;white-space:nowrap}.save-btn{background:var(--blue);color:#fff}.share-btn{background:#ecfbf2;color:var(--green);border:1px solid #bfe0cc}
+    .gamebox{background:#e9f8f2;border:1px solid #d3ebe1;border-radius:13px;padding:6px}
+    .game-line{display:flex;gap:5px;margin-bottom:5px}.game-line:last-child{margin-bottom:0}
+    .game-line input,.game-line select,.toolbar select,.toolbar button{
+      min-width:0;height:31px;border:1px solid #cfe0ed;border-radius:9px;background:#fff;color:var(--ink);padding:3px 6px;font-size:12px;font-weight:850;outline:none;
+    }
+    .game-line input:focus,.game-line select:focus,.toolbar select:focus,.player-row input:focus,textarea:focus{border-color:#3b94dd;box-shadow:0 0 0 3px rgba(8,103,189,.12)}
+    .date-field{flex:1.12}.place-field{flex:.95}.time-field{flex:.70}.format-field{flex:.82}.limit-field{flex:.54}.innings-field{flex:.60}.opponent-field{flex:1.33}
+    .toolbar{display:grid;grid-template-columns:1fr .86fr auto;gap:5px;margin:7px 0}
+    .toolbar button{padding:0 9px;font-weight:950;white-space:nowrap}
+    .inning-scroll{display:flex;gap:5px;overflow-x:auto;padding:1px 0 7px;-webkit-overflow-scrolling:touch}
+    .inning-btn{border:1px solid var(--line);background:#fff;min-width:38px;height:30px;border-radius:999px;font-size:12px;font-weight:950;color:var(--ink)}
+    .inning-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+    .inning-btn.initial{min-width:46px;background:#eef8ff;border-color:#b9d7ef}.inning-btn.initial.active{background:var(--blue-dark);border-color:var(--blue-dark);color:#fff}
+    .tiny-note{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:11px;font-weight:850;margin:0 0 6px;line-height:1.35}
+    .panel{display:none}.panel.active{display:block}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+    .card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 9px;border-bottom:1px solid var(--line);background:#fbfdff}
+    .card-head h2{margin:0;font-size:14px;line-height:1.1;letter-spacing:.01em}.subhead{color:var(--muted);font-size:11px;font-weight:850;white-space:nowrap}
+    .row-list{background:#fff}
+    .order-row{position:relative;border-bottom:1px solid #edf2f7;background:#fff;transition:background .15s ease, box-shadow .15s ease}.order-row:last-child{border-bottom:0}
+    .order-row.has-change{background:linear-gradient(90deg,rgba(255,247,237,.78),#fff 58%)}
+    .order-row.selected{background:#eaf4ff;box-shadow:inset 0 0 0 2px var(--blue)}
+    .order-row.def-selected{background:#fff7ed;box-shadow:inset 0 0 0 2px #f59e0b}
+    .order-row.selected .order-main{border-left-color:var(--blue)!important}
+    .order-main{position:relative;display:grid;grid-template-columns:28px minmax(0,.95fr) minmax(130px,1.25fr);align-items:center;gap:6px;min-height:38px;padding:4px 7px 4px 8px;border-left:5px solid transparent}
+    .order-no{color:var(--blue);font-size:21px;line-height:1;font-weight:950;text-align:center}
+    .player-name{min-width:0;border:0;background:transparent;text-align:left;padding:0;font-size:14px;font-weight:950;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .player-name .status{color:var(--muted);font-size:10px;font-weight:900;margin-left:3px}
+    .selected-label{display:inline-flex;margin-left:4px;vertical-align:middle;align-items:center;border-radius:999px;background:var(--blue);color:#fff;font-size:9px;font-weight:950;padding:1px 5px;line-height:1.4}
+    .pos-flow{min-width:0;display:flex;align-items:center;gap:4px;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;padding:1px 0;scrollbar-width:none}.pos-flow::-webkit-scrollbar{display:none}
+    .pos-chip,.add-pos-chip{
+      flex:0 0 auto;min-width:32px;height:28px;border-radius:999px;border:1px solid #bdd7ef;background:#fff;color:#07192b;font-size:14px;font-weight:950;display:inline-flex;align-items:center;justify-content:center;gap:2px;padding:0 7px;
+    }
+    .pos-chip.start{background:#f5fbff;border-color:#9bc9f0;color:#043e76}
+    .pos-chip.change{background:#fff7ed;border-color:#fdba74;color:#7c2d12}
+    .pos-chip .inning-mini{font-size:9px;color:var(--warn);font-weight:950;margin-right:1px;line-height:1}
+    .pos-chip.def-selected{background:#fef3c7;border-color:#f59e0b;color:#78350f;box-shadow:0 0 0 2px rgba(245,158,11,.20)}
+    .pos-chip.current-inning{border-color:#3b94dd}
+    .add-pos-chip{min-width:27px;width:27px;height:27px;padding:0;background:#ecfbf2;border-color:#bfe0cc;color:var(--green);font-size:17px}
+    .inline-editor{padding:0 7px 7px 41px;margin-top:-1px}
+    .editor-box{border:1px solid #cfe4fb;background:#f8fcff;border-radius:13px;padding:7px;display:grid;gap:7px}
+    .editor-head{display:flex;align-items:center;justify-content:space-between;gap:6px;color:var(--blue-dark);font-size:12px;font-weight:950}.editor-head .close-edit{width:28px;height:26px;border:0;border-radius:9px;background:#eef5fb;color:#394b5f;font-weight:950}
+    .chip-row{display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}.chip-row::-webkit-scrollbar{display:none}
+    .mini-chip{flex:0 0 auto;height:29px;min-width:36px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font-size:12px;font-weight:950;padding:0 9px}
+    .mini-chip.active{background:var(--blue);border-color:var(--blue);color:#fff}
+    .mini-chip.danger{background:#fff1f0;border-color:#ffd0cd;color:var(--danger)}
+    .bench-wrap,.memo-wrap{margin-top:8px;background:#fff;border:1px solid var(--line);border-radius:15px;overflow:hidden;box-shadow:0 4px 12px rgba(16,32,51,.05)}
+    details summary{list-style:none;padding:9px 10px;font-weight:950;color:var(--blue-dark);display:flex;align-items:center;justify-content:space-between;gap:8px}details summary::-webkit-details-marker{display:none}
+    .bench-list{display:flex;flex-wrap:wrap;gap:6px;padding:0 10px 10px}.bench-chip{border:1px solid var(--line);background:#fff;border-radius:999px;min-height:30px;padding:0 9px;display:inline-flex;align-items:center;gap:6px;font-weight:900;font-size:12px}.bench-chip.selected{background:#eaf4ff;border-color:var(--blue);box-shadow:0 0 0 2px rgba(8,103,189,.12)}
+    .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(0,0,0,.10)}
+    .empty-state{color:var(--muted);font-size:13px;font-weight:850;padding:0 10px 10px}
+    .memo-body{padding:0 10px 10px}.memo-body textarea{width:100%;min-height:120px;resize:vertical;border:1px solid var(--line);border-radius:11px;padding:8px;font-size:12px;line-height:1.45;font-weight:850;background:#fbfdff;color:#102033;outline:none}.memo-actions{display:flex;gap:7px;margin-top:7px}.memo-actions button{flex:1;min-height:34px;border:1px solid var(--line);border-radius:11px;background:#fff;font-weight:950}.memo-actions .primary{background:var(--blue);border-color:var(--blue);color:#fff}
+    .player-panel{padding:9px}.display-mode-row{display:grid;grid-template-columns:66px minmax(0,1fr);align-items:center;gap:7px;margin-bottom:8px;color:var(--muted);font-size:12px;font-weight:950}.display-mode-row select{height:32px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:0 8px;font-weight:900}
+    .player-row{display:grid;grid-template-columns:24px minmax(0,1fr) 52px 34px;align-items:center;gap:6px;min-height:42px;padding:4px 0;border-bottom:1px solid #edf2f7}.player-row:last-child{border-bottom:0}.color-input{width:24px;height:24px;padding:0;border:0;background:transparent}.player-names{display:grid;grid-template-columns:1fr 1fr;gap:5px;min-width:0}.player-row input[type="text"],.player-row input[type="number"]{min-width:0;height:31px;border:1px solid var(--line);border-radius:9px;padding:0 7px;font-size:12px;font-weight:850}.icon-del{height:31px;border:0;border-radius:9px;background:#fff1f0;color:var(--danger);font-weight:950}.add-row{display:grid;grid-template-columns:1fr 1fr 58px;gap:6px;padding-top:9px}.add-row input{min-width:0;height:34px;border:1px solid var(--line);border-radius:10px;padding:0 9px;font-size:12px;font-weight:850}.add-row button{border:0;border-radius:10px;background:var(--green);color:#fff;font-weight:950}
+    .bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.96);border-top:1px solid var(--line);backdrop-filter:blur(12px);padding:5px max(7px,env(safe-area-inset-left)) calc(5px + env(safe-area-inset-bottom)) max(7px,env(safe-area-inset-right));display:flex;justify-content:center}.bottom-nav-inner{width:min(560px,100%);display:grid;grid-template-columns:repeat(2,1fr);gap:5px}.nav-btn{border:0;background:transparent;color:#7b8794;border-radius:14px;min-height:47px;font-weight:950;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}.nav-btn .icon{font-size:19px;line-height:1}.nav-btn.active{background:#eaf4ff;color:var(--blue)}
+    .toast{position:fixed;left:50%;bottom:calc(65px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(16px);opacity:0;pointer-events:none;z-index:80;background:#071226;color:#fff;border-radius:999px;padding:9px 14px;font-size:13px;font-weight:900;transition:.2s ease;white-space:nowrap}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    @media (max-width:390px){.app{padding-left:6px;padding-right:6px}.toolbar{grid-template-columns:1fr .82fr auto}.toolbar select,.toolbar button{font-size:11px;padding-left:5px;padding-right:5px}.order-main{grid-template-columns:25px minmax(0,.92fr) minmax(112px,1.1fr);gap:5px;min-height:37px;padding-left:6px;padding-right:5px}.order-no{font-size:20px}.player-name{font-size:13px}.pos-chip{height:27px;min-width:30px;font-size:13px;padding:0 6px}.inline-editor{padding-left:36px}.game-line input,.game-line select{font-size:11px;padding-left:4px;padding-right:4px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="titlebar">
+        <div class="title-text" id="titleText">打順プランナー</div>
+        <span class="save-chip" id="saveNote">端末保存</span>
+        <button class="share-btn" type="button" id="shareBtn">共有</button>
+        <button class="save-btn" type="button" id="saveBtn">保存</button>
+      </div>
+      <div class="gamebox" aria-label="試合情報">
+        <div class="game-line">
+          <input class="date-field" id="gameDate" type="date" aria-label="日付" />
+          <input class="place-field" id="gamePlace" type="text" placeholder="場所" aria-label="場所" />
+          <input class="time-field" id="gameStart" type="time" aria-label="開始時間" />
+        </div>
+        <div class="game-line">
+          <select class="format-field" id="gameFormat" aria-label="試合形式">
+            <option value="時間制">時間制</option>
+            <option value="イニング制">イニング制</option>
+            <option value="練習試合">練習試合</option>
+            <option value="公式戦">公式戦</option>
+          </select>
+          <input class="limit-field" id="gameLimit" type="number" min="0" inputmode="numeric" placeholder="80分" aria-label="時間" />
+          <select class="innings-field" id="gameInnings" aria-label="イニング">
+            <option value="5">5回</option>
+            <option value="6">6回</option>
+            <option value="7">7回</option>
+            <option value="8">8回</option>
+            <option value="9">9回</option>
+          </select>
+          <input class="opponent-field" id="gameOpponent" type="text" placeholder="対戦相手" aria-label="対戦相手" />
+        </div>
+      </div>
+    </header>
+
+    <div class="toolbar" id="orderToolbar">
+      <select id="battingMode" aria-label="打順方式">
+        <option value="all">全員打ち</option>
+        <option value="nine">9人制</option>
+      </select>
+      <select id="displayMode" aria-label="表示名">
+        <option value="nick">ニックネーム</option>
+        <option value="full">本名</option>
+        <option value="fullNumber">本名＋背番号</option>
+        <option value="nickNumber">ニックネーム＋背番号</option>
+      </select>
+      <button type="button" id="resetDefenseBtn">守備初期化</button>
+    </div>
+    <div class="inning-scroll" id="inningButtons" aria-label="表示回"></div>
+
+    <main>
+      <section class="panel active" id="orderPanel">
+        <p class="tiny-note" id="modeNote">初期オーダー作成中｜選手名2タップで打順入替。</p>
+        <div class="card">
+          <div class="card-head">
+            <h2 id="orderTitle">スターティングオーダー</h2>
+            <span class="subhead" id="modeLabel">全員打ち</span>
+          </div>
+          <div class="row-list" id="orderList"></div>
+        </div>
+        <details class="bench-wrap">
+          <summary><span>ベンチ・未守備</span><span id="benchCount">0人</span></summary>
+          <div class="bench-list" id="benchList"></div>
+        </details>
+        <details class="memo-wrap">
+          <summary><span>保存メモ</span><span id="memoChangeCount">守備変更0人</span></summary>
+          <div class="memo-body">
+            <textarea id="saveMemo" readonly></textarea>
+            <div class="memo-actions">
+              <button type="button" class="primary" id="copyMemoBtn">コピー</button>
+              <button type="button" id="shareMemoBtn">共有</button>
+              <button type="button" id="refreshMemoBtn">更新</button>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <section class="panel" id="playersPanel">
+        <p class="tiny-note">登録した選手は削除するまで保持。</p>
+        <div class="card">
+          <div class="card-head">
+            <h2>選手管理</h2>
+            <span class="subhead">ニックネーム・本名・背番号</span>
+          </div>
+          <div class="player-panel" id="playerPanel"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav" aria-label="画面切替">
+    <div class="bottom-nav-inner">
+      <button class="nav-btn active" data-tab="order" type="button"><span class="icon">☷</span><span>オーダー</span></button>
+      <button class="nav-btn" data-tab="players" type="button"><span class="icon">👥</span><span>選手</span></button>
+    </div>
+  </nav>
+  <div class="toast" id="toast">保存しました</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const STORAGE_KEY = 'lineupPlannerV10OrderInlineGame';
+  const MIGRATION_KEYS = ['lineupPlannerV9OrderTapShare','lineupPlannerV8InlineSwap','lineupPlannerV7InlineDefense','lineupPlannerV6TapCompact','lineupPlannerV5CompactIphone','lineupPlannerV4Iphone'];
+  const FIELD_POSITIONS = [
+    { code:'1', short:'投' }, { code:'2', short:'捕' }, { code:'3', short:'一' },
+    { code:'4', short:'二' }, { code:'5', short:'三' }, { code:'6', short:'遊' },
+    { code:'7', short:'左' }, { code:'8', short:'中' }, { code:'9', short:'右' }
+  ];
+  const POSITIONS = [...FIELD_POSITIONS, { code:'DH', short:'DH' }, { code:'B', short:'ベ' }];
+  const POS_SHORT = Object.fromEntries(POSITIONS.map(p => [p.code, p.short]));
+  const ABSOLUTE_MAX_INNINGS = 9;
+  const DEFAULT_COLORS = ['#e85d04','#1b8a5a','#2f80ed','#8a4ce8','#cc3bd9','#e3342f','#1492a8','#5b8c2a','#b76e00','#4338ca','#0f766e','#be185d','#0369a1','#ca8a04'];
+  const today = new Date();
+  const todayText = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0,10);
+  const defaultPlayers = [
+    { id:'p1', nickname:'はると', fullName:'', number:'', color:'#e85d04', status:'' },
+    { id:'p2', nickname:'ひなた', fullName:'', number:'', color:'#1b8a5a', status:'' },
+    { id:'p3', nickname:'とうり', fullName:'', number:'', color:'#2f80ed', status:'' },
+    { id:'p4', nickname:'まほろと', fullName:'', number:'', color:'#8a4ce8', status:'' },
+    { id:'p5', nickname:'いっと', fullName:'', number:'', color:'#cc3bd9', status:'' },
+    { id:'p6', nickname:'たろう', fullName:'', number:'', color:'#e3342f', status:'' },
+    { id:'p7', nickname:'しゅんぺい', fullName:'', number:'', color:'#1492a8', status:'制限あり' },
+    { id:'p8', nickname:'たいち', fullName:'', number:'', color:'#5b8c2a', status:'' },
+    { id:'p9', nickname:'しゅんすけ', fullName:'', number:'', color:'#b76e00', status:'体験' },
+    { id:'p10', nickname:'ゆうと', fullName:'', number:'', color:'#4338ca', status:'' }
+  ];
+  const defaultStartPositions = { p1:'5', p2:'6', p3:'8', p4:'2', p5:'1', p6:'3', p7:'4', p8:'7', p9:'9', p10:'B' };
+
+  let state = loadState();
+  let currentTab = 'order';
+  let selectedSwapId = null;
+  let selectedDefense = null;
+  const $ = (id) => document.getElementById(id);
+
+  function clone(value){ return JSON.parse(JSON.stringify(value)); }
+  function playerById(id){ return state.players.find(p => p.id === id) || null; }
+  function isFieldPos(pos){ return FIELD_POSITIONS.some(p => p.code === pos); }
+  function posShort(pos){ return POS_SHORT[pos || 'B'] || 'ベ'; }
+  function maxInnings(st = state){ return Math.min(ABSOLUTE_MAX_INNINGS, Math.max(1, Number(st?.game?.innings || 6))); }
+  function isInitialMode(){ return Number(state?.selectedInning || 0) === 0; }
+  function activeInning(){
+    if(isInitialMode()) return 1;
+    const selectedInning = Number(state.selectedInning);
+    return Math.min(maxInnings(), Math.max(1, Number.isFinite(selectedInning) ? selectedInning : 1));
+  }
+
+  function createDefaultState(){
+    const st = {
+      version: 10,
+      team: { year:'2026', division:'C', name:'旭丘スカイヤーズ' },
+      game: { date: todayText, place:'旭丘小', start:'14:00', format:'時間制', limit:'80', innings:6, opponent:'' },
+      settings: { displayMode:'nick' },
+      battingMode: 'all',
+      selectedInning: 0,
+      players: clone(defaultPlayers),
+      battingOrder: defaultPlayers.map(p => p.id),
+      startPositions: clone(defaultStartPositions),
+      defenseChanges: {},
+      lineupByInning: {}
+    };
+    ensureStructures(st);
+    return st;
+  }
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw) return normalizeState(JSON.parse(raw));
+      for(const key of MIGRATION_KEYS){
+        const old = localStorage.getItem(key);
+        if(old) return normalizeState(JSON.parse(old));
+      }
+      return createDefaultState();
+    }catch(e){
+      return createDefaultState();
+    }
+  }
+
+  function findPositionInBoard(board, playerId){
+    if(!board || !playerId) return 'B';
+    for(const p of FIELD_POSITIONS){ if(board[p.code] === playerId) return p.code; }
+    return 'B';
+  }
+
+  function migrateDefenseBoards(st){
+    if(st.defenseChanges && Object.keys(st.defenseChanges).length) return;
+    st.defenseChanges = {};
+    if(!st.defense) return;
+    const inningKeys = Object.keys(st.defense).map(Number).filter(Boolean);
+    const innings = Math.min(ABSOLUTE_MAX_INNINGS, Math.max(Number(st.game?.innings || 6), ...inningKeys));
+    const firstBoard = st.defense[1];
+    if(firstBoard){
+      st.players.forEach(p => {
+        const pos = findPositionInBoard(firstBoard, p.id);
+        if(pos !== 'B') st.startPositions[p.id] = pos;
+      });
+    }
+    for(let i=2; i<=innings; i++){
+      const prev = st.defense[i-1];
+      const cur = st.defense[i];
+      if(!prev || !cur) continue;
+      st.players.forEach(p => {
+        const before = findPositionInBoard(prev, p.id);
+        const after = findPositionInBoard(cur, p.id);
+        if(before !== after){
+          st.defenseChanges[p.id] ||= {};
+          st.defenseChanges[p.id][i] = after;
+        }
+      });
+    }
+  }
+
+  function normalizeState(st){
+    st ||= createDefaultState();
+    const incomingVersion = Number(st.version || 0);
+    st.version = 10;
+    st.team ||= { year:'2026', division:'C', name:'旭丘スカイヤーズ' };
+    st.game ||= { date: todayText, place:'', start:'14:00', format:'時間制', limit:'80', innings:6, opponent:'' };
+    st.game.date ||= todayText;
+    st.game.opponent ||= '';
+    st.game.innings = Math.min(ABSOLUTE_MAX_INNINGS, Math.max(1, Number(st.game.innings || 6)));
+    if(incomingVersion < 10) st.selectedInning = 0;
+    st.settings ||= {};
+    st.settings.displayMode ||= 'nick';
+    st.battingMode = st.battingMode === 'nine' ? 'nine' : 'all';
+    const selectedInning = Number(st.selectedInning);
+    st.selectedInning = Number.isFinite(selectedInning) ? selectedInning : 0;
+    st.players ||= clone(defaultPlayers);
+    st.players.forEach((p, i) => {
+      const oldName = p.name || p.nickname || p.fullName || '';
+      p.nickname ||= oldName || `選手${i+1}`;
+      p.fullName ||= '';
+      p.number = p.number || '';
+      p.color ||= DEFAULT_COLORS[i % DEFAULT_COLORS.length];
+      p.status ||= '';
+      delete p.name;
+    });
+    st.battingOrder ||= st.players.map(p => p.id);
+    st.startPositions ||= {};
+    const ids = new Set(st.players.map(p => p.id));
+    st.battingOrder = st.battingOrder.filter(id => ids.has(id));
+    st.players.forEach((p, i) => {
+      if(!st.battingOrder.includes(p.id)) st.battingOrder.push(p.id);
+      if(!st.startPositions[p.id]) st.startPositions[p.id] = i < 9 ? String(i + 1) : 'B';
+    });
+    migrateDefenseBoards(st);
+    st.lineupByInning ||= {};
+    ensureStructures(st);
+    return st;
+  }
+
+  function ensureStructures(st = state){
+    const gameInnings = maxInnings(st);
+    const innings = gameInnings;
+    st.game.innings = gameInnings;
+    const selectedInning = Number(st.selectedInning);
+    st.selectedInning = Math.min(innings, Math.max(0, Number.isFinite(selectedInning) ? selectedInning : 0));
+    st.defenseChanges ||= {};
+    const ids = new Set(st.players.map(p => p.id));
+    Object.keys(st.defenseChanges).forEach(pid => {
+      if(!ids.has(pid)){ delete st.defenseChanges[pid]; return; }
+      Object.keys(st.defenseChanges[pid]).forEach(k => {
+        const n = Number(k);
+        const v = st.defenseChanges[pid][k];
+        if(!n || n < 2 || n > ABSOLUTE_MAX_INNINGS || !POSITIONS.some(p => p.code === v)) delete st.defenseChanges[pid][k];
+      });
+      if(Object.keys(st.defenseChanges[pid]).length === 0) delete st.defenseChanges[pid];
+    });
+    if(st.battingMode === 'nine'){
+      if(!st.lineupByInning[1]) st.lineupByInning[1] = st.battingOrder.slice(0,9);
+      Object.keys(st.lineupByInning).forEach(k => {
+        const n = Number(k);
+        if(!n || n < 1 || n > ABSOLUTE_MAX_INNINGS) delete st.lineupByInning[k];
+      });
+      let prevLine = st.lineupByInning[1];
+      for(let i=1; i<=ABSOLUTE_MAX_INNINGS; i++){
+        if(i > innings && !Object.prototype.hasOwnProperty.call(st.lineupByInning, i)) continue;
+        const prev = i === 1 ? st.lineupByInning[1] : (prevLine || st.lineupByInning[1]);
+        st.lineupByInning[i] ||= clone(prev);
+        if(!Array.isArray(st.lineupByInning[i])) st.lineupByInning[i] = [];
+        const line = [];
+        st.lineupByInning[i].forEach(id => { if(ids.has(id) && !line.includes(id) && line.length < 9) line.push(id); });
+        const addable = st.battingOrder.filter(id => ids.has(id) && !line.includes(id));
+        while(line.length < 9 && addable.length) line.push(addable.shift());
+        st.lineupByInning[i] = line;
+        prevLine = line;
+      }
+    } else {
+      st.lineupByInning = {};
+    }
+    cleanupRedundantChanges(st);
+  }
+
+  function cleanupRedundantChanges(st = state){
+    st.players.forEach(p => {
+      const changes = st.defenseChanges[p.id];
+      if(!changes) return;
+      let current = st.startPositions[p.id] || 'B';
+      Object.keys(changes).map(Number).sort((a,b)=>a-b).forEach(i => {
+        const next = changes[i];
+        if(next === current){ delete changes[i]; }
+        else current = next;
+      });
+      if(Object.keys(changes).length === 0) delete st.defenseChanges[p.id];
+    });
+  }
+
+  function saveState(show=false){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    $('saveNote').textContent = '端末保存';
+    if(show) showToast('保存しました');
+  }
+
+  function showToast(message){
+    const toast = $('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove('show'), 1400);
+  }
+
+  function displayName(id){
+    const p = playerById(id);
+    if(!p) return '未設定';
+    const nick = p.nickname || p.fullName || '未設定';
+    const full = p.fullName || nick;
+    const no = String(p.number || '').trim();
+    switch(state.settings.displayMode){
+      case 'full': return full;
+      case 'fullNumber': return no ? `${full} #${no}` : full;
+      case 'nickNumber': return no ? `${nick} #${no}` : nick;
+      default: return nick;
+    }
+  }
+
+  function effectivePosition(playerId, inning){
+    let pos = state.startPositions[playerId] || 'B';
+    const limit = Math.min(maxInnings(), Math.max(1, Number(inning || 1)));
+    const changes = state.defenseChanges[playerId] || {};
+    for(let i=2; i<=limit; i++){
+      if(changes[i]) pos = changes[i];
+    }
+    return pos || 'B';
+  }
+
+  function playerAtPosition(pos, inning, exceptId=null){
+    if(!isFieldPos(pos)) return null;
+    return state.players.find(p => p.id !== exceptId && effectivePosition(p.id, inning) === pos)?.id || null;
+  }
+
+  function setRawChange(playerId, inning, pos){
+    if(inning <= 1){ state.startPositions[playerId] = pos; return; }
+    state.defenseChanges[playerId] ||= {};
+    state.defenseChanges[playerId][inning] = pos;
+  }
+
+  function setPlayerPositionFromInning(playerId, inning, pos, swap=true){
+    inning = Math.min(maxInnings(), Math.max(1, Number(inning || 1)));
+    const beforePos = effectivePosition(playerId, inning);
+    if(swap && isFieldPos(pos)){
+      const otherId = playerAtPosition(pos, inning, playerId);
+      if(otherId) setRawChange(otherId, inning, beforePos || 'B');
+    }
+    setRawChange(playerId, inning, pos);
+    cleanupRedundantChanges();
+  }
+
+  function setStartPosition(playerId, pos){
+    const before = state.startPositions[playerId] || 'B';
+    if(isFieldPos(pos)){
+      const otherId = state.players.find(p => p.id !== playerId && (state.startPositions[p.id] || 'B') === pos)?.id || null;
+      if(otherId) state.startPositions[otherId] = before;
+    }
+    state.startPositions[playerId] = pos;
+    cleanupRedundantChanges();
+    saveState();
+    render();
+  }
+
+  function defenseEntries(playerId){
+    const changes = state.defenseChanges[playerId] || {};
+    return Object.keys(changes).map(Number).sort((a,b)=>a-b).map(inning => ({ inning, pos:changes[inning] }));
+  }
+
+  function defenseFlow(playerId){
+    return [{ inning:1, pos:state.startPositions[playerId] || 'B', start:true }, ...defenseEntries(playerId).filter(e => e.inning <= maxInnings()).map(e => ({...e, start:false}))];
+  }
+
+  function getLineupAt(inning){
+    ensureStructures();
+    inning = Math.min(maxInnings(), Math.max(1, Number(inning || 1)));
+    if(state.battingMode === 'all') return state.battingOrder.slice();
+    return (state.lineupByInning[inning] || state.lineupByInning[1] || state.battingOrder.slice(0,9)).slice();
+  }
+
+  function handlePlayerTap(playerId){
+    if(!playerById(playerId)) return;
+    selectedDefense = null;
+    if(isInitialMode()){
+      handleInitialOrderTap(playerId);
+    }else{
+      handleSubstitutionTap(playerId);
+    }
+  }
+
+  function handleInitialOrderTap(playerId){
+    if(!selectedSwapId){
+      selectedSwapId = playerId;
+      render();
+      return;
+    }
+    if(selectedSwapId === playerId){
+      selectedSwapId = null;
+      render();
+      return;
+    }
+    swapInitialOrder(selectedSwapId, playerId);
+    selectedSwapId = null;
+    saveState();
+    render();
+  }
+
+  function swapInitialOrder(idA, idB){
+    if(idA === idB) return;
+    const a = state.battingOrder.indexOf(idA);
+    const b = state.battingOrder.indexOf(idB);
+    if(a < 0 || b < 0) return;
+    [state.battingOrder[a], state.battingOrder[b]] = [state.battingOrder[b], state.battingOrder[a]];
+    if(state.battingMode === 'nine'){
+      const oldFirst = (state.lineupByInning[1] || []).slice();
+      const hadLineupChanges = Object.keys(state.lineupByInning || {}).some(k => Number(k) > 1 && JSON.stringify(state.lineupByInning[k]) !== JSON.stringify(oldFirst));
+      state.lineupByInning[1] = state.battingOrder.slice(0,9);
+      if(!hadLineupChanges){
+        for(let i=1; i<=maxInnings(); i++) state.lineupByInning[i] = state.lineupByInning[1].slice();
+      }else{
+        for(let i=2; i<=maxInnings(); i++){
+          const line = (state.lineupByInning[i] || state.lineupByInning[i-1] || state.lineupByInning[1]).slice();
+          const ia = line.indexOf(idA);
+          const ib = line.indexOf(idB);
+          if(ia >= 0 && ib >= 0) [line[ia], line[ib]] = [line[ib], line[ia]];
+          state.lineupByInning[i] = line.slice(0,9);
+        }
+      }
+    }
+    showToast('打順を入替');
+  }
+
+  function handleSubstitutionTap(playerId){
+    const inning = activeInning();
+    if(!selectedSwapId){
+      selectedSwapId = playerId;
+      render();
+      return;
+    }
+    if(selectedSwapId === playerId){
+      selectedSwapId = null;
+      render();
+      return;
+    }
+    const idA = selectedSwapId;
+    const idB = playerId;
+    const done = state.battingMode === 'nine'
+      ? substituteNineMode(idA, idB, inning)
+      : substituteAllBattingDefenseOnly(idA, idB, inning);
+    selectedSwapId = null;
+    if(done){
+      cleanupRedundantChanges();
+      saveState();
+      render();
+    }else{
+      showToast('打順固定中。ベンチ選手と交代できます');
+      render();
+    }
+  }
+
+  function substituteNineMode(idA, idB, inning){
+    const currentLine = getLineupAt(inning);
+    const a = currentLine.indexOf(idA);
+    const b = currentLine.indexOf(idB);
+    if((a >= 0 && b >= 0) || (a < 0 && b < 0)) return false;
+    const outId = a >= 0 ? idA : idB;
+    const inId = a >= 0 ? idB : idA;
+    const slot = a >= 0 ? a : b;
+    const outPos = effectivePosition(outId, inning);
+    for(let i=inning; i<=maxInnings(); i++){
+      const line = getLineupAt(i);
+      const idx = line.indexOf(outId);
+      if(idx >= 0) line[idx] = inId;
+      else if(!line.includes(inId)) line[slot] = inId;
+      state.lineupByInning[i] = line.slice(0,9);
+    }
+    setRawChange(outId, inning, 'B');
+    setRawChange(inId, inning, outPos || 'B');
+    showToast(`${inning}回 ${slot + 1}番を交代`);
+    return true;
+  }
+
+  function substituteAllBattingDefenseOnly(idA, idB, inning){
+    const posA = effectivePosition(idA, inning);
+    const posB = effectivePosition(idB, inning);
+    const aBench = posA === 'B';
+    const bBench = posB === 'B';
+    if(aBench === bBench) return false;
+    const fieldId = aBench ? idB : idA;
+    const benchId = aBench ? idA : idB;
+    const fieldPos = effectivePosition(fieldId, inning);
+    setRawChange(fieldId, inning, 'B');
+    setRawChange(benchId, inning, fieldPos || 'B');
+    showToast(`${inning}回から守備交代`);
+    return true;
+  }
+
+  function handleDefenseTap(playerId){
+    if(!playerById(playerId)) return;
+    selectedSwapId = null;
+    const inning = activeInning();
+    if(!selectedDefense){
+      selectedDefense = { playerId, inning };
+      render();
+      return;
+    }
+    if(selectedDefense.playerId === playerId){
+      selectedDefense = null;
+      render();
+      return;
+    }
+    swapDefensePositionsAtInning(selectedDefense.playerId, playerId, inning);
+    selectedDefense = null;
+    cleanupRedundantChanges();
+    saveState();
+    render();
+  }
+
+  function swapDefensePositionsAtInning(idA, idB, inning){
+    if(idA === idB) return;
+    inning = Math.min(maxInnings(), Math.max(1, Number(inning || 1)));
+    const posA = effectivePosition(idA, inning);
+    const posB = effectivePosition(idB, inning);
+    if(posA === posB) return;
+    if(inning <= 1){
+      state.startPositions[idA] = posB;
+      state.startPositions[idB] = posA;
+      showToast('1回の守備を入替');
+      return;
+    }
+    setRawChange(idA, inning, posB);
+    setRawChange(idB, inning, posA);
+    showToast(`${inning}回から守備入替`);
+  }
+
+  function setBattingMode(mode){
+    state.battingMode = mode;
+    state.selectedInning = 0;
+    state.defenseChanges = {};
+    state.lineupByInning = {};
+    if(mode === 'nine') state.lineupByInning[1] = state.battingOrder.slice(0,9);
+    selectedSwapId = null;
+    selectedDefense = null;
+    ensureStructures();
+    saveState();
+    render();
+    showToast(mode === 'nine' ? '9人制に変更' : '全員打ちに変更');
+  }
+
+  function resetDefense(){
+    state.defenseChanges = {};
+    state.players.forEach((p, i) => state.startPositions[p.id] = i < 9 ? String(i + 1) : 'B');
+    state.lineupByInning = {};
+    if(state.battingMode === 'nine') state.lineupByInning[1] = state.battingOrder.slice(0,9);
+    selectedSwapId = null;
+    selectedDefense = null;
+    ensureStructures();
+    saveState();
+    render();
+    showToast('守備を初期化');
+  }
+
+  function render(){
+    ensureStructures();
+    renderHeader();
+    renderInningButtons();
+    renderOrder();
+    renderBench();
+    renderMemo();
+    renderPlayers();
+    renderTabs();
+  }
+
+  function renderHeader(){
+    const g = state.game;
+    $('titleText').textContent = '打順プランナー';
+    $('gameDate').value = g.date || todayText;
+    $('gamePlace').value = g.place || '';
+    $('gameStart').value = g.start || '';
+    $('gameFormat').value = g.format || '時間制';
+    $('gameLimit').value = g.limit || '';
+    $('gameInnings').value = String(g.innings || 6);
+    $('gameOpponent').value = g.opponent || '';
+    $('battingMode').value = state.battingMode;
+    $('displayMode').value = state.settings.displayMode || 'nick';
+    const modeText = state.battingMode === 'all' ? '全員打ち' : '9人制';
+    $('modeLabel').textContent = isInitialMode() ? `${modeText}｜初期` : `${modeText}｜${state.selectedInning}回守備`;
+    $('orderTitle').textContent = isInitialMode() ? 'スターティングオーダー' : `${state.selectedInning}回の守備変更`;
+    $('modeNote').textContent = isInitialMode()
+      ? '初期｜選手名2タップで打順入替。守備チップ2タップで初期守備。'
+      : `${state.selectedInning}回守備中｜打順固定。守備チップ2タップ。ベンチ交代は選手名→ベンチ。`;
+  }
+
+  function renderInningButtons(){
+    const wrap = $('inningButtons');
+    wrap.innerHTML = '';
+    const addButton = (label, value, extraClass='') => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `inning-btn ${extraClass}` + (value === state.selectedInning ? ' active' : '');
+      btn.textContent = label;
+      btn.addEventListener('click', () => { state.selectedInning = value; selectedSwapId = null; selectedDefense = null; saveState(); render(); });
+      wrap.appendChild(btn);
+    };
+    addButton('初期', 0, 'initial');
+    for(let i=1; i<=maxInnings(); i++) addButton(`${i}回`, i);
+  }
+
+  function renderOrder(){
+    const list = $('orderList');
+    const inning = activeInning();
+    const pids = getLineupAt(inning);
+    list.innerHTML = '';
+    pids.forEach((pid, index) => {
+      const player = playerById(pid);
+      if(!player) return;
+      const flow = defenseFlow(pid).filter(item => item.inning <= maxInnings());
+      const hasChange = flow.length > 1;
+      const isDefSelected = selectedDefense?.playerId === pid;
+      const row = document.createElement('div');
+      row.className = 'order-row' + (hasChange ? ' has-change' : '') + (selectedSwapId === pid ? ' selected' : '') + (isDefSelected ? ' def-selected' : '');
+      const main = document.createElement('div');
+      main.className = 'order-main';
+      main.style.borderLeftColor = player.color || '#94a3b8';
+      const statusHtml = player.status ? `<span class="status">${escapeHtml(player.status)}</span>` : '';
+      const selectedHtml = selectedSwapId === pid ? '<span class="selected-label">選択中</span>' : '';
+      const playerLabel = isInitialMode() ? '打順入替で選択' : '交代で選択';
+      main.innerHTML = `
+        <div class="order-no">${index + 1}</div>
+        <button type="button" class="player-name" aria-label="${escapeAttr(displayName(pid))}${playerLabel}">${escapeHtml(displayName(pid))}${statusHtml}${selectedHtml}</button>
+        <div class="pos-flow" aria-label="守備履歴"></div>
+      `;
+      const playerButton = main.querySelector('.player-name');
+      playerButton.addEventListener('click', (e) => { e.stopPropagation(); handlePlayerTap(pid); });
+      const posFlow = main.querySelector('.pos-flow');
+      const currentPos = effectivePosition(pid, inning);
+      flow.forEach(item => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        const isCurrent = item.pos === currentPos && item.inning <= inning && !flow.some(x => x.inning > item.inning && x.inning <= inning);
+        chip.className = 'pos-chip ' + (item.start ? 'start' : 'change') + (isDefSelected && isCurrent ? ' def-selected' : '') + (isCurrent ? ' current-inning' : '');
+        chip.setAttribute('aria-label', `${isInitialMode() ? '初期' : state.selectedInning + '回'}の守備を入れ替え`);
+        chip.innerHTML = item.start ? `<span>${escapeHtml(posShort(item.pos))}</span>` : `<span class="inning-mini">${item.inning}回</span><span>${escapeHtml(posShort(item.pos))}</span>`;
+        chip.addEventListener('click', (e) => { e.stopPropagation(); handleDefenseTap(pid); });
+        posFlow.appendChild(chip);
+      });
+      row.appendChild(main);
+      list.appendChild(row);
+    });
+  }
+
+  function renderBench(){
+    const inning = activeInning();
+    const lineup = new Set(getLineupAt(inning));
+    const bench = state.players.filter(p => state.battingMode === 'nine' ? !lineup.has(p.id) : effectivePosition(p.id, inning) === 'B');
+    $('benchCount').textContent = `${bench.length}人`;
+    const wrap = $('benchList');
+    wrap.innerHTML = '';
+    if(!bench.length){ wrap.innerHTML = '<span class="empty-state">ベンチ表示なし</span>'; return; }
+    bench.forEach(p => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'bench-chip' + (selectedSwapId === p.id ? ' selected' : '');
+      chip.innerHTML = `<span class="dot" style="background:${escapeAttr(p.color)}"></span><span>${escapeHtml(displayName(p.id))}</span>`;
+      chip.addEventListener('click', () => handlePlayerTap(p.id));
+      wrap.appendChild(chip);
+    });
+  }
+
+  function playersWithDefenseChanges(){
+    return state.players.filter(p => defenseFlow(p.id).length > 1);
+  }
+
+  function formatGameDate(dateStr){
+    if(!dateStr) return '';
+    const d = new Date(`${dateStr}T00:00:00`);
+    if(Number.isNaN(d.getTime())) return dateStr.replaceAll('-','/');
+    const week = ['日','月','火','水','木','金','土'][d.getDay()];
+    return `${String(d.getFullYear()).slice(-2)}/${d.getMonth()+1}/${d.getDate()}(${week})`;
+  }
+
+  function lineupChangeLines(){
+    if(state.battingMode !== 'nine') return [];
+    const lines = [];
+    for(let inning=2; inning<=maxInnings(); inning++){
+      const prev = getLineupAt(inning - 1);
+      const cur = getLineupAt(inning);
+      cur.forEach((pid, idx) => {
+        if(prev[idx] && prev[idx] !== pid){
+          lines.push(`${inning}回　${idx + 1}番　${displayName(prev[idx])} → ${displayName(pid)}　${posShort(effectivePosition(pid, inning))}`);
+        }
+      });
+    }
+    return lines;
+  }
+
+  function defenseChangeLines(){
+    const lines = [];
+    const orderIndex = Object.fromEntries(state.battingOrder.map((id, i) => [id, i]));
+    for(let inning=2; inning<=maxInnings(); inning++){
+      const changed = state.players
+        .map(p => {
+          const before = effectivePosition(p.id, inning - 1);
+          const after = effectivePosition(p.id, inning);
+          return { player:p, before, after };
+        })
+        .filter(x => x.before !== x.after)
+        .filter(x => state.battingMode === 'all' || (x.before !== 'B' && x.after !== 'B'))
+        .sort((a,b) => (orderIndex[a.player.id] ?? 999) - (orderIndex[b.player.id] ?? 999));
+      changed.forEach(x => lines.push(`${inning}回　${displayName(x.player.id)}　${posShort(x.before)} → ${posShort(x.after)}`));
+    }
+    return lines;
+  }
+
+  function buildSaveMemo(){
+    const g = state.game;
+    const lines = [];
+    const dateLine = [formatGameDate(g.date), g.opponent ? `vs ${g.opponent}` : ''].filter(Boolean).join(' ');
+    const placeLine = [g.place ? `@${g.place}` : '', g.start ? `${g.start} 試合開始` : '', g.format || '', g.limit ? `${g.limit}分` : '', g.innings ? `${g.innings}回` : ''].filter(Boolean).join(' ');
+    lines.push('【スターティングメンバー】');
+    if(dateLine) lines.push(dateLine);
+    if(placeLine) lines.push(placeLine);
+    lines.push('');
+    getLineupAt(1).forEach((pid, idx) => lines.push(`${idx + 1}　${displayName(pid)}　${posShort(state.startPositions[pid] || 'B')}`));
+    const lineupChanges = lineupChangeLines();
+    const defenseLines = defenseChangeLines();
+    if(defenseLines.length){
+      lines.push('');
+      lines.push('【守備変更】');
+      defenseLines.forEach(line => lines.push(line));
+    }
+    if(lineupChanges.length){
+      lines.push('');
+      lines.push('【選手交代】');
+      lineupChanges.forEach(line => lines.push(line));
+    }
+    return lines.join('\n');
+  }
+
+  function renderMemo(){
+    const defenseCount = defenseChangeLines().length;
+    const subCount = lineupChangeLines().length;
+    $('memoChangeCount').textContent = `変更${defenseCount + subCount}件`;
+    $('saveMemo').value = buildSaveMemo();
+  }
+
+  function renderPlayers(){
+    const panel = $('playerPanel');
+    panel.innerHTML = '';
+    const modeRow = document.createElement('div');
+    modeRow.className = 'display-mode-row';
+    modeRow.innerHTML = `<span>表示名</span><select id="displayModePanel">
+      <option value="nick">ニックネーム</option>
+      <option value="full">本名</option>
+      <option value="fullNumber">本名＋背番号</option>
+      <option value="nickNumber">ニックネーム＋背番号</option>
+    </select>`;
+    panel.appendChild(modeRow);
+    const modeSelect = modeRow.querySelector('select');
+    modeSelect.value = state.settings.displayMode || 'nick';
+    modeSelect.addEventListener('change', () => { state.settings.displayMode = modeSelect.value; saveState(); render(); });
+
+    state.players.forEach((p) => {
+      const row = document.createElement('div');
+      row.className = 'player-row';
+      row.innerHTML = `
+        <input class="color-input" type="color" value="${escapeAttr(p.color)}" aria-label="色" />
+        <div class="player-names">
+          <input class="nick-input" type="text" value="${escapeAttr(p.nickname)}" placeholder="ニックネーム" aria-label="ニックネーム" />
+          <input class="full-input" type="text" value="${escapeAttr(p.fullName || '')}" placeholder="本名" aria-label="本名" />
+        </div>
+        <input class="number-input" type="number" min="0" inputmode="numeric" value="${escapeAttr(p.number || '')}" placeholder="背番" aria-label="背番号" />
+        <button class="icon-del" type="button" aria-label="削除">×</button>
+      `;
+      const color = row.querySelector('.color-input');
+      const nick = row.querySelector('.nick-input');
+      const full = row.querySelector('.full-input');
+      const number = row.querySelector('.number-input');
+      const del = row.querySelector('button');
+      color.addEventListener('input', () => { p.color = color.value; saveState(); render(); });
+      nick.addEventListener('input', () => { p.nickname = nick.value; saveState(); render(); });
+      full.addEventListener('input', () => { p.fullName = full.value; saveState(); render(); });
+      number.addEventListener('input', () => { p.number = number.value; saveState(); render(); });
+      del.addEventListener('click', () => deletePlayer(p.id));
+      panel.appendChild(row);
+    });
+    const add = document.createElement('div');
+    add.className = 'add-row';
+    add.innerHTML = '<input id="newNick" type="text" placeholder="ニックネーム" /><input id="newFull" type="text" placeholder="本名" /><button type="button" id="addPlayerBtn">追加</button>';
+    panel.appendChild(add);
+    $('addPlayerBtn').addEventListener('click', addPlayer);
+    $('newNick').addEventListener('keydown', (e) => { if(e.key === 'Enter') addPlayer(); });
+    $('newFull').addEventListener('keydown', (e) => { if(e.key === 'Enter') addPlayer(); });
+  }
+
+  function renderTabs(){
+    document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active'));
+    $(`${currentTab}Panel`).classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === currentTab));
+    const isOrderTab = currentTab === 'order';
+    $('orderToolbar').hidden = !isOrderTab;
+    $('inningButtons').hidden = !isOrderTab;
+  }
+
+  function addPlayer(){
+    const nickInput = $('newNick');
+    const fullInput = $('newFull');
+    const nick = nickInput.value.trim();
+    const full = fullInput.value.trim();
+    if(!nick && !full) return;
+    const id = `p${Date.now().toString(36)}`;
+    const color = DEFAULT_COLORS[state.players.length % DEFAULT_COLORS.length];
+    state.players.push({ id, nickname:nick || full, fullName:full, number:'', color, status:'' });
+    state.battingOrder.push(id);
+    state.startPositions[id] = 'B';
+    ensureStructures();
+    nickInput.value = '';
+    fullInput.value = '';
+    saveState();
+    render();
+    showToast('選手を追加');
+  }
+
+  function deletePlayer(id){
+    if(state.players.length <= 9){ showToast('9人未満にはできません'); return; }
+    state.players = state.players.filter(p => p.id !== id);
+    state.battingOrder = state.battingOrder.filter(pid => pid !== id);
+    delete state.startPositions[id];
+    delete state.defenseChanges[id];
+    Object.keys(state.lineupByInning).forEach(k => state.lineupByInning[k] = state.lineupByInning[k].filter(pid => pid !== id));
+    if(selectedSwapId === id) selectedSwapId = null;
+    if(selectedDefense?.playerId === id) selectedDefense = null;
+    ensureStructures();
+    saveState();
+    render();
+  }
+
+
+  async function shareOrder(){
+    const text = buildSaveMemo();
+    const opponent = state.game.opponent ? `vs ${state.game.opponent}` : 'オーダー';
+    const title = `打順 ${opponent}`;
+    if(navigator.share){
+      try{
+        await navigator.share({ title, text });
+        showToast('共有しました');
+        return;
+      }catch(e){
+        if(e && e.name === 'AbortError') return;
+      }
+    }
+    if(navigator.clipboard?.writeText){
+      navigator.clipboard.writeText(text).then(() => showToast('共有文をコピー')).catch(() => fallbackCopyText(text));
+    }else{
+      fallbackCopyText(text);
+    }
+  }
+
+  function fallbackCopyText(text){
+    const area = document.createElement('textarea');
+    area.value = text;
+    area.setAttribute('readonly','');
+    area.style.position = 'fixed';
+    area.style.left = '-9999px';
+    area.style.top = '0';
+    document.body.appendChild(area);
+    area.focus();
+    area.select();
+    try{ document.execCommand('copy'); showToast('共有文をコピー'); }
+    catch(e){ showToast('コピーできませんでした'); }
+    area.remove();
+  }
+
+  function copyMemo(){
+    const text = $('saveMemo').value;
+    if(navigator.clipboard?.writeText){
+      navigator.clipboard.writeText(text).then(() => showToast('コピーしました')).catch(() => fallbackCopy(text));
+    }else fallbackCopy(text);
+  }
+
+  function fallbackCopy(text){
+    $('saveMemo').focus();
+    $('saveMemo').select();
+    try{ document.execCommand('copy'); showToast('コピーしました'); }
+    catch(e){ showToast('コピーできませんでした'); }
+  }
+
+  function escapeHtml(value){ return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function escapeAttr(value){ return escapeHtml(value); }
+
+  function bindEvents(){
+    $('saveBtn').addEventListener('click', () => saveState(true));
+    $('battingMode').addEventListener('change', e => setBattingMode(e.target.value));
+    $('displayMode').addEventListener('change', e => { state.settings.displayMode = e.target.value; saveState(); render(); });
+    $('resetDefenseBtn').addEventListener('click', resetDefense);
+    $('copyMemoBtn').addEventListener('click', copyMemo);
+    $('shareBtn').addEventListener('click', shareOrder);
+    $('shareMemoBtn').addEventListener('click', shareOrder);
+    $('refreshMemoBtn').addEventListener('click', () => { renderMemo(); showToast('メモ更新'); });
+
+    const gameInputs = [
+      ['gameDate','date'], ['gamePlace','place'], ['gameStart','start'], ['gameFormat','format'],
+      ['gameLimit','limit'], ['gameInnings','innings'], ['gameOpponent','opponent']
+    ];
+    gameInputs.forEach(([id,key]) => {
+      $(id).addEventListener('change', e => {
+        state.game[key] = key === 'innings' ? Number(e.target.value) : e.target.value;
+        selectedSwapId = null;
+        selectedDefense = null;
+        ensureStructures(); saveState(); render();
+      });
+      $(id).addEventListener('input', e => {
+        state.game[key] = key === 'innings' ? Number(e.target.value) : e.target.value;
+        saveState();
+      });
+    });
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => { currentTab = btn.dataset.tab; selectedSwapId = null; selectedDefense = null; renderTabs(); window.scrollTo({ top:0, behavior:'smooth' }); });
+    });
+  }
+
+  bindEvents();
+  render();
+  saveState();
+})();
+</script>
+</body>
+</html>
