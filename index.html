@@ -87,6 +87,7 @@
     .card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 9px;border-bottom:1px solid var(--line);background:#fbfdff}
     .order-card .card-head{border:1px solid var(--line);border-radius:13px;background:#fbfdff;box-shadow:0 3px 8px rgba(16,32,51,.05)}
     .card-head h2{margin:0;font-size:14px;line-height:1.1;letter-spacing:.01em}.subhead{color:var(--muted);font-size:11px;font-weight:850;white-space:nowrap}
+    .order-head h2{min-width:0}.order-head-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:0;flex:0 0 auto}.order-reset-btn{height:31px;min-width:76px;border:1px solid #bdd7ef;border-radius:10px;background:#fff;color:var(--blue-dark);font-size:12px;font-weight:950;padding:0 8px;white-space:nowrap;box-shadow:0 2px 7px rgba(16,32,51,.045);touch-action:manipulation}.order-reset-btn:active{opacity:.82;transform:translateZ(0) scale(.98)}
     .row-list{background:#fff}
     .order-card .row-list{display:grid;gap:6px;background:transparent;padding:7px 2px 0}
     .order-row{position:relative;background:transparent;border:0}.order-row:last-child{border-bottom:0}
@@ -120,10 +121,9 @@
       touch-action:manipulation;user-select:none;-webkit-user-select:none;
     }
     .pos-chip.start{min-width:38px;height:32px;background:#f5fbff;border-color:#9bc9f0;color:#043e76;font-size:14px}
-    .pos-chip.change{min-width:32px;height:26px;background:#fff7ed;border-color:#fdba74;color:#7c2d12;font-size:11px;padding:0 5px}
+    .pos-chip.change{min-width:28px;height:26px;background:#fff7ed;border-color:#fdba74;color:#7c2d12;font-size:13px;padding:0 5px}
     .pos-chip.current-inning{border-color:#3b94dd}
-    .pos-chip.change.current-inning{min-width:34px;height:28px;font-size:12px}
-    .pos-chip .inning-mini{font-size:inherit;color:inherit;font-weight:950;margin-right:0;line-height:1}
+    .pos-chip.change.current-inning{min-width:30px;height:28px;font-size:13px}
     .pos-chip.def-selected,.pos-chip.is-defense-selected{background:#fffafa;border-color:var(--danger);color:#7a271a;box-shadow:0 0 0 2px rgba(180,35,24,.22),0 4px 10px rgba(180,35,24,.13);transform:translate3d(0,-1px,0) scale(1.04)}
     .pos-chip:active{opacity:.82;transform:translateZ(0) scale(.96)}
     .pos-chip.swap-fade-out{animation:chipSwapFadeOut .12s ease forwards}
@@ -163,7 +163,7 @@
     @keyframes chipSwapFadeIn{0%{opacity:.55;transform:translateZ(0) scale(.97)}100%{opacity:1;transform:translateZ(0) scale(1)}}
     @media (prefers-reduced-motion: reduce){.player-main-group,.player-card,.defense-card,.pos-chip,.bench-chip,.toast{transition:none!important}.player-main-group.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback,.pos-chip.tap-feedback,.player-main-group.swap-fade-out,.player-main-group.swap-fade-in,.defense-card.swap-fade-out,.defense-card.swap-fade-in,.bench-chip.swap-fade-out,.bench-chip.swap-fade-in,.pos-chip.swap-fade-out,.pos-chip.swap-fade-in{animation:none!important}}
     @media (max-width:560px){.title-text{flex:0 1 128px}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 7px;font-size:12px}.settings-btn{min-width:auto}}
-    @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 8px;font-size:12px}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .row-list{gap:5px;padding-top:5px}.order-main{grid-template-columns:27px minmax(0,1fr);gap:6px;min-height:44px;padding:0}.player-main-group{grid-template-columns:minmax(0,1fr) minmax(144px,.86fr);gap:6px}.order-no{font-size:20px}.player-card{font-size:13px;padding-left:9px;padding-right:9px}.pos-flow{gap:3px;padding:4px}.pos-chip{height:30px;min-width:34px;font-size:13px;padding:0 7px}.pos-chip.change{height:26px;min-width:31px;font-size:11px;padding:0 5px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select,.date-button{font-size:12px;padding-left:6px;padding-right:6px}.calendar-panel{gap:6px;padding:7px}.calendar-weekdays,.calendar-grid{gap:2px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
+    @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 8px;font-size:12px}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .card-head{padding:7px}.card-head h2{font-size:13px}.order-head-actions{gap:4px}.order-reset-btn{height:30px;min-width:72px;font-size:11px;padding:0 7px}.order-card .row-list{gap:5px;padding-top:5px}.order-main{grid-template-columns:27px minmax(0,1fr);gap:6px;min-height:44px;padding:0}.player-main-group{grid-template-columns:minmax(0,1fr) minmax(144px,.86fr);gap:6px}.order-no{font-size:20px}.player-card{font-size:13px;padding-left:9px;padding-right:9px}.pos-flow{gap:3px;padding:4px}.pos-chip{height:30px;min-width:34px;font-size:13px;padding:0 7px}.pos-chip.change{height:26px;min-width:28px;font-size:13px;padding:0 5px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select,.date-button{font-size:12px;padding-left:6px;padding-right:6px}.calendar-panel{gap:6px;padding:7px}.calendar-weekdays,.calendar-grid{gap:2px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
   </style>
 </head>
 <body>
@@ -183,11 +183,13 @@
 
     <main>
       <section class="panel active" id="orderPanel">
-        <p class="tiny-note" id="modeNote">初期オーダー作成中｜選手名2タップで打順入替。</p>
         <div class="card order-card">
-          <div class="card-head">
+          <div class="card-head order-head">
             <h2 id="orderTitle">スターティングオーダー</h2>
-            <span class="subhead" id="modeLabel">全員打ち</span>
+            <div class="order-head-actions">
+              <span class="subhead" id="modeLabel">全員打ち</span>
+              <button type="button" class="order-reset-btn" id="orderResetDefenseBtn">守備初期化</button>
+            </div>
           </div>
           <div class="row-list" id="orderList"></div>
         </div>
@@ -1074,18 +1076,45 @@
     render();
   }
 
-  function resetDefense(){
-    state.defenseChanges = {};
+  function resetInitialDefensePositions(){
     state.players.forEach((p, i) => state.startPositions[p.id] = i < 9 ? String(i + 1) : 'B');
     assignInitialDhIfNeeded();
+  }
+
+  function resetDefense(){
+    state.defenseChanges = {};
+    resetInitialDefensePositions();
     state.lineupByInning = {};
     if(state.battingMode === 'nine') state.lineupByInning[1] = state.battingOrder.slice(0,lineupLimit());
     selectedSwapId = null;
     selectedDefense = null;
+    clearTapFeedback();
+    clearSwapAnimationState();
     ensureStructures();
     saveState();
     render();
     showToast('守備を初期化');
+  }
+
+  function resetCurrentDefense(){
+    const inning = activeInning();
+    selectedSwapId = null;
+    selectedDefense = null;
+    clearTapFeedback();
+    clearSwapAnimationState();
+    if(isInitialMode() || inning <= 1){
+      resetInitialDefensePositions();
+    } else {
+      Object.keys(state.defenseChanges || {}).forEach(pid => {
+        if(!state.defenseChanges[pid]) return;
+        delete state.defenseChanges[pid][inning];
+        if(Object.keys(state.defenseChanges[pid]).length === 0) delete state.defenseChanges[pid];
+      });
+    }
+    cleanupRedundantChanges();
+    ensureStructures();
+    saveState();
+    render();
   }
 
   function render(){
@@ -1140,9 +1169,7 @@
     const modeText = state.battingMode === 'all' ? '全員打ち' : '9人制';
     $('modeLabel').textContent = isInitialMode() ? `${modeText}｜初期` : `${modeText}｜${state.selectedInning}回守備`;
     $('orderTitle').textContent = isInitialMode() ? 'スターティングオーダー' : `${state.selectedInning}回の守備変更`;
-    $('modeNote').textContent = isInitialMode()
-      ? '初期｜選手名2タップで打順入替。守備チップ2タップで初期守備。'
-      : `${state.selectedInning}回守備中｜打順固定。守備チップ2タップ。ベンチ交代は選手名→ベンチ。`;
+    $('orderResetDefenseBtn').setAttribute('aria-label', isInitialMode() ? '初期守備を初期化' : `${state.selectedInning}回の守備変更を初期化`);
   }
 
   function renderInningButtons(){
@@ -1209,7 +1236,7 @@
         const isCurrent = item.pos === currentPos && item.inning <= inning && !flow.some(x => x.inning > item.inning && x.inning <= inning);
         chip.className = 'pos-chip ' + (item.start ? 'start' : 'change') + (isCurrent ? ' current-inning' : '');
         chip.setAttribute('aria-label', `${isInitialMode() ? '初期' : state.selectedInning + '回'}の守備を入れ替え`);
-        chip.innerHTML = item.start ? `<span>${escapeHtml(posShort(item.pos))}</span>` : `<span>${item.inning}${escapeHtml(posShort(item.pos))}</span>`;
+        chip.innerHTML = `<span>${escapeHtml(posShort(item.pos))}</span>`;
         bindQuickTap(chip, () => handleDefenseTap(pid));
         posFlow.appendChild(chip);
       });
@@ -1468,6 +1495,7 @@
     $('displayMode').addEventListener('change', e => { state.settings.displayMode = e.target.value; saveState(); render(); });
     $('dhMode').addEventListener('change', e => setDhMode(e.target.value === 'on'));
     $('resetDefenseBtn').addEventListener('click', resetDefense);
+    $('orderResetDefenseBtn').addEventListener('click', resetCurrentDefense);
     $('copyMemoBtn').addEventListener('click', copyMemo);
     $('shareBtn').addEventListener('click', shareOrder);
     $('shareMemoBtn').addEventListener('click', shareOrder);
