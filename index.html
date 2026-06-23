@@ -88,23 +88,31 @@
     .order-card .card-head{border:1px solid var(--line);border-radius:13px;background:#fbfdff;box-shadow:0 3px 8px rgba(16,32,51,.05)}
     .card-head h2{margin:0;font-size:14px;line-height:1.1;letter-spacing:.01em}.subhead{color:var(--muted);font-size:11px;font-weight:850;white-space:nowrap}
     .row-list{background:#fff}
-    .order-card .row-list{display:grid;gap:5px;background:transparent;padding:6px 2px 0}
-    .order-row{position:relative;border-bottom:1px solid #edf2f7;background:#fff;transition:box-shadow .16s ease, opacity .16s ease, transform .16s ease}.order-row:last-child{border-bottom:0}
-    .order-card .order-row{border:1px solid #e4edf5;border-radius:12px;box-shadow:0 2px 7px rgba(16,32,51,.045);overflow:hidden}
-    .order-card .order-row:last-child{border-bottom:1px solid #e4edf5}
-    .order-row.has-change{background:linear-gradient(90deg,rgba(255,247,237,.78),#fff 58%)}
-    .order-row.selected,.order-row.is-selected{box-shadow:inset 0 0 0 1px rgba(180,35,24,.85)}
-    .order-row.tap-feedback,.bench-chip.tap-feedback,.pos-chip.tap-feedback{animation:tapGhost .18s ease-out}
-    .order-row.swap-fade-out,.bench-chip.swap-fade-out{animation:swapFadeOut .12s ease forwards}
-    .order-row.swap-fade-in,.bench-chip.swap-fade-in{animation:swapFadeIn .15s ease-out}
-    .order-row.selected .order-main,.order-row.is-selected .order-main{border-left-color:var(--danger)!important}
-    .order-main{position:relative;display:grid;grid-template-columns:30px minmax(0,.98fr) minmax(130px,1.18fr);align-items:center;gap:7px;min-height:44px;padding:6px 8px 6px 9px;border-left:5px solid transparent}
-    .order-no{color:var(--blue);font-size:21px;line-height:1;font-weight:950;text-align:center}
-    .player-name{min-width:0;border:0;background:transparent;text-align:left;padding:0;font-size:14px;font-weight:950;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .pos-flow{min-width:0;display:flex;align-items:center;gap:4px;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;padding:1px 0;scrollbar-width:none}.pos-flow::-webkit-scrollbar{display:none}
+    .order-card .row-list{display:grid;gap:6px;background:transparent;padding:7px 2px 0}
+    .order-row{position:relative;background:transparent;border:0}.order-row:last-child{border-bottom:0}
+    .order-card .order-row{border:0;border-radius:0;box-shadow:none;overflow:visible}
+    .order-card .order-row:last-child{border-bottom:0}
+    .order-main{position:relative;display:grid;grid-template-columns:30px minmax(0,1fr) minmax(112px,.64fr);align-items:stretch;gap:7px;min-height:44px;padding:0}
+    .order-no{color:var(--blue);font-size:21px;line-height:1;font-weight:950;text-align:center;display:flex;align-items:center;justify-content:center}
+    .player-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .player-card,.defense-card{
+      min-width:0;min-height:44px;border:1px solid #bdd7ef;border-radius:12px;background:#fff;color:var(--ink);box-shadow:0 2px 7px rgba(16,32,51,.045);
+      transition:background-color .14s ease,border-color .14s ease,box-shadow .14s ease,transform .14s ease,opacity .14s ease;
+      touch-action:manipulation;user-select:none;-webkit-user-select:none;
+    }
+    .player-card{display:flex;align-items:center;justify-content:flex-start;text-align:left;padding:0 10px;font-size:14px;font-weight:950}
+    .player-card:active,.defense-card:active,.bench-chip:active{opacity:.84;transform:translateZ(0) scale(.98)}
+    .player-card.selected,.player-card.is-selected,.bench-chip.selected,.bench-chip.is-selected{border-color:var(--danger);box-shadow:0 0 0 1px rgba(180,35,24,.22),0 4px 10px rgba(180,35,24,.10)}
+    .player-card.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback{animation:tapGhost .16s ease-out}
+    .player-card.swap-fade-out,.defense-card.swap-fade-out,.bench-chip.swap-fade-out{animation:swapFadeOut .105s ease forwards}
+    .player-card.swap-fade-in,.defense-card.swap-fade-in,.bench-chip.swap-fade-in{animation:swapFadeIn .12s ease-out}
+    .pos-flow{min-width:0;display:flex;align-items:center;gap:4px;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;padding:5px;scrollbar-width:none}.pos-flow::-webkit-scrollbar{display:none}
+    .defense-card.has-change{background:linear-gradient(90deg,#fff 0%,rgba(255,247,237,.78) 100%)}
+    .defense-card.def-selected,.defense-card.is-defense-selected{background:#fffafa;border-color:var(--danger);box-shadow:0 0 0 2px rgba(180,35,24,.20),0 4px 10px rgba(180,35,24,.12);transform:translate3d(0,-1px,0) scale(1.01)}
     .pos-chip,.add-pos-chip{
       flex:0 0 auto;min-width:36px;height:32px;border-radius:999px;border:1px solid #bdd7ef;background:#fff;color:#07192b;font-size:14px;font-weight:950;display:inline-flex;align-items:center;justify-content:center;gap:2px;padding:0 8px;
       transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease,color .16s ease,opacity .16s ease;
+      touch-action:manipulation;user-select:none;-webkit-user-select:none;
     }
     .pos-chip.start{background:#f5fbff;border-color:#9bc9f0;color:#043e76}
     .pos-chip.change{background:#fff7ed;border-color:#fdba74;color:#7c2d12}
@@ -124,7 +132,7 @@
     .mini-chip.danger{background:#fff1f0;border-color:#ffd0cd;color:var(--danger)}
     .bench-wrap,.memo-wrap{margin-top:8px;background:#fff;border:1px solid var(--line);border-radius:15px;overflow:hidden;box-shadow:0 4px 12px rgba(16,32,51,.05)}
     details summary{list-style:none;padding:9px 10px;font-weight:950;color:var(--blue-dark);display:flex;align-items:center;justify-content:space-between;gap:8px}details summary::-webkit-details-marker{display:none}
-    .bench-list{display:flex;flex-wrap:wrap;gap:6px;padding:0 10px 10px}.bench-chip{border:1px solid var(--line);background:#fff;border-radius:999px;min-height:30px;padding:0 9px;display:inline-flex;align-items:center;gap:6px;font-weight:900;font-size:12px;transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease,opacity .16s ease}.bench-chip.selected,.bench-chip.is-selected{border-color:var(--danger);box-shadow:0 0 0 1px rgba(180,35,24,.18)}
+    .bench-list{display:flex;flex-wrap:wrap;gap:6px;padding:0 10px 10px}.bench-chip{border:1px solid #bdd7ef;background:#fff;border-radius:12px;min-height:42px;padding:0 10px;display:inline-flex;align-items:center;gap:6px;font-weight:900;font-size:12px;transition:background-color .14s ease,border-color .14s ease,box-shadow .14s ease,transform .14s ease,opacity .14s ease;touch-action:manipulation;user-select:none;-webkit-user-select:none}
     .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(0,0,0,.10)}
     .empty-state{color:var(--muted);font-size:13px;font-weight:850;padding:0 10px 10px}
     .memo-body{padding:0 10px 10px}.memo-body textarea{width:100%;min-height:120px;resize:vertical;border:1px solid var(--line);border-radius:11px;padding:8px;font-size:12px;line-height:1.45;font-weight:850;background:#fbfdff;color:#102033;outline:none}.memo-actions{display:flex;gap:7px;margin-top:7px}.memo-actions button{flex:1;min-height:34px;border:1px solid var(--line);border-radius:11px;background:#fff;font-weight:950}.memo-actions .primary{background:var(--blue);border-color:var(--blue);color:#fff}
@@ -147,9 +155,9 @@
     @keyframes swapFadeIn{0%{opacity:.55;transform:translateZ(0) scale(.97)}100%{opacity:1;transform:translateZ(0) scale(1)}}
     @keyframes chipSwapFadeOut{0%{opacity:1;transform:translateZ(0) scale(1)}100%{opacity:.55;transform:translateZ(0) scale(.97)}}
     @keyframes chipSwapFadeIn{0%{opacity:.55;transform:translateZ(0) scale(.97)}100%{opacity:1;transform:translateZ(0) scale(1)}}
-    @media (prefers-reduced-motion: reduce){.order-row,.pos-chip,.bench-chip,.toast{transition:none!important}.order-row.tap-feedback,.bench-chip.tap-feedback,.pos-chip.tap-feedback,.order-row.swap-fade-out,.order-row.swap-fade-in,.bench-chip.swap-fade-out,.bench-chip.swap-fade-in,.pos-chip.swap-fade-out,.pos-chip.swap-fade-in{animation:none!important}}
+    @media (prefers-reduced-motion: reduce){.player-card,.defense-card,.pos-chip,.bench-chip,.toast{transition:none!important}.player-card.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback,.pos-chip.tap-feedback,.player-card.swap-fade-out,.player-card.swap-fade-in,.defense-card.swap-fade-out,.defense-card.swap-fade-in,.bench-chip.swap-fade-out,.bench-chip.swap-fade-in,.pos-chip.swap-fade-out,.pos-chip.swap-fade-in{animation:none!important}}
     @media (max-width:560px){.title-text{flex:0 1 128px}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 7px;font-size:12px}.settings-btn{min-width:auto}}
-    @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 8px;font-size:12px}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .row-list{gap:4px;padding-top:5px}.order-main{grid-template-columns:27px minmax(0,.92fr) minmax(118px,1.08fr);gap:5px;min-height:45px;padding:6px 6px 6px 7px}.order-no{font-size:20px}.player-name{font-size:13px}.pos-chip{height:32px;min-width:36px;font-size:13px;padding:0 7px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select,.date-button{font-size:12px;padding-left:6px;padding-right:6px}.calendar-panel{gap:6px;padding:7px}.calendar-weekdays,.calendar-grid{gap:2px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
+    @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 8px;font-size:12px}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .row-list{gap:5px;padding-top:5px}.order-main{grid-template-columns:27px minmax(0,1fr) minmax(104px,.58fr);gap:6px;min-height:44px;padding:0}.order-no{font-size:20px}.player-card{font-size:13px;padding-left:9px;padding-right:9px}.pos-chip{height:30px;min-width:34px;font-size:13px;padding:0 7px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select,.date-button{font-size:12px;padding-left:6px;padding-right:6px}.calendar-panel{gap:6px;padding:7px}.calendar-weekdays,.calendar-grid{gap:2px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
   </style>
 </head>
 <body>
@@ -329,9 +337,9 @@
   let tapFeedbackTimer = null;
   let isSwapAnimating = false;
   let calendarMonth = null;
-  const SWAP_FADE_OUT_MS = 120;
-  const SWAP_FADE_IN_MS = 150;
-  const TAP_FEEDBACK_MS = 180;
+  const SWAP_FADE_OUT_MS = 105;
+  const SWAP_FADE_IN_MS = 120;
+  const TAP_FEEDBACK_MS = 160;
   const $ = (id) => document.getElementById(id);
 
   function clone(value){ return JSON.parse(JSON.stringify(value)); }
@@ -695,6 +703,29 @@
       FORM_CONTROL_GUARD_EVENTS.forEach(type => control.addEventListener(type, stopFormControlPropagation, { passive:true }));
     });
   }
+  function bindQuickTap(element, handler){
+    let handledByPointer = false;
+    const run = (event) => {
+      event.stopPropagation();
+      if(shouldIgnoreNestedFormControlTap(event)) return;
+      handler(event);
+    };
+    element.addEventListener('pointerup', event => {
+      if(event.pointerType === 'mouse' && event.button !== 0) return;
+      handledByPointer = true;
+      event.preventDefault();
+      run(event);
+      setTimeout(() => { handledByPointer = false; }, 350);
+    });
+    element.addEventListener('click', event => {
+      if(handledByPointer){
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+      run(event);
+    });
+  }
   function reducedMotion(){
     return Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
   }
@@ -714,6 +745,12 @@
     defenseTapFeedbackIds.clear();
   }
   function startTapFeedback({ playerIds = [], defenseIds = [] }){
+    if(!isSwapAnimating && swapAnimationTimer){
+      clearTimeout(swapAnimationTimer);
+      swapAnimationTimer = null;
+      swapFadeInIds.clear();
+      defenseSwapFadeInIds.clear();
+    }
     clearTapFeedback();
     if(reducedMotion()) return;
     tapFeedbackIds = new Set(playerIds.filter(id => playerById(id)));
@@ -725,6 +762,8 @@
   }
   function startSwapAnimation({ playerIds = [], defenseIds = [], commit }){
     if(isSwapAnimating) return false;
+    clearTimeout(swapAnimationTimer);
+    swapAnimationTimer = null;
     clearTapFeedback();
     const rowIds = playerIds.filter(id => playerById(id));
     const chipIds = defenseIds.filter(id => playerById(id));
@@ -747,9 +786,12 @@
       }
       swapFadeInIds = new Set(rowIds);
       defenseSwapFadeInIds = new Set(chipIds);
+      isSwapAnimating = false;
       render();
       swapAnimationTimer = setTimeout(() => {
-        clearSwapAnimationState();
+        swapAnimationTimer = null;
+        swapFadeInIds.clear();
+        defenseSwapFadeInIds.clear();
         render();
       }, inDelay);
     }, outDelay);
@@ -1128,42 +1170,39 @@
       const isSwapFadingIn = swapFadeInIds.has(pid);
       const hasTapFeedback = tapFeedbackIds.has(pid);
       const showSwapSelected = isSwapSelected && !hasTapFeedback;
+      const playerCardClass = 'player-name player-card' + (showSwapSelected ? ' selected is-selected' : '') + (hasTapFeedback ? ' tap-feedback' : '') + (isSwapFadingOut ? ' swap-fade-out is-swapping' : '') + (isSwapFadingIn ? ' swap-fade-in is-swapping' : '');
       const row = document.createElement('div');
-      row.className = 'order-row' + (hasChange ? ' has-change' : '') + (showSwapSelected ? ' selected is-selected' : '') + (hasTapFeedback ? ' tap-feedback' : '') + (isSwapFadingOut ? ' swap-fade-out is-swapping' : '') + (isSwapFadingIn ? ' swap-fade-in is-swapping' : '');
+      row.className = 'order-row' + (hasChange ? ' has-change' : '');
       const main = document.createElement('div');
       main.className = 'order-main';
-      main.style.borderLeftColor = player.color || '#94a3b8';
       const playerLabel = isInitialMode() ? '打順入替で選択' : '交代で選択';
       main.innerHTML = `
         <div class="order-no">${index + 1}</div>
-        <button type="button" class="player-name" aria-label="${escapeAttr(displayName(pid))}${playerLabel}">${escapeHtml(displayName(pid))}</button>
-        <div class="pos-flow" aria-label="守備履歴"></div>
+        <button type="button" class="${playerCardClass}" aria-label="${escapeAttr(displayName(pid))}${playerLabel}">${escapeHtml(displayName(pid))}</button>
+        <div class="pos-flow defense-card" role="button" tabindex="0" aria-label="守備履歴"></div>
       `;
       const playerButton = main.querySelector('.player-name');
-      playerButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if(shouldIgnoreNestedFormControlTap(e)) return;
-        handlePlayerTap(pid);
-      });
+      playerButton.style.borderLeftColor = player.color || '#94a3b8';
+      bindQuickTap(playerButton, () => handlePlayerTap(pid));
       const posFlow = main.querySelector('.pos-flow');
+      const isDefenseFadingOut = defenseSwapFadeOutIds.has(pid);
+      const isDefenseFadingIn = defenseSwapFadeInIds.has(pid);
+      const hasDefenseTapFeedback = defenseTapFeedbackIds.has(pid);
+      const showDefenseSelected = isDefSelected && !hasDefenseTapFeedback;
+      posFlow.className = 'pos-flow defense-card' + (hasChange ? ' has-change' : '') + (showDefenseSelected ? ' def-selected is-defense-selected' : '') + (hasDefenseTapFeedback ? ' tap-feedback' : '') + (isDefenseFadingOut ? ' swap-fade-out is-chip-swapping' : '') + (isDefenseFadingIn ? ' swap-fade-in is-chip-swapping' : '');
+      bindQuickTap(posFlow, (e) => {
+        if(e.target.closest('.pos-chip')) return;
+        handleDefenseTap(pid);
+      });
       const currentPos = effectivePosition(pid, inning);
       flow.forEach(item => {
         const chip = document.createElement('button');
         chip.type = 'button';
         const isCurrent = item.pos === currentPos && item.inning <= inning && !flow.some(x => x.inning > item.inning && x.inning <= inning);
-        const isSelectedDefenseChip = isDefSelected && isCurrent;
-        const isDefenseFadingOut = defenseSwapFadeOutIds.has(pid) && isCurrent;
-        const isDefenseFadingIn = defenseSwapFadeInIds.has(pid) && isCurrent;
-        const hasDefenseTapFeedback = defenseTapFeedbackIds.has(pid) && isCurrent;
-        const showDefenseSelected = isSelectedDefenseChip && !hasDefenseTapFeedback;
-        chip.className = 'pos-chip ' + (item.start ? 'start' : 'change') + (showDefenseSelected ? ' def-selected is-defense-selected' : '') + (isCurrent ? ' current-inning' : '') + (hasDefenseTapFeedback ? ' tap-feedback' : '') + (isDefenseFadingOut ? ' swap-fade-out is-chip-swapping' : '') + (isDefenseFadingIn ? ' swap-fade-in is-chip-swapping' : '');
+        chip.className = 'pos-chip ' + (item.start ? 'start' : 'change') + (isCurrent ? ' current-inning' : '');
         chip.setAttribute('aria-label', `${isInitialMode() ? '初期' : state.selectedInning + '回'}の守備を入れ替え`);
         chip.innerHTML = item.start ? `<span>${escapeHtml(posShort(item.pos))}</span>` : `<span class="inning-mini">${item.inning}回</span><span>${escapeHtml(posShort(item.pos))}</span>`;
-        chip.addEventListener('click', (e) => {
-          e.stopPropagation();
-          if(shouldIgnoreNestedFormControlTap(e)) return;
-          handleDefenseTap(pid);
-        });
+        bindQuickTap(chip, () => handleDefenseTap(pid));
         posFlow.appendChild(chip);
       });
       row.appendChild(main);
@@ -1185,11 +1224,7 @@
       const hasTapFeedback = tapFeedbackIds.has(p.id);
       chip.className = 'bench-chip' + (selectedSwapId === p.id && !hasTapFeedback ? ' selected is-selected' : '') + (hasTapFeedback ? ' tap-feedback' : '') + (swapFadeOutIds.has(p.id) ? ' swap-fade-out is-swapping' : '') + (swapFadeInIds.has(p.id) ? ' swap-fade-in is-swapping' : '');
       chip.innerHTML = `<span class="dot" style="background:${escapeAttr(p.color)}"></span><span>${escapeHtml(displayName(p.id))}</span>`;
-      chip.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if(shouldIgnoreNestedFormControlTap(e)) return;
-        handlePlayerTap(p.id);
-      });
+      bindQuickTap(chip, () => handlePlayerTap(p.id));
       wrap.appendChild(chip);
     });
   }
