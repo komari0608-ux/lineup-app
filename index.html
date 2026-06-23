@@ -73,7 +73,8 @@
     .order-row{position:relative;border-bottom:1px solid #edf2f7;background:#fff;transition:box-shadow .16s ease, opacity .16s ease, transform .16s ease}.order-row:last-child{border-bottom:0}
     .order-row.has-change{background:linear-gradient(90deg,rgba(255,247,237,.78),#fff 58%)}
     .order-row.selected,.order-row.is-selected{box-shadow:inset 0 0 0 1px rgba(180,35,24,.85)}
-    .order-row.just-swapped{animation:rowSwapSettle .14s ease-out}
+    .order-row.swap-fade-out,.bench-chip.swap-fade-out{animation:swapFadeOut .12s ease forwards}
+    .order-row.swap-fade-in,.bench-chip.swap-fade-in{animation:swapFadeIn .15s ease-out}
     .order-row.selected .order-main,.order-row.is-selected .order-main{border-left-color:var(--danger)!important}
     .order-main{position:relative;display:grid;grid-template-columns:28px minmax(0,.95fr) minmax(130px,1.25fr);align-items:center;gap:6px;min-height:38px;padding:4px 7px 4px 8px;border-left:5px solid transparent}
     .order-no{color:var(--blue);font-size:21px;line-height:1;font-weight:950;text-align:center}
@@ -89,7 +90,8 @@
     .pos-chip .inning-mini{font-size:9px;color:var(--warn);font-weight:950;margin-right:1px;line-height:1}
     .pos-chip.def-selected,.pos-chip.is-defense-selected{background:#f8fcff;border-color:var(--blue);color:var(--blue-dark);box-shadow:0 0 0 2px rgba(8,103,189,.22),0 4px 10px rgba(8,103,189,.13);transform:translate3d(0,-1px,0) scale(1.04)}
     .pos-chip:active{opacity:.82;transform:translateZ(0) scale(.96)}
-    .pos-chip.just-swapped-defense{animation:defenseChipSettle .16s ease-out}
+    .pos-chip.swap-fade-out{animation:chipSwapFadeOut .12s ease forwards}
+    .pos-chip.swap-fade-in{animation:chipSwapFadeIn .15s ease-out}
     .pos-chip.current-inning{border-color:#3b94dd}
     .add-pos-chip{min-width:32px;width:32px;height:32px;padding:0;background:#ecfbf2;border-color:#bfe0cc;color:var(--green);font-size:17px}
     .inline-editor{padding:0 7px 7px 41px;margin-top:-1px}
@@ -101,7 +103,7 @@
     .mini-chip.danger{background:#fff1f0;border-color:#ffd0cd;color:var(--danger)}
     .bench-wrap,.memo-wrap{margin-top:8px;background:#fff;border:1px solid var(--line);border-radius:15px;overflow:hidden;box-shadow:0 4px 12px rgba(16,32,51,.05)}
     details summary{list-style:none;padding:9px 10px;font-weight:950;color:var(--blue-dark);display:flex;align-items:center;justify-content:space-between;gap:8px}details summary::-webkit-details-marker{display:none}
-    .bench-list{display:flex;flex-wrap:wrap;gap:6px;padding:0 10px 10px}.bench-chip{border:1px solid var(--line);background:#fff;border-radius:999px;min-height:30px;padding:0 9px;display:inline-flex;align-items:center;gap:6px;font-weight:900;font-size:12px;transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease,opacity .16s ease}.bench-chip.selected,.bench-chip.is-selected{border-color:var(--danger);box-shadow:0 0 0 1px rgba(180,35,24,.18)}.bench-chip.just-swapped{animation:chipSwapSettle .14s ease-out}
+    .bench-list{display:flex;flex-wrap:wrap;gap:6px;padding:0 10px 10px}.bench-chip{border:1px solid var(--line);background:#fff;border-radius:999px;min-height:30px;padding:0 9px;display:inline-flex;align-items:center;gap:6px;font-weight:900;font-size:12px;transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease,opacity .16s ease}.bench-chip.selected,.bench-chip.is-selected{border-color:var(--danger);box-shadow:0 0 0 1px rgba(180,35,24,.18)}
     .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(0,0,0,.10)}
     .empty-state{color:var(--muted);font-size:13px;font-weight:850;padding:0 10px 10px}
     .memo-body{padding:0 10px 10px}.memo-body textarea{width:100%;min-height:120px;resize:vertical;border:1px solid var(--line);border-radius:11px;padding:8px;font-size:12px;line-height:1.45;font-weight:850;background:#fbfdff;color:#102033;outline:none}.memo-actions{display:flex;gap:7px;margin-top:7px}.memo-actions button{flex:1;min-height:34px;border:1px solid var(--line);border-radius:11px;background:#fff;font-weight:950}.memo-actions .primary{background:var(--blue);border-color:var(--blue);color:#fff}
@@ -109,10 +111,11 @@
     .player-row{display:grid;grid-template-columns:24px minmax(0,1fr) 52px 34px;align-items:center;gap:6px;min-height:42px;padding:4px 0;border-bottom:1px solid #edf2f7}.player-row:last-child{border-bottom:0}.color-input{width:24px;height:24px;padding:0;border:0;background:transparent}.player-names{display:grid;grid-template-columns:1fr 1fr;gap:5px;min-width:0}.player-row input[type="text"],.player-row input[type="number"]{min-width:0;height:31px;border:1px solid var(--line);border-radius:9px;padding:0 7px;font-size:12px;font-weight:850}.icon-del{height:31px;border:0;border-radius:9px;background:#fff1f0;color:var(--danger);font-weight:950}.add-row{display:grid;grid-template-columns:1fr 1fr 58px;gap:6px;padding-top:9px}.add-row input{min-width:0;height:34px;border:1px solid var(--line);border-radius:10px;padding:0 9px;font-size:12px;font-weight:850}.add-row button{border:0;border-radius:10px;background:var(--green);color:#fff;font-weight:950}
     .bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.96);border-top:1px solid var(--line);backdrop-filter:blur(12px);padding:5px max(7px,env(safe-area-inset-left)) calc(5px + env(safe-area-inset-bottom)) max(7px,env(safe-area-inset-right));display:flex;justify-content:center}.bottom-nav-inner{width:min(560px,100%);display:grid;grid-template-columns:repeat(2,1fr);gap:5px}.nav-btn{border:0;background:transparent;color:#7b8794;border-radius:14px;min-height:47px;font-weight:950;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}.nav-btn .icon{font-size:19px;line-height:1}.nav-btn.active{background:#eaf4ff;color:var(--blue)}
     .toast{position:fixed;left:50%;bottom:calc(65px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(16px);opacity:0;pointer-events:none;z-index:80;background:#071226;color:#fff;border-radius:999px;padding:9px 14px;font-size:13px;font-weight:900;transition:.2s ease;white-space:nowrap}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-    @keyframes rowSwapSettle{0%{opacity:.94;transform:translateZ(0) scale(.998)}100%{opacity:1;transform:translateZ(0) scale(1)}}
-    @keyframes chipSwapSettle{0%{opacity:.9;transform:translateZ(0) scale(.98)}100%{opacity:1;transform:translateZ(0) scale(1)}}
-    @keyframes defenseChipSettle{0%{opacity:.82;transform:translateZ(0) scale(.98)}100%{opacity:1;transform:translateZ(0) scale(1)}}
-    @media (prefers-reduced-motion: reduce){.order-row,.pos-chip,.bench-chip,.toast{transition:none!important}.order-row.just-swapped,.bench-chip.just-swapped,.pos-chip.just-swapped-defense{animation:none!important}}
+    @keyframes swapFadeOut{0%{opacity:1;transform:translateZ(0) scale(1)}100%{opacity:.55;transform:translateZ(0) scale(.98)}}
+    @keyframes swapFadeIn{0%{opacity:.55;transform:translateZ(0) scale(.98)}100%{opacity:1;transform:translateZ(0) scale(1)}}
+    @keyframes chipSwapFadeOut{0%{opacity:1;transform:translateZ(0) scale(1)}100%{opacity:.55;transform:translateZ(0) scale(.97)}}
+    @keyframes chipSwapFadeIn{0%{opacity:.55;transform:translateZ(0) scale(.97)}100%{opacity:1;transform:translateZ(0) scale(1)}}
+    @media (prefers-reduced-motion: reduce){.order-row,.pos-chip,.bench-chip,.toast{transition:none!important}.order-row.swap-fade-out,.order-row.swap-fade-in,.bench-chip.swap-fade-out,.bench-chip.swap-fade-in,.pos-chip.swap-fade-out,.pos-chip.swap-fade-in{animation:none!important}}
     @media (max-width:390px){.app{padding-left:6px;padding-right:6px}.toolbar{grid-template-columns:1fr .82fr auto}.toolbar select,.toolbar button{font-size:11px;padding-left:5px;padding-right:5px}.order-main{grid-template-columns:25px minmax(0,.92fr) minmax(118px,1.1fr);gap:5px;min-height:42px;padding-left:6px;padding-right:5px}.order-no{font-size:20px}.player-name{font-size:13px}.pos-chip{height:32px;min-width:36px;font-size:13px;padding:0 7px}.inline-editor{padding-left:36px}.game-line input,.game-line select{font-size:11px;padding-left:4px;padding-right:4px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}}
   </style>
 </head>
@@ -249,10 +252,14 @@
   let currentTab = 'order';
   let selectedSwapId = null;
   let selectedDefense = null;
-  let justSwappedIds = new Set();
-  let justSwappedDefenseIds = new Set();
-  let justSwappedTimer = null;
-  let justSwappedDefenseTimer = null;
+  let swapFadeOutIds = new Set();
+  let swapFadeInIds = new Set();
+  let defenseSwapFadeOutIds = new Set();
+  let defenseSwapFadeInIds = new Set();
+  let swapAnimationTimer = null;
+  let isSwapAnimating = false;
+  const SWAP_FADE_OUT_MS = 120;
+  const SWAP_FADE_IN_MS = 150;
   const $ = (id) => document.getElementById(id);
 
   function clone(value){ return JSON.parse(JSON.stringify(value)); }
@@ -475,25 +482,48 @@
       FORM_CONTROL_GUARD_EVENTS.forEach(type => control.addEventListener(type, stopFormControlPropagation, { passive:true }));
     });
   }
-  function markJustSwapped(...ids){
-    const validIds = ids.filter(id => playerById(id));
-    if(!validIds.length) return;
-    justSwappedIds = new Set(validIds);
-    clearTimeout(justSwappedTimer);
-    justSwappedTimer = setTimeout(() => {
-      justSwappedIds.clear();
-      render();
-    }, 160);
+  function reducedMotion(){
+    return Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
   }
-  function markDefenseJustSwapped(...ids){
-    const validIds = ids.filter(id => playerById(id));
-    if(!validIds.length) return;
-    justSwappedDefenseIds = new Set(validIds);
-    clearTimeout(justSwappedDefenseTimer);
-    justSwappedDefenseTimer = setTimeout(() => {
-      justSwappedDefenseIds.clear();
+  function clearSwapAnimationState(){
+    clearTimeout(swapAnimationTimer);
+    swapAnimationTimer = null;
+    isSwapAnimating = false;
+    swapFadeOutIds.clear();
+    swapFadeInIds.clear();
+    defenseSwapFadeOutIds.clear();
+    defenseSwapFadeInIds.clear();
+  }
+  function startSwapAnimation({ playerIds = [], defenseIds = [], commit }){
+    if(isSwapAnimating) return false;
+    const rowIds = playerIds.filter(id => playerById(id));
+    const chipIds = defenseIds.filter(id => playerById(id));
+    const outDelay = reducedMotion() ? 0 : SWAP_FADE_OUT_MS;
+    const inDelay = reducedMotion() ? 0 : SWAP_FADE_IN_MS;
+    isSwapAnimating = true;
+    swapFadeOutIds = new Set(rowIds);
+    swapFadeInIds.clear();
+    defenseSwapFadeOutIds = new Set(chipIds);
+    defenseSwapFadeInIds.clear();
+    render();
+    swapAnimationTimer = setTimeout(() => {
+      const done = commit();
+      swapFadeOutIds.clear();
+      defenseSwapFadeOutIds.clear();
+      if(done === false){
+        clearSwapAnimationState();
+        render();
+        return;
+      }
+      swapFadeInIds = new Set(rowIds);
+      defenseSwapFadeInIds = new Set(chipIds);
       render();
-    }, 160);
+      swapAnimationTimer = setTimeout(() => {
+        clearSwapAnimationState();
+        render();
+      }, inDelay);
+    }, outDelay);
+    return true;
   }
 
   function effectivePosition(playerId, inning){
@@ -557,6 +587,7 @@
   }
 
   function handlePlayerTap(playerId){
+    if(isSwapAnimating) return;
     if(!playerById(playerId)) return;
     selectedDefense = null;
     if(isInitialMode()){
@@ -577,17 +608,24 @@
       render();
       return;
     }
-    swapInitialOrder(selectedSwapId, playerId);
-    selectedSwapId = null;
-    saveState();
-    render();
+    const idA = selectedSwapId;
+    const idB = playerId;
+    startSwapAnimation({
+      playerIds: [idA, idB],
+      commit: () => {
+        const done = swapInitialOrder(idA, idB);
+        selectedSwapId = null;
+        if(done) saveState();
+        return done;
+      }
+    });
   }
 
   function swapInitialOrder(idA, idB){
-    if(idA === idB) return;
+    if(idA === idB) return false;
     const a = state.battingOrder.indexOf(idA);
     const b = state.battingOrder.indexOf(idB);
-    if(a < 0 || b < 0) return;
+    if(a < 0 || b < 0) return false;
     [state.battingOrder[a], state.battingOrder[b]] = [state.battingOrder[b], state.battingOrder[a]];
     if(state.battingMode === 'nine'){
       const oldFirst = (state.lineupByInning[1] || []).slice();
@@ -605,8 +643,7 @@
         }
       }
     }
-    markJustSwapped(idA, idB);
-    showToast('打順を入替');
+    return true;
   }
 
   function handleSubstitutionTap(playerId){
@@ -623,18 +660,22 @@
     }
     const idA = selectedSwapId;
     const idB = playerId;
-    const done = state.battingMode === 'nine'
-      ? substituteNineMode(idA, idB, inning)
-      : substituteAllBattingDefenseOnly(idA, idB, inning);
-    selectedSwapId = null;
-    if(done){
-      cleanupRedundantChanges();
-      saveState();
-      render();
-    }else{
-      showToast('打順固定中。ベンチ選手と交代できます');
-      render();
-    }
+    startSwapAnimation({
+      playerIds: [idA, idB],
+      commit: () => {
+        const done = state.battingMode === 'nine'
+          ? substituteNineMode(idA, idB, inning)
+          : substituteAllBattingDefenseOnly(idA, idB, inning);
+        selectedSwapId = null;
+        if(done){
+          cleanupRedundantChanges();
+          saveState();
+          return true;
+        }
+        showToast('打順固定中。ベンチ選手と交代できます');
+        return false;
+      }
+    });
   }
 
   function substituteNineMode(idA, idB, inning){
@@ -655,8 +696,6 @@
     }
     setRawChange(outId, inning, 'B');
     setRawChange(inId, inning, outPos || 'B');
-    markJustSwapped(outId, inId);
-    showToast(`${inning}回 ${slot + 1}番を交代`);
     return true;
   }
 
@@ -671,12 +710,11 @@
     const fieldPos = effectivePosition(fieldId, inning);
     setRawChange(fieldId, inning, 'B');
     setRawChange(benchId, inning, fieldPos || 'B');
-    markJustSwapped(fieldId, benchId);
-    showToast(`${inning}回から守備交代`);
     return true;
   }
 
   function handleDefenseTap(playerId){
+    if(isSwapAnimating) return;
     if(!playerById(playerId)) return;
     selectedSwapId = null;
     const inning = activeInning();
@@ -690,30 +728,37 @@
       render();
       return;
     }
-    swapDefensePositionsAtInning(selectedDefense.playerId, playerId, inning);
-    selectedDefense = null;
-    cleanupRedundantChanges();
-    saveState();
-    render();
+    const idA = selectedDefense.playerId;
+    const idB = playerId;
+    startSwapAnimation({
+      defenseIds: [idA, idB],
+      commit: () => {
+        const done = swapDefensePositionsAtInning(idA, idB, inning);
+        selectedDefense = null;
+        if(done){
+          cleanupRedundantChanges();
+          saveState();
+          return true;
+        }
+        return false;
+      }
+    });
   }
 
   function swapDefensePositionsAtInning(idA, idB, inning){
-    if(idA === idB) return;
+    if(idA === idB) return false;
     inning = Math.min(maxInnings(), Math.max(1, Number(inning || 1)));
     const posA = effectivePosition(idA, inning);
     const posB = effectivePosition(idB, inning);
-    if(posA === posB) return;
+    if(posA === posB) return false;
     if(inning <= 1){
       state.startPositions[idA] = posB;
       state.startPositions[idB] = posA;
-      markDefenseJustSwapped(idA, idB);
-      showToast('1回の守備を入替');
-      return;
+      return true;
     }
     setRawChange(idA, inning, posB);
     setRawChange(idB, inning, posA);
-    markDefenseJustSwapped(idA, idB);
-    showToast(`${inning}回から守備入替`);
+    return true;
   }
 
   function setBattingMode(mode){
@@ -802,9 +847,10 @@
       const hasChange = flow.length > 1;
       const isSwapSelected = selectedSwapId === pid;
       const isDefSelected = selectedDefense?.playerId === pid;
-      const isJustSwapped = justSwappedIds.has(pid);
+      const isSwapFadingOut = swapFadeOutIds.has(pid);
+      const isSwapFadingIn = swapFadeInIds.has(pid);
       const row = document.createElement('div');
-      row.className = 'order-row' + (hasChange ? ' has-change' : '') + (isSwapSelected ? ' selected is-selected' : '') + (isJustSwapped ? ' just-swapped' : '');
+      row.className = 'order-row' + (hasChange ? ' has-change' : '') + (isSwapSelected ? ' selected is-selected' : '') + (isSwapFadingOut ? ' swap-fade-out is-swapping' : '') + (isSwapFadingIn ? ' swap-fade-in is-swapping' : '');
       const main = document.createElement('div');
       main.className = 'order-main';
       main.style.borderLeftColor = player.color || '#94a3b8';
@@ -828,8 +874,9 @@
         chip.type = 'button';
         const isCurrent = item.pos === currentPos && item.inning <= inning && !flow.some(x => x.inning > item.inning && x.inning <= inning);
         const isSelectedDefenseChip = isDefSelected && isCurrent;
-        const isJustSwappedDefenseChip = justSwappedDefenseIds.has(pid) && isCurrent;
-        chip.className = 'pos-chip ' + (item.start ? 'start' : 'change') + (isSelectedDefenseChip ? ' def-selected is-defense-selected' : '') + (isCurrent ? ' current-inning' : '') + (isJustSwappedDefenseChip ? ' just-swapped-defense' : '');
+        const isDefenseFadingOut = defenseSwapFadeOutIds.has(pid) && isCurrent;
+        const isDefenseFadingIn = defenseSwapFadeInIds.has(pid) && isCurrent;
+        chip.className = 'pos-chip ' + (item.start ? 'start' : 'change') + (isSelectedDefenseChip ? ' def-selected is-defense-selected' : '') + (isCurrent ? ' current-inning' : '') + (isDefenseFadingOut ? ' swap-fade-out is-chip-swapping' : '') + (isDefenseFadingIn ? ' swap-fade-in is-chip-swapping' : '');
         chip.setAttribute('aria-label', `${isInitialMode() ? '初期' : state.selectedInning + '回'}の守備を入れ替え`);
         chip.innerHTML = item.start ? `<span>${escapeHtml(posShort(item.pos))}</span>` : `<span class="inning-mini">${item.inning}回</span><span>${escapeHtml(posShort(item.pos))}</span>`;
         chip.addEventListener('click', (e) => {
@@ -855,7 +902,7 @@
     bench.forEach(p => {
       const chip = document.createElement('button');
       chip.type = 'button';
-      chip.className = 'bench-chip' + (selectedSwapId === p.id ? ' selected is-selected' : '') + (justSwappedIds.has(p.id) ? ' just-swapped' : '');
+      chip.className = 'bench-chip' + (selectedSwapId === p.id ? ' selected is-selected' : '') + (swapFadeOutIds.has(p.id) ? ' swap-fade-out is-swapping' : '') + (swapFadeInIds.has(p.id) ? ' swap-fade-in is-swapping' : '');
       chip.innerHTML = `<span class="dot" style="background:${escapeAttr(p.color)}"></span><span>${escapeHtml(displayName(p.id))}</span>`;
       chip.addEventListener('click', (e) => {
         e.stopPropagation();
