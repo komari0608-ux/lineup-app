@@ -36,7 +36,7 @@
     .app{
       width:min(560px,100%);
       margin:0 auto;
-      padding:6px 7px calc(70px + env(safe-area-inset-bottom));
+      padding:6px 7px calc(96px + env(safe-area-inset-bottom));
     }
     .top{
       position:sticky;
@@ -58,12 +58,12 @@
     }
     .game-line input:focus,.game-line select:focus,.toolbar select:focus,.player-row input:focus,textarea:focus{border-color:#3b94dd;box-shadow:0 0 0 3px rgba(8,103,189,.12)}
     .date-field{flex:1.12}.place-field{flex:.95}.time-field{flex:.70}.format-field{flex:.82}.limit-field{flex:.54}.innings-field{flex:.60}.opponent-field{flex:1.33}
-    .toolbar{display:grid;grid-template-columns:1fr .86fr auto;gap:5px;margin:7px 0}
+    .toolbar{display:grid;grid-template-columns:1fr .86fr auto;gap:5px;margin:8px 0 5px}
     .toolbar button{padding:0 9px;font-weight:950;white-space:nowrap}
-    .inning-scroll{display:flex;gap:5px;overflow-x:auto;padding:1px 0 7px;-webkit-overflow-scrolling:touch}
-    .inning-btn{border:1px solid var(--line);background:#fff;min-width:38px;height:30px;border-radius:999px;font-size:12px;font-weight:950;color:var(--ink)}
+    .inning-scroll{display:flex;gap:6px;overflow-x:auto;padding:2px 0 9px;margin-bottom:2px;-webkit-overflow-scrolling:touch;scroll-padding-inline:6px}
+    .inning-btn{border:1px solid var(--line);background:#fff;min-width:42px;height:34px;border-radius:999px;font-size:12px;font-weight:950;color:var(--ink)}
     .inning-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
-    .inning-btn.initial{min-width:46px;background:#eef8ff;border-color:#b9d7ef}.inning-btn.initial.active{background:var(--blue-dark);border-color:var(--blue-dark);color:#fff}
+    .inning-btn.initial{min-width:52px;background:#eef8ff;border-color:#b9d7ef}.inning-btn.initial.active{background:var(--blue-dark);border-color:var(--blue-dark);color:#fff}
     .tiny-note{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:11px;font-weight:850;margin:0 0 6px;line-height:1.35}
     .panel{display:none}.panel.active{display:block}
     .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
@@ -82,14 +82,14 @@
     .selected-label{display:inline-flex;margin-left:4px;vertical-align:middle;align-items:center;border-radius:999px;background:var(--blue);color:#fff;font-size:9px;font-weight:950;padding:1px 5px;line-height:1.4}
     .pos-flow{min-width:0;display:flex;align-items:center;gap:4px;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;padding:1px 0;scrollbar-width:none}.pos-flow::-webkit-scrollbar{display:none}
     .pos-chip,.add-pos-chip{
-      flex:0 0 auto;min-width:32px;height:28px;border-radius:999px;border:1px solid #bdd7ef;background:#fff;color:#07192b;font-size:14px;font-weight:950;display:inline-flex;align-items:center;justify-content:center;gap:2px;padding:0 7px;
+      flex:0 0 auto;min-width:36px;height:32px;border-radius:999px;border:1px solid #bdd7ef;background:#fff;color:#07192b;font-size:14px;font-weight:950;display:inline-flex;align-items:center;justify-content:center;gap:2px;padding:0 8px;
     }
     .pos-chip.start{background:#f5fbff;border-color:#9bc9f0;color:#043e76}
     .pos-chip.change{background:#fff7ed;border-color:#fdba74;color:#7c2d12}
     .pos-chip .inning-mini{font-size:9px;color:var(--warn);font-weight:950;margin-right:1px;line-height:1}
     .pos-chip.def-selected{background:#fef3c7;border-color:#f59e0b;color:#78350f;box-shadow:0 0 0 2px rgba(245,158,11,.20)}
     .pos-chip.current-inning{border-color:#3b94dd}
-    .add-pos-chip{min-width:27px;width:27px;height:27px;padding:0;background:#ecfbf2;border-color:#bfe0cc;color:var(--green);font-size:17px}
+    .add-pos-chip{min-width:32px;width:32px;height:32px;padding:0;background:#ecfbf2;border-color:#bfe0cc;color:var(--green);font-size:17px}
     .inline-editor{padding:0 7px 7px 41px;margin-top:-1px}
     .editor-box{border:1px solid #cfe4fb;background:#f8fcff;border-radius:13px;padding:7px;display:grid;gap:7px}
     .editor-head{display:flex;align-items:center;justify-content:space-between;gap:6px;color:var(--blue-dark);font-size:12px;font-weight:950}.editor-head .close-edit{width:28px;height:26px;border:0;border-radius:9px;background:#eef5fb;color:#394b5f;font-weight:950}
@@ -107,7 +107,7 @@
     .player-row{display:grid;grid-template-columns:24px minmax(0,1fr) 52px 34px;align-items:center;gap:6px;min-height:42px;padding:4px 0;border-bottom:1px solid #edf2f7}.player-row:last-child{border-bottom:0}.color-input{width:24px;height:24px;padding:0;border:0;background:transparent}.player-names{display:grid;grid-template-columns:1fr 1fr;gap:5px;min-width:0}.player-row input[type="text"],.player-row input[type="number"]{min-width:0;height:31px;border:1px solid var(--line);border-radius:9px;padding:0 7px;font-size:12px;font-weight:850}.icon-del{height:31px;border:0;border-radius:9px;background:#fff1f0;color:var(--danger);font-weight:950}.add-row{display:grid;grid-template-columns:1fr 1fr 58px;gap:6px;padding-top:9px}.add-row input{min-width:0;height:34px;border:1px solid var(--line);border-radius:10px;padding:0 9px;font-size:12px;font-weight:850}.add-row button{border:0;border-radius:10px;background:var(--green);color:#fff;font-weight:950}
     .bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.96);border-top:1px solid var(--line);backdrop-filter:blur(12px);padding:5px max(7px,env(safe-area-inset-left)) calc(5px + env(safe-area-inset-bottom)) max(7px,env(safe-area-inset-right));display:flex;justify-content:center}.bottom-nav-inner{width:min(560px,100%);display:grid;grid-template-columns:repeat(2,1fr);gap:5px}.nav-btn{border:0;background:transparent;color:#7b8794;border-radius:14px;min-height:47px;font-weight:950;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}.nav-btn .icon{font-size:19px;line-height:1}.nav-btn.active{background:#eaf4ff;color:var(--blue)}
     .toast{position:fixed;left:50%;bottom:calc(65px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(16px);opacity:0;pointer-events:none;z-index:80;background:#071226;color:#fff;border-radius:999px;padding:9px 14px;font-size:13px;font-weight:900;transition:.2s ease;white-space:nowrap}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-    @media (max-width:390px){.app{padding-left:6px;padding-right:6px}.toolbar{grid-template-columns:1fr .82fr auto}.toolbar select,.toolbar button{font-size:11px;padding-left:5px;padding-right:5px}.order-main{grid-template-columns:25px minmax(0,.92fr) minmax(112px,1.1fr);gap:5px;min-height:37px;padding-left:6px;padding-right:5px}.order-no{font-size:20px}.player-name{font-size:13px}.pos-chip{height:27px;min-width:30px;font-size:13px;padding:0 6px}.inline-editor{padding-left:36px}.game-line input,.game-line select{font-size:11px;padding-left:4px;padding-right:4px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}}
+    @media (max-width:390px){.app{padding-left:6px;padding-right:6px}.toolbar{grid-template-columns:1fr .82fr auto}.toolbar select,.toolbar button{font-size:11px;padding-left:5px;padding-right:5px}.order-main{grid-template-columns:25px minmax(0,.92fr) minmax(118px,1.1fr);gap:5px;min-height:42px;padding-left:6px;padding-right:5px}.order-no{font-size:20px}.player-name{font-size:13px}.pos-chip{height:32px;min-width:36px;font-size:13px;padding:0 7px}.inline-editor{padding-left:36px}.game-line input,.game-line select{font-size:11px;padding-left:4px;padding-right:4px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}}
   </style>
 </head>
 <body>
@@ -446,6 +446,26 @@
     }
   }
 
+  const FORM_CONTROL_SELECTOR = 'input, select, textarea, button';
+  const FORM_CONTROL_GUARD_EVENTS = ['pointerdown', 'touchstart', 'mousedown', 'click'];
+  function isFormControl(target){
+    return !!target?.closest?.(FORM_CONTROL_SELECTOR);
+  }
+  function shouldIgnoreNestedFormControlTap(event){
+    const control = event.target?.closest?.(FORM_CONTROL_SELECTOR);
+    return !!control && control !== event.currentTarget;
+  }
+  function stopFormControlPropagation(event){
+    if(isFormControl(event.target)) event.stopPropagation();
+  }
+  function bindFormControlTapGuards(root = document){
+    root.querySelectorAll(FORM_CONTROL_SELECTOR).forEach(control => {
+      if(control.dataset.tapGuardBound === '1') return;
+      control.dataset.tapGuardBound = '1';
+      FORM_CONTROL_GUARD_EVENTS.forEach(type => control.addEventListener(type, stopFormControlPropagation, { passive:true }));
+    });
+  }
+
   function effectivePosition(playerId, inning){
     let pos = state.startPositions[playerId] || 'B';
     const limit = Math.min(maxInnings(), Math.max(1, Number(inning || 1)));
@@ -697,6 +717,7 @@
     renderMemo();
     renderPlayers();
     renderTabs();
+    bindFormControlTapGuards();
   }
 
   function renderHeader(){
@@ -759,7 +780,11 @@
         <div class="pos-flow" aria-label="守備履歴"></div>
       `;
       const playerButton = main.querySelector('.player-name');
-      playerButton.addEventListener('click', (e) => { e.stopPropagation(); handlePlayerTap(pid); });
+      playerButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if(shouldIgnoreNestedFormControlTap(e)) return;
+        handlePlayerTap(pid);
+      });
       const posFlow = main.querySelector('.pos-flow');
       const currentPos = effectivePosition(pid, inning);
       flow.forEach(item => {
@@ -769,7 +794,11 @@
         chip.className = 'pos-chip ' + (item.start ? 'start' : 'change') + (isDefSelected && isCurrent ? ' def-selected' : '') + (isCurrent ? ' current-inning' : '');
         chip.setAttribute('aria-label', `${isInitialMode() ? '初期' : state.selectedInning + '回'}の守備を入れ替え`);
         chip.innerHTML = item.start ? `<span>${escapeHtml(posShort(item.pos))}</span>` : `<span class="inning-mini">${item.inning}回</span><span>${escapeHtml(posShort(item.pos))}</span>`;
-        chip.addEventListener('click', (e) => { e.stopPropagation(); handleDefenseTap(pid); });
+        chip.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if(shouldIgnoreNestedFormControlTap(e)) return;
+          handleDefenseTap(pid);
+        });
         posFlow.appendChild(chip);
       });
       row.appendChild(main);
@@ -790,7 +819,11 @@
       chip.type = 'button';
       chip.className = 'bench-chip' + (selectedSwapId === p.id ? ' selected' : '');
       chip.innerHTML = `<span class="dot" style="background:${escapeAttr(p.color)}"></span><span>${escapeHtml(displayName(p.id))}</span>`;
-      chip.addEventListener('click', () => handlePlayerTap(p.id));
+      chip.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if(shouldIgnoreNestedFormControlTap(e)) return;
+        handlePlayerTap(p.id);
+      });
       wrap.appendChild(chip);
     });
   }
@@ -905,10 +938,10 @@
       const full = row.querySelector('.full-input');
       const number = row.querySelector('.number-input');
       const del = row.querySelector('button');
-      color.addEventListener('input', () => { p.color = color.value; saveState(); render(); });
-      nick.addEventListener('input', () => { p.nickname = nick.value; saveState(); render(); });
-      full.addEventListener('input', () => { p.fullName = full.value; saveState(); render(); });
-      number.addEventListener('input', () => { p.number = number.value; saveState(); render(); });
+      color.addEventListener('input', () => { p.color = color.value; saveState(); });
+      nick.addEventListener('input', () => { p.nickname = nick.value; saveState(); });
+      full.addEventListener('input', () => { p.fullName = full.value; saveState(); });
+      number.addEventListener('input', () => { p.number = number.value; saveState(); });
       del.addEventListener('click', () => deletePlayer(p.id));
       panel.appendChild(row);
     });
