@@ -238,10 +238,13 @@
           </select>
           <button type="button" id="resetDefenseBtn">守備初期化</button>
         </div>
-        <div class="dh-row" aria-label="DH設定">
-          <span>DH設定</span>
-          <span>準備中</span>
-        </div>
+        <label class="setting-field">
+          <span>DH制</span>
+          <select id="dhMode" aria-label="DH制">
+            <option value="off">DHなし</option>
+            <option value="on">DHあり</option>
+          </select>
+        </label>
       </section>
 
       <div class="settings-actions">
@@ -310,6 +313,9 @@
   function clone(value){ return JSON.parse(JSON.stringify(value)); }
   function playerById(id){ return state.players.find(p => p.id === id) || null; }
   function isFieldPos(pos){ return FIELD_POSITIONS.some(p => p.code === pos); }
+  function isDhEnabled(st = state){ return st?.settings?.dhEnabled === true; }
+  function lineupLimit(st = state){ return st?.battingMode === 'nine' ? (isDhEnabled(st) ? 10 : 9) : Number.POSITIVE_INFINITY; }
+  function canSetPosition(pos, st = state){ return pos !== 'DH' || isDhEnabled(st); }
   function posShort(pos){ return POS_SHORT[pos || 'B'] || 'ベ'; }
   function maxInnings(st = state){ return Math.min(ABSOLUTE_MAX_INNINGS, Math.max(1, Number(st?.game?.innings || 6))); }
   function isInitialMode(){ return Number(state?.selectedInning || 0) === 0; }
@@ -324,7 +330,7 @@
       version: 10,
       team: { year:'2026', division:'C', name:'旭丘スカイヤーズ' },
       game: { date: todayText, place:'旭丘小', start:'14:00', format:'時間制', limit:'80', innings:6, opponent:'' },
-      settings: { displayMode:'nick' },
+      settings: { displayMode:'nick', dhEnabled:false },
       battingMode: 'all',
       selectedInning: 0,
       players: clone(defaultPlayers),
@@ -397,6 +403,7 @@
     if(incomingVersion < 10) st.selectedInning = 0;
     st.settings ||= {};
     st.settings.displayMode ||= 'nick';
+    st.settings.dhEnabled = st.settings.dhEnabled === true;
     st.battingMode = st.battingMode === 'nine' ? 'nine' : 'all';
     const selectedInning = Number(st.selectedInning);
     st.selectedInning = Number.isFinite(selectedInning) ? selectedInning : 0;
@@ -424,6 +431,17 @@
     return st;
   }
 
+  function hasDhAssigned(st = state){
+    if(Object.values(st.startPositions || {}).includes('DH')) return true;
+    return Object.values(st.defenseChanges || {}).some(changes => Object.values(changes || {}).includes('DH'));
+  }
+
+  function assignInitialDhIfNeeded(st = state){
+    if(!isDhEnabled(st) || hasDhAssigned(st)) return;
+    const benchId = (st.battingOrder || []).find(id => (st.startPositions?.[id] || 'B') === 'B');
+    if(benchId) st.startPositions[benchId] = 'DH';
+  }
+
   function ensureStructures(st = state){
     const gameInnings = maxInnings(st);
     const innings = gameInnings;
@@ -441,8 +459,10 @@
       });
       if(Object.keys(st.defenseChanges[pid]).length === 0) delete st.defenseChanges[pid];
     });
+    assignInitialDhIfNeeded(st);
     if(st.battingMode === 'nine'){
-      if(!st.lineupByInning[1]) st.lineupByInning[1] = st.battingOrder.slice(0,9);
+      const limit = lineupLimit(st);
+      if(!st.lineupByInning[1]) st.lineupByInning[1] = st.battingOrder.slice(0,limit);
       Object.keys(st.lineupByInning).forEach(k => {
         const n = Number(k);
         if(!n || n < 1 || n > ABSOLUTE_MAX_INNINGS) delete st.lineupByInning[k];
@@ -454,9 +474,9 @@
         st.lineupByInning[i] ||= clone(prev);
         if(!Array.isArray(st.lineupByInning[i])) st.lineupByInning[i] = [];
         const line = [];
-        st.lineupByInning[i].forEach(id => { if(ids.has(id) && !line.includes(id) && line.length < 9) line.push(id); });
+        st.lineupByInning[i].forEach(id => { if(ids.has(id) && !line.includes(id) && line.length < limit) line.push(id); });
         const addable = st.battingOrder.filter(id => ids.has(id) && !line.includes(id));
-        while(line.length < 9 && addable.length) line.push(addable.shift());
+        while(line.length < limit && addable.length) line.push(addable.shift());
         st.lineupByInning[i] = line;
         prevLine = line;
       }
@@ -621,6 +641,7 @@
   }
 
   function setPlayerPositionFromInning(playerId, inning, pos, swap=true){
+    if(!canSetPosition(pos)) return;
     inning = Math.min(maxInnings(), Math.max(1, Number(inning || 1)));
     const beforePos = effectivePosition(playerId, inning);
     if(swap && isFieldPos(pos)){
@@ -632,6 +653,7 @@
   }
 
   function setStartPosition(playerId, pos){
+    if(!canSetPosition(pos)) return;
     const before = state.startPositions[playerId] || 'B';
     if(isFieldPos(pos)){
       const otherId = state.players.find(p => p.id !== playerId && (state.startPositions[p.id] || 'B') === pos)?.id || null;
@@ -656,7 +678,7 @@
     ensureStructures();
     inning = Math.min(maxInnings(), Math.max(1, Number(inning || 1)));
     if(state.battingMode === 'all') return state.battingOrder.slice();
-    return (state.lineupByInning[inning] || state.lineupByInning[1] || state.battingOrder.slice(0,9)).slice();
+    return (state.lineupByInning[inning] || state.lineupByInning[1] || state.battingOrder.slice(0,lineupLimit())).slice();
   }
 
   function handlePlayerTap(playerId){
@@ -704,7 +726,7 @@
     if(state.battingMode === 'nine'){
       const oldFirst = (state.lineupByInning[1] || []).slice();
       const hadLineupChanges = Object.keys(state.lineupByInning || {}).some(k => Number(k) > 1 && JSON.stringify(state.lineupByInning[k]) !== JSON.stringify(oldFirst));
-      state.lineupByInning[1] = state.battingOrder.slice(0,9);
+      state.lineupByInning[1] = state.battingOrder.slice(0,lineupLimit());
       if(!hadLineupChanges){
         for(let i=1; i<=maxInnings(); i++) state.lineupByInning[i] = state.lineupByInning[1].slice();
       }else{
@@ -713,7 +735,7 @@
           const ia = line.indexOf(idA);
           const ib = line.indexOf(idB);
           if(ia >= 0 && ib >= 0) [line[ia], line[ib]] = [line[ib], line[ia]];
-          state.lineupByInning[i] = line.slice(0,9);
+          state.lineupByInning[i] = line.slice(0,lineupLimit());
         }
       }
     }
@@ -767,7 +789,7 @@
       const idx = line.indexOf(outId);
       if(idx >= 0) line[idx] = inId;
       else if(!line.includes(inId)) line[slot] = inId;
-      state.lineupByInning[i] = line.slice(0,9);
+      state.lineupByInning[i] = line.slice(0,lineupLimit());
     }
     setRawChange(outId, inning, 'B');
     setRawChange(inId, inning, outPos || 'B');
@@ -783,6 +805,7 @@
     const fieldId = aBench ? idB : idA;
     const benchId = aBench ? idA : idB;
     const fieldPos = effectivePosition(fieldId, inning);
+    if(fieldPos === 'DH' && !isDhEnabled()) return false;
     setRawChange(fieldId, inning, 'B');
     setRawChange(benchId, inning, fieldPos || 'B');
     return true;
@@ -827,6 +850,7 @@
     const posA = effectivePosition(idA, inning);
     const posB = effectivePosition(idB, inning);
     if(posA === posB) return false;
+    if(!isDhEnabled() && (posA === 'DH' || posB === 'DH')) return false;
     if(inning <= 1){
       state.startPositions[idA] = posB;
       state.startPositions[idB] = posA;
@@ -842,7 +866,7 @@
     state.selectedInning = 0;
     state.defenseChanges = {};
     state.lineupByInning = {};
-    if(mode === 'nine') state.lineupByInning[1] = state.battingOrder.slice(0,9);
+    if(mode === 'nine') state.lineupByInning[1] = state.battingOrder.slice(0,lineupLimit());
     selectedSwapId = null;
     selectedDefense = null;
     ensureStructures();
@@ -851,11 +875,24 @@
     showToast(mode === 'nine' ? '9人制に変更' : '全員打ちに変更');
   }
 
+  function setDhMode(enabled){
+    state.settings.dhEnabled = enabled === true;
+    selectedSwapId = null;
+    selectedDefense = null;
+    clearTapFeedback();
+    clearSwapAnimationState();
+    if(state.settings.dhEnabled) assignInitialDhIfNeeded();
+    ensureStructures();
+    saveState();
+    render();
+  }
+
   function resetDefense(){
     state.defenseChanges = {};
     state.players.forEach((p, i) => state.startPositions[p.id] = i < 9 ? String(i + 1) : 'B');
+    assignInitialDhIfNeeded();
     state.lineupByInning = {};
-    if(state.battingMode === 'nine') state.lineupByInning[1] = state.battingOrder.slice(0,9);
+    if(state.battingMode === 'nine') state.lineupByInning[1] = state.battingOrder.slice(0,lineupLimit());
     selectedSwapId = null;
     selectedDefense = null;
     ensureStructures();
@@ -910,6 +947,7 @@
     $('gameOpponent').value = g.opponent || '';
     $('battingMode').value = state.battingMode;
     $('displayMode').value = state.settings.displayMode || 'nick';
+    $('dhMode').value = isDhEnabled() ? 'on' : 'off';
     const modeText = state.battingMode === 'all' ? '全員打ち' : '9人制';
     $('modeLabel').textContent = isInitialMode() ? `${modeText}｜初期` : `${modeText}｜${state.selectedInning}回守備`;
     $('orderTitle').textContent = isInitialMode() ? 'スターティングオーダー' : `${state.selectedInning}回の守備変更`;
@@ -1242,6 +1280,7 @@
     document.addEventListener('keydown', e => { if(e.key === 'Escape' && !$('settingsModal').hidden) closeSettings(); });
     $('battingMode').addEventListener('change', e => setBattingMode(e.target.value));
     $('displayMode').addEventListener('change', e => { state.settings.displayMode = e.target.value; saveState(); render(); });
+    $('dhMode').addEventListener('change', e => setDhMode(e.target.value === 'on'));
     $('resetDefenseBtn').addEventListener('click', resetDefense);
     $('copyMemoBtn').addEventListener('click', copyMemo);
     $('shareBtn').addEventListener('click', shareOrder);
