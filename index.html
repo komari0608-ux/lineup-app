@@ -57,11 +57,23 @@
     .game-line-main{grid-template-columns:minmax(0,1fr) minmax(92px,.68fr)}
     .game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
     .game-line-rule{grid-template-columns:minmax(0,1fr) minmax(68px,.56fr) minmax(74px,.62fr)}
-    .game-line input,.game-line select,.toolbar select,.toolbar button,.setting-field select{
+    .game-line input,.game-line select,.date-button,.toolbar select,.toolbar button,.setting-field select{
       min-width:0;height:44px;border:1px solid #cfe0ed;border-radius:10px;background:#fff;color:var(--ink);padding:4px 8px;font-size:12px;font-weight:850;outline:none;
     }
-    .game-line input:focus,.game-line select:focus,.toolbar select:focus,.player-row input:focus,textarea:focus,.setting-field select:focus{border-color:#3b94dd;box-shadow:0 0 0 3px rgba(8,103,189,.12)}
+    .game-line input:focus,.game-line select:focus,.date-button:focus,.toolbar select:focus,.player-row input:focus,textarea:focus,.setting-field select:focus{border-color:#3b94dd;box-shadow:0 0 0 3px rgba(8,103,189,.12)}
     .date-field{flex:1.12}.place-field{flex:.95}.time-field{flex:.70}.format-field{flex:.82}.limit-field{flex:.54}.innings-field{flex:.60}.opponent-field{flex:1.33}
+    .date-button{display:flex;align-items:center;justify-content:flex-start;text-align:left}
+    .calendar-panel[hidden]{display:none!important}
+    .calendar-panel{display:grid;gap:7px;background:#fff;border:1px solid #cfe0ed;border-radius:12px;padding:8px;box-shadow:0 4px 12px rgba(16,32,51,.06)}
+    .calendar-head{display:grid;grid-template-columns:40px minmax(0,1fr) 40px;align-items:center;gap:6px}
+    .calendar-nav{height:38px;border:1px solid var(--line);border-radius:10px;background:#f8fbfd;color:var(--blue-dark);font-size:18px;font-weight:950}
+    .calendar-month{text-align:center;color:var(--blue-dark);font-size:13px;font-weight:950}
+    .calendar-weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+    .calendar-weekday{text-align:center;color:var(--muted);font-size:11px;font-weight:950;line-height:1.2}
+    .calendar-empty{min-height:44px}
+    .calendar-day{min-width:0;height:44px;border:1px solid transparent;border-radius:10px;background:#f8fbfd;color:var(--ink);font-size:13px;font-weight:950;padding:0}
+    .calendar-day.is-today{border-color:#86bce9;background:#f0f8ff}
+    .calendar-day.is-selected{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 3px 8px rgba(8,103,189,.20)}
     .toolbar{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}
     .toolbar button{grid-column:1 / -1;padding:0 9px;font-weight:950;white-space:nowrap}
     .inning-scroll{display:flex;gap:6px;overflow-x:auto;padding:8px 0 8px;margin-bottom:3px;-webkit-overflow-scrolling:touch;scroll-padding-inline:6px}
@@ -137,7 +149,7 @@
     @keyframes chipSwapFadeIn{0%{opacity:.55;transform:translateZ(0) scale(.97)}100%{opacity:1;transform:translateZ(0) scale(1)}}
     @media (prefers-reduced-motion: reduce){.order-row,.pos-chip,.bench-chip,.toast{transition:none!important}.order-row.tap-feedback,.bench-chip.tap-feedback,.pos-chip.tap-feedback,.order-row.swap-fade-out,.order-row.swap-fade-in,.bench-chip.swap-fade-out,.bench-chip.swap-fade-in,.pos-chip.swap-fade-out,.pos-chip.swap-fade-in{animation:none!important}}
     @media (max-width:560px){.title-text{flex:0 1 128px}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 7px;font-size:12px}.settings-btn{min-width:auto}}
-    @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 8px;font-size:12px}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .row-list{gap:4px;padding-top:5px}.order-main{grid-template-columns:27px minmax(0,.92fr) minmax(118px,1.08fr);gap:5px;min-height:45px;padding:6px 6px 6px 7px}.order-no{font-size:20px}.player-name{font-size:13px}.pos-chip{height:32px;min-width:36px;font-size:13px;padding:0 7px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select{font-size:12px;padding-left:6px;padding-right:6px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
+    @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 8px;font-size:12px}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .row-list{gap:4px;padding-top:5px}.order-main{grid-template-columns:27px minmax(0,.92fr) minmax(118px,1.08fr);gap:5px;min-height:45px;padding:6px 6px 6px 7px}.order-no{font-size:20px}.player-name{font-size:13px}.pos-chip{height:32px;min-width:36px;font-size:13px;padding:0 7px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select,.date-button{font-size:12px;padding-left:6px;padding-right:6px}.calendar-panel{gap:6px;padding:7px}.calendar-weekdays,.calendar-grid{gap:2px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
   </style>
 </head>
 <body>
@@ -206,9 +218,11 @@
         <h3>試合情報</h3>
         <div class="gamebox" aria-label="試合情報">
           <div class="game-line game-line-main">
-            <input class="date-field" id="gameDate" type="date" aria-label="日付" />
+            <input id="gameDate" type="hidden" />
+            <button class="date-field date-button" id="gameDateBtn" type="button" aria-label="日付" aria-expanded="false" aria-controls="dateCalendar"></button>
             <input class="time-field" id="gameStart" type="time" aria-label="開始時間" />
           </div>
+          <div class="calendar-panel" id="dateCalendar" hidden></div>
           <div class="game-line game-line-teams">
             <input class="place-field" id="gamePlace" type="text" placeholder="場所" aria-label="場所" />
             <input class="opponent-field" id="gameOpponent" type="text" placeholder="対戦相手" aria-label="対戦相手" />
@@ -314,6 +328,7 @@
   let defenseTapFeedbackIds = new Set();
   let tapFeedbackTimer = null;
   let isSwapAnimating = false;
+  let calendarMonth = null;
   const SWAP_FADE_OUT_MS = 120;
   const SWAP_FADE_IN_MS = 150;
   const TAP_FEEDBACK_MS = 180;
@@ -530,8 +545,121 @@
   }
 
   function closeSettings(){
+    closeDateCalendar();
     $('settingsModal').hidden = true;
     document.body.classList.remove('modal-open');
+  }
+
+  function dateParts(dateStr){
+    const match = String(dateStr || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if(!match) return null;
+    const year = Number(match[1]);
+    const month = Number(match[2]) - 1;
+    const day = Number(match[3]);
+    const date = new Date(year, month, day);
+    if(date.getFullYear() !== year || date.getMonth() !== month || date.getDate() !== day) return null;
+    return { year, month, day };
+  }
+
+  function dateValue(year, month, day){
+    return `${year}-${String(month + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+  }
+
+  function displayFullDate(dateStr){
+    const parts = dateParts(dateStr);
+    if(!parts) return String(dateStr || '').replaceAll('-','/');
+    return `${parts.year}/${String(parts.month + 1).padStart(2,'0')}/${String(parts.day).padStart(2,'0')}`;
+  }
+
+  function setCalendarMonthFromDate(dateStr = state.game.date || todayText){
+    const parts = dateParts(dateStr) || dateParts(todayText);
+    calendarMonth = { year: parts.year, month: parts.month };
+  }
+
+  function closeDateCalendar(){
+    const calendar = $('dateCalendar');
+    const button = $('gameDateBtn');
+    if(calendar) calendar.hidden = true;
+    if(button) button.setAttribute('aria-expanded', 'false');
+  }
+
+  function toggleDateCalendar(){
+    const calendar = $('dateCalendar');
+    const button = $('gameDateBtn');
+    if(!calendar || !button) return;
+    if(calendar.hidden){
+      setCalendarMonthFromDate();
+      calendar.hidden = false;
+      button.setAttribute('aria-expanded', 'true');
+      renderDateCalendar();
+    }else{
+      closeDateCalendar();
+    }
+  }
+
+  function shiftCalendarMonth(delta){
+    if(!calendarMonth) setCalendarMonthFromDate();
+    const base = new Date(calendarMonth.year, calendarMonth.month + delta, 1);
+    calendarMonth = { year: base.getFullYear(), month: base.getMonth() };
+    renderDateCalendar();
+  }
+
+  function selectCalendarDate(value){
+    state.game.date = value;
+    selectedSwapId = null;
+    selectedDefense = null;
+    saveState();
+    closeDateCalendar();
+    render();
+  }
+
+  function renderDateCalendar(){
+    const calendar = $('dateCalendar');
+    if(!calendar || calendar.hidden) return;
+    if(!calendarMonth) setCalendarMonthFromDate();
+    const { year, month } = calendarMonth;
+    const selected = state.game.date || todayText;
+    const firstDay = new Date(year, month, 1);
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const leadingBlanks = (firstDay.getDay() + 6) % 7;
+    const weekdays = ['月','火','水','木','金','土','日'];
+    calendar.innerHTML = `
+      <div class="calendar-head">
+        <button class="calendar-nav" type="button" data-calendar-prev aria-label="前月">‹</button>
+        <div class="calendar-month">${year}年${month + 1}月</div>
+        <button class="calendar-nav" type="button" data-calendar-next aria-label="翌月">›</button>
+      </div>
+      <div class="calendar-weekdays">${weekdays.map(day => `<div class="calendar-weekday">${day}</div>`).join('')}</div>
+      <div class="calendar-grid"></div>
+    `;
+    const grid = calendar.querySelector('.calendar-grid');
+    for(let i=0; i<leadingBlanks; i++){
+      const blank = document.createElement('div');
+      blank.className = 'calendar-empty';
+      grid.appendChild(blank);
+    }
+    for(let day=1; day<=daysInMonth; day++){
+      const value = dateValue(year, month, day);
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'calendar-day' + (value === selected ? ' is-selected' : '') + (value === todayText ? ' is-today' : '');
+      button.textContent = String(day);
+      button.setAttribute('aria-label', displayFullDate(value));
+      button.addEventListener('click', e => {
+        e.stopPropagation();
+        selectCalendarDate(value);
+      });
+      grid.appendChild(button);
+    }
+    calendar.querySelector('[data-calendar-prev]').addEventListener('click', e => {
+      e.stopPropagation();
+      shiftCalendarMonth(-1);
+    });
+    calendar.querySelector('[data-calendar-next]').addEventListener('click', e => {
+      e.stopPropagation();
+      shiftCalendarMonth(1);
+    });
+    bindFormControlTapGuards(calendar);
   }
 
   function displayName(id){
@@ -950,6 +1078,7 @@
     $('titleText').textContent = '打順プランナー';
     renderGameSummary();
     $('gameDate').value = g.date || todayText;
+    $('gameDateBtn').textContent = displayFullDate(g.date || todayText) || '日付';
     $('gamePlace').value = g.place || '';
     $('gameStart').value = g.start || '';
     $('gameFormat').value = g.format || '時間制';
@@ -959,6 +1088,7 @@
     $('battingMode').value = state.battingMode;
     $('displayMode').value = state.settings.displayMode || 'nick';
     $('dhMode').value = isDhEnabled() ? 'on' : 'off';
+    renderDateCalendar();
     const modeText = state.battingMode === 'all' ? '全員打ち' : '9人制';
     $('modeLabel').textContent = isInitialMode() ? `${modeText}｜初期` : `${modeText}｜${state.selectedInning}回守備`;
     $('orderTitle').textContent = isInitialMode() ? 'スターティングオーダー' : `${state.selectedInning}回の守備変更`;
@@ -1299,9 +1429,14 @@
     $('shareBtn').addEventListener('click', shareOrder);
     $('shareMemoBtn').addEventListener('click', shareOrder);
     $('refreshMemoBtn').addEventListener('click', () => { renderMemo(); showToast('メモ更新'); });
+    $('gameDateBtn').addEventListener('click', e => {
+      e.stopPropagation();
+      toggleDateCalendar();
+    });
+    $('dateCalendar').addEventListener('click', e => e.stopPropagation());
 
     const gameInputs = [
-      ['gameDate','date'], ['gamePlace','place'], ['gameStart','start'], ['gameFormat','format'],
+      ['gamePlace','place'], ['gameStart','start'], ['gameFormat','format'],
       ['gameLimit','limit'], ['gameInnings','innings'], ['gameOpponent','opponent']
     ];
     gameInputs.forEach(([id,key]) => {
