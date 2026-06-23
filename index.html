@@ -89,7 +89,6 @@
     .order-main{position:relative;display:grid;grid-template-columns:30px minmax(0,.98fr) minmax(130px,1.18fr);align-items:center;gap:7px;min-height:44px;padding:6px 8px 6px 9px;border-left:5px solid transparent}
     .order-no{color:var(--blue);font-size:21px;line-height:1;font-weight:950;text-align:center}
     .player-name{min-width:0;border:0;background:transparent;text-align:left;padding:0;font-size:14px;font-weight:950;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .player-name .status{color:var(--muted);font-size:10px;font-weight:900;margin-left:3px}
     .pos-flow{min-width:0;display:flex;align-items:center;gap:4px;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;padding:1px 0;scrollbar-width:none}.pos-flow::-webkit-scrollbar{display:none}
     .pos-chip,.add-pos-chip{
       flex:0 0 auto;min-width:36px;height:32px;border-radius:999px;border:1px solid #bdd7ef;background:#fff;color:#07192b;font-size:14px;font-weight:950;display:inline-flex;align-items:center;justify-content:center;gap:2px;padding:0 8px;
@@ -98,7 +97,7 @@
     .pos-chip.start{background:#f5fbff;border-color:#9bc9f0;color:#043e76}
     .pos-chip.change{background:#fff7ed;border-color:#fdba74;color:#7c2d12}
     .pos-chip .inning-mini{font-size:9px;color:var(--warn);font-weight:950;margin-right:1px;line-height:1}
-    .pos-chip.def-selected,.pos-chip.is-defense-selected{background:#f8fcff;border-color:var(--blue);color:var(--blue-dark);box-shadow:0 0 0 2px rgba(8,103,189,.22),0 4px 10px rgba(8,103,189,.13);transform:translate3d(0,-1px,0) scale(1.04)}
+    .pos-chip.def-selected,.pos-chip.is-defense-selected{background:#fffafa;border-color:var(--danger);color:#7a271a;box-shadow:0 0 0 2px rgba(180,35,24,.22),0 4px 10px rgba(180,35,24,.13);transform:translate3d(0,-1px,0) scale(1.04)}
     .pos-chip:active{opacity:.82;transform:translateZ(0) scale(.96)}
     .pos-chip.swap-fade-out{animation:chipSwapFadeOut .12s ease forwards}
     .pos-chip.swap-fade-in{animation:chipSwapFadeIn .15s ease-out}
@@ -131,9 +130,9 @@
     .setting-field{display:grid;grid-template-columns:58px minmax(0,1fr);align-items:center;gap:6px;margin:6px 0 0;color:var(--muted);font-size:12px;font-weight:950}.setting-field:last-child{margin-bottom:0}
     .dh-row{min-height:36px;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px dashed #cfe0ed;border-radius:11px;padding:8px 10px;color:var(--muted);font-size:12px;font-weight:900;background:#fbfdff}
     .settings-actions{display:flex;gap:8px;margin-top:10px}.settings-actions button{flex:1;height:36px;border:1px solid var(--line);border-radius:11px;background:#fff;font-weight:950}.settings-actions .primary{background:var(--blue);border-color:var(--blue);color:#fff}
-    @keyframes tapGhost{0%{opacity:1}42%{opacity:.78}100%{opacity:1}}
-    @keyframes swapFadeOut{0%{opacity:1;transform:translateZ(0) scale(1)}100%{opacity:.55;transform:translateZ(0) scale(.98)}}
-    @keyframes swapFadeIn{0%{opacity:.55;transform:translateZ(0) scale(.98)}100%{opacity:1;transform:translateZ(0) scale(1)}}
+    @keyframes tapGhost{0%{opacity:1;transform:translateZ(0) scale(1)}44%{opacity:.72;transform:translateZ(0) scale(.98)}100%{opacity:1;transform:translateZ(0) scale(1)}}
+    @keyframes swapFadeOut{0%{opacity:1;transform:translateZ(0) scale(1)}100%{opacity:.55;transform:translateZ(0) scale(.97)}}
+    @keyframes swapFadeIn{0%{opacity:.55;transform:translateZ(0) scale(.97)}100%{opacity:1;transform:translateZ(0) scale(1)}}
     @keyframes chipSwapFadeOut{0%{opacity:1;transform:translateZ(0) scale(1)}100%{opacity:.55;transform:translateZ(0) scale(.97)}}
     @keyframes chipSwapFadeIn{0%{opacity:.55;transform:translateZ(0) scale(.97)}100%{opacity:1;transform:translateZ(0) scale(1)}}
     @media (prefers-reduced-motion: reduce){.order-row,.pos-chip,.bench-chip,.toast{transition:none!important}.order-row.tap-feedback,.bench-chip.tap-feedback,.pos-chip.tap-feedback,.order-row.swap-fade-out,.order-row.swap-fade-in,.bench-chip.swap-fade-out,.bench-chip.swap-fade-in,.pos-chip.swap-fade-out,.pos-chip.swap-fade-in{animation:none!important}}
@@ -295,9 +294,9 @@
     { id:'p4', nickname:'まほろと', fullName:'', number:'', color:'#8a4ce8', status:'' },
     { id:'p5', nickname:'いっと', fullName:'', number:'', color:'#cc3bd9', status:'' },
     { id:'p6', nickname:'たろう', fullName:'', number:'', color:'#e3342f', status:'' },
-    { id:'p7', nickname:'しゅんぺい', fullName:'', number:'', color:'#1492a8', status:'制限あり' },
+    { id:'p7', nickname:'しゅんぺい', fullName:'', number:'', color:'#1492a8', status:'' },
     { id:'p8', nickname:'たいち', fullName:'', number:'', color:'#5b8c2a', status:'' },
-    { id:'p9', nickname:'しゅんすけ', fullName:'', number:'', color:'#b76e00', status:'体験' },
+    { id:'p9', nickname:'しゅんすけ', fullName:'', number:'', color:'#b76e00', status:'' },
     { id:'p10', nickname:'ゆうと', fullName:'', number:'', color:'#4338ca', status:'' }
   ];
   const defaultStartPositions = { p1:'5', p2:'6', p3:'8', p4:'2', p5:'1', p6:'3', p7:'4', p8:'7', p9:'9', p10:'B' };
@@ -703,6 +702,7 @@
   }
 
   function handleInitialOrderTap(playerId){
+    if(isSwapAnimating) return;
     if(!selectedSwapId){
       selectedSwapId = playerId;
       startTapFeedback({ playerIds: [playerId] });
@@ -753,6 +753,7 @@
   }
 
   function handleSubstitutionTap(playerId){
+    if(isSwapAnimating) return;
     const inning = activeInning();
     if(!selectedSwapId){
       selectedSwapId = playerId;
@@ -996,16 +997,16 @@
       const isSwapFadingOut = swapFadeOutIds.has(pid);
       const isSwapFadingIn = swapFadeInIds.has(pid);
       const hasTapFeedback = tapFeedbackIds.has(pid);
+      const showSwapSelected = isSwapSelected && !hasTapFeedback;
       const row = document.createElement('div');
-      row.className = 'order-row' + (hasChange ? ' has-change' : '') + (isSwapSelected ? ' selected is-selected' : '') + (hasTapFeedback ? ' tap-feedback' : '') + (isSwapFadingOut ? ' swap-fade-out is-swapping' : '') + (isSwapFadingIn ? ' swap-fade-in is-swapping' : '');
+      row.className = 'order-row' + (hasChange ? ' has-change' : '') + (showSwapSelected ? ' selected is-selected' : '') + (hasTapFeedback ? ' tap-feedback' : '') + (isSwapFadingOut ? ' swap-fade-out is-swapping' : '') + (isSwapFadingIn ? ' swap-fade-in is-swapping' : '');
       const main = document.createElement('div');
       main.className = 'order-main';
       main.style.borderLeftColor = player.color || '#94a3b8';
-      const statusHtml = player.status ? `<span class="status">${escapeHtml(player.status)}</span>` : '';
       const playerLabel = isInitialMode() ? '打順入替で選択' : '交代で選択';
       main.innerHTML = `
         <div class="order-no">${index + 1}</div>
-        <button type="button" class="player-name" aria-label="${escapeAttr(displayName(pid))}${playerLabel}">${escapeHtml(displayName(pid))}${statusHtml}</button>
+        <button type="button" class="player-name" aria-label="${escapeAttr(displayName(pid))}${playerLabel}">${escapeHtml(displayName(pid))}</button>
         <div class="pos-flow" aria-label="守備履歴"></div>
       `;
       const playerButton = main.querySelector('.player-name');
@@ -1024,7 +1025,8 @@
         const isDefenseFadingOut = defenseSwapFadeOutIds.has(pid) && isCurrent;
         const isDefenseFadingIn = defenseSwapFadeInIds.has(pid) && isCurrent;
         const hasDefenseTapFeedback = defenseTapFeedbackIds.has(pid) && isCurrent;
-        chip.className = 'pos-chip ' + (item.start ? 'start' : 'change') + (isSelectedDefenseChip ? ' def-selected is-defense-selected' : '') + (isCurrent ? ' current-inning' : '') + (hasDefenseTapFeedback ? ' tap-feedback' : '') + (isDefenseFadingOut ? ' swap-fade-out is-chip-swapping' : '') + (isDefenseFadingIn ? ' swap-fade-in is-chip-swapping' : '');
+        const showDefenseSelected = isSelectedDefenseChip && !hasDefenseTapFeedback;
+        chip.className = 'pos-chip ' + (item.start ? 'start' : 'change') + (showDefenseSelected ? ' def-selected is-defense-selected' : '') + (isCurrent ? ' current-inning' : '') + (hasDefenseTapFeedback ? ' tap-feedback' : '') + (isDefenseFadingOut ? ' swap-fade-out is-chip-swapping' : '') + (isDefenseFadingIn ? ' swap-fade-in is-chip-swapping' : '');
         chip.setAttribute('aria-label', `${isInitialMode() ? '初期' : state.selectedInning + '回'}の守備を入れ替え`);
         chip.innerHTML = item.start ? `<span>${escapeHtml(posShort(item.pos))}</span>` : `<span class="inning-mini">${item.inning}回</span><span>${escapeHtml(posShort(item.pos))}</span>`;
         chip.addEventListener('click', (e) => {
@@ -1050,7 +1052,8 @@
     bench.forEach(p => {
       const chip = document.createElement('button');
       chip.type = 'button';
-      chip.className = 'bench-chip' + (selectedSwapId === p.id ? ' selected is-selected' : '') + (tapFeedbackIds.has(p.id) ? ' tap-feedback' : '') + (swapFadeOutIds.has(p.id) ? ' swap-fade-out is-swapping' : '') + (swapFadeInIds.has(p.id) ? ' swap-fade-in is-swapping' : '');
+      const hasTapFeedback = tapFeedbackIds.has(p.id);
+      chip.className = 'bench-chip' + (selectedSwapId === p.id && !hasTapFeedback ? ' selected is-selected' : '') + (hasTapFeedback ? ' tap-feedback' : '') + (swapFadeOutIds.has(p.id) ? ' swap-fade-out is-swapping' : '') + (swapFadeInIds.has(p.id) ? ' swap-fade-in is-swapping' : '');
       chip.innerHTML = `<span class="dot" style="background:${escapeAttr(p.color)}"></span><span>${escapeHtml(displayName(p.id))}</span>`;
       chip.addEventListener('click', (e) => {
         e.stopPropagation();
