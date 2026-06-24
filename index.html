@@ -77,7 +77,7 @@
     .toolbar{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}
     .toolbar button{grid-column:1 / -1;padding:0 9px;font-weight:950;white-space:nowrap}
     .inning-scroll{display:flex;gap:6px;overflow-x:auto;padding:8px 0 8px;margin-bottom:3px;-webkit-overflow-scrolling:touch;scroll-padding-inline:6px}
-    .inning-btn{border:1px solid var(--line);background:#fff;min-width:42px;height:34px;border-radius:999px;font-size:12px;font-weight:950;color:var(--ink)}
+    .inning-btn{border:1px solid var(--line);background:#fff;min-width:42px;height:34px;border-radius:999px;font-size:12px;font-weight:950;color:var(--ink);touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
     .inning-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
     .inning-btn.initial{min-width:52px;background:#eef8ff;border-color:#b9d7ef}.inning-btn.initial.active{background:var(--blue-dark);border-color:var(--blue-dark);color:#fff}
     .tiny-note{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:11px;font-weight:850;margin:0 0 6px;line-height:1.35}
@@ -100,19 +100,19 @@
     .player-main-group{
       min-width:0;display:grid;grid-template-columns:minmax(0,.9fr) minmax(158px,1fr);gap:7px;border-radius:15px;
       transition:background-color .14s ease,box-shadow .14s ease,transform .14s ease,opacity .14s ease;
-      touch-action:manipulation;user-select:none;-webkit-user-select:none;
+      touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
     }
     .player-card,.defense-card{
       min-width:0;min-height:44px;border:1px solid #bdd7ef;border-radius:12px;background:#fff;color:var(--ink);box-shadow:0 2px 7px rgba(16,32,51,.045);
       transition:background-color .14s ease,border-color .14s ease,box-shadow .14s ease,transform .14s ease,opacity .14s ease;
-      touch-action:manipulation;user-select:none;-webkit-user-select:none;
+      touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
     }
     .player-card{display:flex;align-items:center;justify-content:flex-start;text-align:left;padding:0 10px;font-size:14px;font-weight:950}
-    .player-main-group:active,.player-card:active,.defense-card:active,.bench-chip:active{opacity:.84;transform:translateZ(0) scale(.98)}
+    .player-main-group:active,.player-card:active,.defense-card:active,.bench-chip:active{opacity:.82;transform:translateZ(0) scale(.985)}
     .player-main-group.is-selected-row,.bench-chip.selected,.bench-chip.is-selected{box-shadow:0 0 0 3px rgba(180,35,24,.88),0 5px 12px rgba(180,35,24,.14);background:rgba(180,35,24,.035)}
-    .player-main-group.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback{animation:tapGhost .16s ease-out}
-    .player-main-group.swap-fade-out,.defense-card.swap-fade-out,.bench-chip.swap-fade-out{animation:swapFadeOut .105s ease forwards}
-    .player-main-group.swap-fade-in,.defense-card.swap-fade-in,.bench-chip.swap-fade-in{animation:swapFadeIn .12s ease-out}
+    .player-main-group.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback,.inning-btn.tap-feedback{will-change:transform,opacity;animation:tapGhost .12s ease-out}
+    .player-main-group.swap-fade-out,.defense-card.swap-fade-out,.bench-chip.swap-fade-out{will-change:transform,opacity;animation:swapFadeOut .09s ease forwards}
+    .player-main-group.swap-fade-in,.defense-card.swap-fade-in,.bench-chip.swap-fade-in{will-change:transform,opacity;animation:swapFadeIn .12s ease-out}
     .pos-flow{min-width:0;display:grid;grid-template-columns:repeat(var(--defense-cols),minmax(0,1fr));align-items:center;gap:2px;overflow:visible;white-space:normal;padding:4px 3px;scrollbar-width:none}.pos-flow::-webkit-scrollbar{display:none}
     .pos-cell{min-width:0;min-height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px}.pos-cell.current-inning{background:#eef8ff}.pos-cell.empty.current-inning{box-shadow:inset 0 0 0 1px #cfe4fb}
     .defense-card.has-change{background:linear-gradient(90deg,#fff 0%,rgba(255,247,237,.78) 100%)}
@@ -120,7 +120,7 @@
     .pos-chip,.add-pos-chip{
       flex:0 0 auto;min-width:36px;height:30px;border-radius:999px;border:1px solid #bdd7ef;background:#fff;color:#07192b;font-size:13px;font-weight:950;display:inline-flex;align-items:center;justify-content:center;gap:1px;padding:0 7px;
       transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease,color .16s ease,opacity .16s ease;
-      touch-action:manipulation;user-select:none;-webkit-user-select:none;
+      touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
     }
     .pos-chip.start{min-width:38px;height:32px;background:#f5fbff;border-color:#9bc9f0;color:#043e76;font-size:14px}
     .pos-chip.change{min-width:28px;height:26px;background:#fff7ed;border-color:#fdba74;color:#7c2d12;font-size:13px;padding:0 5px}
@@ -128,9 +128,10 @@
     .pos-chip.change.current-inning{min-width:30px;height:28px;font-size:13px}
     .pos-chip.def-selected,.pos-chip.is-defense-selected{background:#fffafa;border-color:var(--danger);color:#7a271a;box-shadow:0 0 0 2px rgba(180,35,24,.22),0 4px 10px rgba(180,35,24,.13);transform:translate3d(0,-1px,0) scale(1.04)}
     .pos-flow .pos-chip{width:100%;min-width:0;height:28px;padding:0 1px;font-size:12px}.pos-flow .pos-chip.start{min-width:0;height:30px;font-size:13px}.pos-flow .pos-chip.change{min-width:0;height:28px;font-size:12px;padding:0 1px}.pos-flow .pos-chip.change.current-inning{min-width:0;height:28px;font-size:12px}
-    .pos-chip:active{opacity:.82;transform:translateZ(0) scale(.96)}
-    .pos-chip.swap-fade-out{animation:chipSwapFadeOut .12s ease forwards}
-    .pos-chip.swap-fade-in{animation:chipSwapFadeIn .15s ease-out}
+    .pos-chip:active{opacity:.82;transform:translateZ(0) scale(.975)}
+    .pos-chip.tap-feedback{will-change:transform,opacity;animation:tapGhost .12s ease-out}
+    .pos-chip.swap-fade-out{will-change:transform,opacity;animation:chipSwapFadeOut .09s ease forwards}
+    .pos-chip.swap-fade-in{will-change:transform,opacity;animation:chipSwapFadeIn .12s ease-out}
     .add-pos-chip{min-width:32px;width:32px;height:32px;padding:0;background:#ecfbf2;border-color:#bfe0cc;color:var(--green);font-size:17px}
     .inline-editor{padding:0 7px 7px 41px;margin-top:-1px}
     .editor-box{border:1px solid #cfe4fb;background:#f8fcff;border-radius:13px;padding:7px;display:grid;gap:7px}
@@ -141,7 +142,7 @@
     .mini-chip.danger{background:#fff1f0;border-color:#ffd0cd;color:var(--danger)}
     .bench-wrap,.memo-wrap{margin-top:8px;background:#fff;border:1px solid var(--line);border-radius:15px;overflow:hidden;box-shadow:0 4px 12px rgba(16,32,51,.05)}
     details summary{list-style:none;padding:9px 10px;font-weight:950;color:var(--blue-dark);display:flex;align-items:center;justify-content:space-between;gap:8px}details summary::-webkit-details-marker{display:none}
-    .bench-list{display:flex;flex-wrap:wrap;gap:6px;padding:0 10px 10px}.bench-chip{border:1px solid #bdd7ef;background:#fff;border-radius:12px;min-height:42px;padding:0 10px;display:inline-flex;align-items:center;gap:6px;font-weight:900;font-size:12px;transition:background-color .14s ease,border-color .14s ease,box-shadow .14s ease,transform .14s ease,opacity .14s ease;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+    .bench-list{display:flex;flex-wrap:wrap;gap:6px;padding:0 10px 10px}.bench-chip{border:1px solid #bdd7ef;background:#fff;border-radius:12px;min-height:42px;padding:0 10px;display:inline-flex;align-items:center;gap:6px;font-weight:900;font-size:12px;transition:background-color .14s ease,border-color .14s ease,box-shadow .14s ease,transform .14s ease,opacity .14s ease;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
     .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(0,0,0,.10)}
     .empty-state{color:var(--muted);font-size:13px;font-weight:850;padding:0 10px 10px}
     .memo-body{padding:0 10px 10px}.memo-body textarea{width:100%;min-height:120px;resize:vertical;border:1px solid var(--line);border-radius:11px;padding:8px;font-size:12px;line-height:1.45;font-weight:850;background:#fbfdff;color:#102033;outline:none}.memo-actions{display:flex;gap:7px;margin-top:7px}.memo-actions button{flex:1;min-height:34px;border:1px solid var(--line);border-radius:11px;background:#fff;font-weight:950}.memo-actions .primary{background:var(--blue);border-color:var(--blue);color:#fff}
@@ -159,12 +160,12 @@
     .setting-field{display:grid;grid-template-columns:58px minmax(0,1fr);align-items:center;gap:6px;margin:6px 0 0;color:var(--muted);font-size:12px;font-weight:950}.setting-field:last-child{margin-bottom:0}
     .dh-row{min-height:36px;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px dashed #cfe0ed;border-radius:11px;padding:8px 10px;color:var(--muted);font-size:12px;font-weight:900;background:#fbfdff}
     .settings-actions{display:flex;gap:8px;margin-top:10px}.settings-actions button{flex:1;height:36px;border:1px solid var(--line);border-radius:11px;background:#fff;font-weight:950}.settings-actions .primary{background:var(--blue);border-color:var(--blue);color:#fff}
-    @keyframes tapGhost{0%{opacity:1;transform:translateZ(0) scale(1)}44%{opacity:.72;transform:translateZ(0) scale(.98)}100%{opacity:1;transform:translateZ(0) scale(1)}}
+    @keyframes tapGhost{0%{opacity:.78;transform:translateZ(0) scale(.985)}58%{opacity:.78;transform:translateZ(0) scale(.985)}100%{opacity:1;transform:translateZ(0) scale(1)}}
     @keyframes swapFadeOut{0%{opacity:1;transform:translateZ(0) scale(1)}100%{opacity:.55;transform:translateZ(0) scale(.97)}}
     @keyframes swapFadeIn{0%{opacity:.55;transform:translateZ(0) scale(.97)}100%{opacity:1;transform:translateZ(0) scale(1)}}
     @keyframes chipSwapFadeOut{0%{opacity:1;transform:translateZ(0) scale(1)}100%{opacity:.55;transform:translateZ(0) scale(.97)}}
     @keyframes chipSwapFadeIn{0%{opacity:.55;transform:translateZ(0) scale(.97)}100%{opacity:1;transform:translateZ(0) scale(1)}}
-    @media (prefers-reduced-motion: reduce){.player-main-group,.player-card,.defense-card,.pos-chip,.bench-chip,.toast{transition:none!important}.player-main-group.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback,.pos-chip.tap-feedback,.player-main-group.swap-fade-out,.player-main-group.swap-fade-in,.defense-card.swap-fade-out,.defense-card.swap-fade-in,.bench-chip.swap-fade-out,.bench-chip.swap-fade-in,.pos-chip.swap-fade-out,.pos-chip.swap-fade-in{animation:none!important}}
+    @media (prefers-reduced-motion: reduce){.player-main-group,.player-card,.defense-card,.pos-chip,.bench-chip,.inning-btn,.toast{transition:none!important}.player-main-group.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback,.inning-btn.tap-feedback,.pos-chip.tap-feedback,.player-main-group.swap-fade-out,.player-main-group.swap-fade-in,.defense-card.swap-fade-out,.defense-card.swap-fade-in,.bench-chip.swap-fade-out,.bench-chip.swap-fade-in,.pos-chip.swap-fade-out,.pos-chip.swap-fade-in{animation:none!important}}
     @media (max-width:560px){.title-text{flex:0 1 128px}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 7px;font-size:12px}.settings-btn{min-width:auto}}
     @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 8px;font-size:12px}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .card-head{padding:7px}.card-head h2{font-size:13px}.order-head-actions{gap:4px}.order-reset-btn{height:30px;min-width:88px;font-size:11px;padding:0 7px}.defense-grid-header{grid-template-columns:27px minmax(0,1fr);gap:6px;padding-top:5px}.defense-grid-head-main{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr);gap:6px}.defense-col-head{font-size:9px}.order-card .row-list{gap:5px;padding-top:4px}.order-main{grid-template-columns:27px minmax(0,1fr);gap:6px;min-height:44px;padding:0}.player-main-group{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr);gap:6px}.order-no{font-size:20px}.player-card{font-size:13px;padding-left:9px;padding-right:9px}.pos-flow{gap:2px;padding:4px 3px}.pos-cell{min-height:28px}.pos-chip{height:30px;min-width:34px;font-size:13px;padding:0 7px}.pos-flow .pos-chip{height:27px;font-size:11px}.pos-flow .pos-chip.start{height:28px;font-size:12px}.pos-flow .pos-chip.change,.pos-flow .pos-chip.change.current-inning{height:27px;font-size:11px}.pos-chip.change{height:26px;min-width:28px;font-size:13px;padding:0 5px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select,.date-button{font-size:12px;padding-left:6px;padding-right:6px}.calendar-panel{gap:6px;padding:7px}.calendar-weekdays,.calendar-grid{gap:2px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
   </style>
@@ -347,11 +348,13 @@
   let tapFeedbackIds = new Set();
   let defenseTapFeedbackIds = new Set();
   let tapFeedbackTimer = null;
+  const quickTapTimers = new WeakMap();
   let isSwapAnimating = false;
   let calendarMonth = null;
-  const SWAP_FADE_OUT_MS = 105;
+  const SWAP_FADE_OUT_MS = 90;
   const SWAP_FADE_IN_MS = 120;
-  const TAP_FEEDBACK_MS = 160;
+  const TAP_FEEDBACK_MS = 120;
+  const POINTER_CLICK_GUARD_MS = 220;
   const $ = (id) => document.getElementById(id);
 
   function clone(value){ return JSON.parse(JSON.stringify(value)); }
@@ -715,19 +718,43 @@
       FORM_CONTROL_GUARD_EVENTS.forEach(type => control.addEventListener(type, stopFormControlPropagation, { passive:true }));
     });
   }
-  function bindQuickTap(element, handler){
+  function flashTapFeedback(element){
+    if(!element || reducedMotion()) return;
+    const oldTimer = quickTapTimers.get(element);
+    if(oldTimer) clearTimeout(oldTimer);
+    element.classList.remove('tap-feedback');
+    void element.offsetWidth;
+    element.classList.add('tap-feedback');
+    quickTapTimers.set(element, setTimeout(() => {
+      element.classList.remove('tap-feedback');
+      quickTapTimers.delete(element);
+    }, TAP_FEEDBACK_MS + 35));
+  }
+  function bindQuickTap(element, handler, options = {}){
     let handledByPointer = false;
+    const shouldIgnore = (event) => shouldIgnoreNestedFormControlTap(event) || Boolean(options.ignore?.(event));
+    const feedbackTarget = (event) => {
+      if(typeof options.feedbackElement === 'function') return options.feedbackElement(event) || element;
+      if(options.feedbackElement) return options.feedbackElement;
+      return element;
+    };
     const run = (event) => {
       event.stopPropagation();
-      if(shouldIgnoreNestedFormControlTap(event)) return;
+      if(shouldIgnore(event)) return;
       handler(event);
     };
+    element.addEventListener('pointerdown', event => {
+      if(event.pointerType === 'mouse' && event.button !== 0) return;
+      if(shouldIgnore(event)) return;
+      event.stopPropagation();
+      flashTapFeedback(feedbackTarget(event));
+    }, { passive:true });
     element.addEventListener('pointerup', event => {
       if(event.pointerType === 'mouse' && event.button !== 0) return;
       handledByPointer = true;
       event.preventDefault();
       run(event);
-      setTimeout(() => { handledByPointer = false; }, 350);
+      setTimeout(() => { handledByPointer = false; }, POINTER_CLICK_GUARD_MS);
     });
     element.addEventListener('click', event => {
       if(handledByPointer){
@@ -1199,7 +1226,7 @@
       btn.type = 'button';
       btn.className = `inning-btn ${extraClass}` + (value === state.selectedInning ? ' active' : '');
       btn.textContent = label;
-      btn.addEventListener('click', () => { state.selectedInning = value; selectedSwapId = null; selectedDefense = null; saveState(); render(); });
+      bindQuickTap(btn, () => { state.selectedInning = value; selectedSwapId = null; selectedDefense = null; saveState(); render(); });
       wrap.appendChild(btn);
     };
     addButton('初期', 0, 'initial');
@@ -1247,7 +1274,7 @@
       const isSwapFadingOut = swapFadeOutIds.has(pid);
       const isSwapFadingIn = swapFadeInIds.has(pid);
       const hasTapFeedback = tapFeedbackIds.has(pid);
-      const showSwapSelected = isSwapSelected && !hasTapFeedback;
+      const showSwapSelected = isSwapSelected;
       const groupClass = 'player-main-group' + (showSwapSelected ? ' is-selected-row' : '') + (hasTapFeedback ? ' tap-feedback' : '') + (isSwapFadingOut ? ' swap-fade-out is-swapping' : '') + (isSwapFadingIn ? ' swap-fade-in is-swapping' : '');
       const row = document.createElement('div');
       row.className = 'order-row' + (hasChange ? ' has-change' : '');
@@ -1263,19 +1290,21 @@
       `;
       const playerButton = main.querySelector('.player-name');
       playerButton.style.borderLeftColor = player.color || '#94a3b8';
-      bindQuickTap(playerButton, () => handlePlayerTap(pid));
+      bindQuickTap(playerButton, () => handlePlayerTap(pid), {
+        feedbackElement: () => playerButton.closest('.player-main-group')
+      });
       const posFlow = main.querySelector('.pos-flow');
       const isDefenseFadingOut = defenseSwapFadeOutIds.has(pid);
       const isDefenseFadingIn = defenseSwapFadeInIds.has(pid);
       const hasDefenseTapFeedback = defenseTapFeedbackIds.has(pid);
-      const showDefenseSelected = isDefSelected && !hasDefenseTapFeedback;
+      const showDefenseSelected = isDefSelected;
       posFlow.className = 'pos-flow defense-card' + (hasChange ? ' has-change' : '') + (showDefenseSelected ? ' def-selected is-defense-selected' : '') + (hasDefenseTapFeedback ? ' tap-feedback' : '') + (isDefenseFadingOut ? ' swap-fade-out is-chip-swapping' : '') + (isDefenseFadingIn ? ' swap-fade-in is-chip-swapping' : '');
       const cols = defenseColumns();
       const activeKey = activeDefenseColumnKey();
       posFlow.style.setProperty('--defense-cols', cols.length);
-      bindQuickTap(posFlow, (e) => {
-        if(e.target.closest('.pos-chip')) return;
-        handleDefenseTap(pid);
+      bindQuickTap(posFlow, () => handleDefenseTap(pid), {
+        ignore: e => Boolean(e.target.closest('.pos-chip')),
+        feedbackElement: () => posFlow
       });
       const flowByColumn = new Map();
       flow.forEach(item => {
@@ -1293,7 +1322,9 @@
           chip.className = 'pos-chip ' + (item.start ? 'start' : 'change') + (isActiveColumn ? ' current-inning' : '');
           chip.setAttribute('aria-label', `${col.key === 'start' ? '初期' : col.label + '回'}の守備 ${posShort(item.pos)}`);
           chip.innerHTML = `<span>${escapeHtml(posShort(item.pos))}</span>`;
-          bindQuickTap(chip, () => handleDefenseTap(pid));
+          bindQuickTap(chip, () => handleDefenseTap(pid), {
+            feedbackElement: () => chip.closest('.defense-card') || chip
+          });
           cell.appendChild(chip);
         }
         posFlow.appendChild(cell);
@@ -1315,7 +1346,7 @@
       const chip = document.createElement('button');
       chip.type = 'button';
       const hasTapFeedback = tapFeedbackIds.has(p.id);
-      chip.className = 'bench-chip' + (selectedSwapId === p.id && !hasTapFeedback ? ' selected is-selected' : '') + (hasTapFeedback ? ' tap-feedback' : '') + (swapFadeOutIds.has(p.id) ? ' swap-fade-out is-swapping' : '') + (swapFadeInIds.has(p.id) ? ' swap-fade-in is-swapping' : '');
+      chip.className = 'bench-chip' + (selectedSwapId === p.id ? ' selected is-selected' : '') + (hasTapFeedback ? ' tap-feedback' : '') + (swapFadeOutIds.has(p.id) ? ' swap-fade-out is-swapping' : '') + (swapFadeInIds.has(p.id) ? ' swap-fade-in is-swapping' : '');
       chip.innerHTML = `<span class="dot" style="background:${escapeAttr(p.color)}"></span><span>${escapeHtml(displayName(p.id))}</span>`;
       bindQuickTap(chip, () => handlePlayerTap(p.id));
       wrap.appendChild(chip);
