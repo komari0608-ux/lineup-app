@@ -89,7 +89,8 @@
     .card-head h2{margin:0;font-size:14px;line-height:1.1;letter-spacing:.01em}.subhead{color:var(--muted);font-size:11px;font-weight:850;white-space:nowrap}
     .order-head h2{min-width:0}.order-head-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:0;flex:0 0 auto}.order-reset-btn{height:31px;min-width:92px;border:1px solid #bdd7ef;border-radius:10px;background:#fff;color:var(--blue-dark);font-size:12px;font-weight:950;padding:0 8px;white-space:nowrap;box-shadow:0 2px 7px rgba(16,32,51,.045);touch-action:manipulation}.order-reset-btn:active{opacity:.82;transform:translateZ(0) scale(.98)}.order-reset-btn:disabled{opacity:.45;box-shadow:none;pointer-events:none}
     .row-list{background:#fff}
-    .order-card .row-list{display:grid;gap:6px;background:transparent;padding:7px 2px 0}
+    .defense-grid-header{display:grid;grid-template-columns:30px minmax(0,1fr);align-items:center;gap:7px;padding:6px 2px 0}.defense-grid-head-main{min-width:0;display:grid;grid-template-columns:minmax(0,.9fr) minmax(158px,1fr);align-items:center;gap:7px}.defense-grid-player-spacer{min-width:0}.defense-grid-cols{padding:0 3px;box-sizing:border-box}.defense-cols{min-width:0;display:grid;grid-template-columns:repeat(var(--defense-cols),minmax(0,1fr));gap:2px}.defense-col-head{height:18px;border-radius:7px;color:#64748b;font-size:10px;font-weight:950;line-height:18px;text-align:center}.defense-col-head.is-active{background:#eaf6ff;color:var(--blue-dark)}
+    .order-card .row-list{display:grid;gap:6px;background:transparent;padding:5px 2px 0}
     .order-row{position:relative;background:transparent;border:0}.order-row:last-child{border-bottom:0}
     .order-card .order-row{border:0;border-radius:0;box-shadow:none;overflow:visible}
     .order-card .order-row:last-child{border-bottom:0}
@@ -97,7 +98,7 @@
     .order-no{color:var(--blue);font-size:21px;line-height:1;font-weight:950;text-align:center;display:flex;align-items:center;justify-content:center}
     .player-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .player-main-group{
-      min-width:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(142px,.82fr);gap:7px;border-radius:15px;
+      min-width:0;display:grid;grid-template-columns:minmax(0,.9fr) minmax(158px,1fr);gap:7px;border-radius:15px;
       transition:background-color .14s ease,box-shadow .14s ease,transform .14s ease,opacity .14s ease;
       touch-action:manipulation;user-select:none;-webkit-user-select:none;
     }
@@ -112,7 +113,8 @@
     .player-main-group.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback{animation:tapGhost .16s ease-out}
     .player-main-group.swap-fade-out,.defense-card.swap-fade-out,.bench-chip.swap-fade-out{animation:swapFadeOut .105s ease forwards}
     .player-main-group.swap-fade-in,.defense-card.swap-fade-in,.bench-chip.swap-fade-in{animation:swapFadeIn .12s ease-out}
-    .pos-flow{min-width:0;display:flex;flex-wrap:wrap;align-items:center;align-content:center;gap:3px;overflow:visible;white-space:normal;padding:4px;scrollbar-width:none}.pos-flow::-webkit-scrollbar{display:none}
+    .pos-flow{min-width:0;display:grid;grid-template-columns:repeat(var(--defense-cols),minmax(0,1fr));align-items:center;gap:2px;overflow:visible;white-space:normal;padding:4px 3px;scrollbar-width:none}.pos-flow::-webkit-scrollbar{display:none}
+    .pos-cell{min-width:0;min-height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px}.pos-cell.current-inning{background:#eef8ff}.pos-cell.empty.current-inning{box-shadow:inset 0 0 0 1px #cfe4fb}
     .defense-card.has-change{background:linear-gradient(90deg,#fff 0%,rgba(255,247,237,.78) 100%)}
     .defense-card.def-selected,.defense-card.is-defense-selected{background:#fffafa;border-color:var(--danger);box-shadow:0 0 0 3px rgba(180,35,24,.88),0 5px 12px rgba(180,35,24,.14);transform:translate3d(0,-1px,0) scale(1.01)}
     .pos-chip,.add-pos-chip{
@@ -125,6 +127,7 @@
     .pos-chip.current-inning{border-color:#3b94dd}
     .pos-chip.change.current-inning{min-width:30px;height:28px;font-size:13px}
     .pos-chip.def-selected,.pos-chip.is-defense-selected{background:#fffafa;border-color:var(--danger);color:#7a271a;box-shadow:0 0 0 2px rgba(180,35,24,.22),0 4px 10px rgba(180,35,24,.13);transform:translate3d(0,-1px,0) scale(1.04)}
+    .pos-flow .pos-chip{width:100%;min-width:0;height:28px;padding:0 1px;font-size:12px}.pos-flow .pos-chip.start{min-width:0;height:30px;font-size:13px}.pos-flow .pos-chip.change{min-width:0;height:28px;font-size:12px;padding:0 1px}.pos-flow .pos-chip.change.current-inning{min-width:0;height:28px;font-size:12px}
     .pos-chip:active{opacity:.82;transform:translateZ(0) scale(.96)}
     .pos-chip.swap-fade-out{animation:chipSwapFadeOut .12s ease forwards}
     .pos-chip.swap-fade-in{animation:chipSwapFadeIn .15s ease-out}
@@ -163,7 +166,7 @@
     @keyframes chipSwapFadeIn{0%{opacity:.55;transform:translateZ(0) scale(.97)}100%{opacity:1;transform:translateZ(0) scale(1)}}
     @media (prefers-reduced-motion: reduce){.player-main-group,.player-card,.defense-card,.pos-chip,.bench-chip,.toast{transition:none!important}.player-main-group.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback,.pos-chip.tap-feedback,.player-main-group.swap-fade-out,.player-main-group.swap-fade-in,.defense-card.swap-fade-out,.defense-card.swap-fade-in,.bench-chip.swap-fade-out,.bench-chip.swap-fade-in,.pos-chip.swap-fade-out,.pos-chip.swap-fade-in{animation:none!important}}
     @media (max-width:560px){.title-text{flex:0 1 128px}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 7px;font-size:12px}.settings-btn{min-width:auto}}
-    @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 8px;font-size:12px}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .card-head{padding:7px}.card-head h2{font-size:13px}.order-head-actions{gap:4px}.order-reset-btn{height:30px;min-width:88px;font-size:11px;padding:0 7px}.order-card .row-list{gap:5px;padding-top:5px}.order-main{grid-template-columns:27px minmax(0,1fr);gap:6px;min-height:44px;padding:0}.player-main-group{grid-template-columns:minmax(0,1fr) minmax(144px,.86fr);gap:6px}.order-no{font-size:20px}.player-card{font-size:13px;padding-left:9px;padding-right:9px}.pos-flow{gap:3px;padding:4px}.pos-chip{height:30px;min-width:34px;font-size:13px;padding:0 7px}.pos-chip.change{height:26px;min-width:28px;font-size:13px;padding:0 5px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select,.date-button{font-size:12px;padding-left:6px;padding-right:6px}.calendar-panel{gap:6px;padding:7px}.calendar-weekdays,.calendar-grid{gap:2px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
+    @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 8px;font-size:12px}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .card-head{padding:7px}.card-head h2{font-size:13px}.order-head-actions{gap:4px}.order-reset-btn{height:30px;min-width:88px;font-size:11px;padding:0 7px}.defense-grid-header{grid-template-columns:27px minmax(0,1fr);gap:6px;padding-top:5px}.defense-grid-head-main{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr);gap:6px}.defense-col-head{font-size:9px}.order-card .row-list{gap:5px;padding-top:4px}.order-main{grid-template-columns:27px minmax(0,1fr);gap:6px;min-height:44px;padding:0}.player-main-group{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr);gap:6px}.order-no{font-size:20px}.player-card{font-size:13px;padding-left:9px;padding-right:9px}.pos-flow{gap:2px;padding:4px 3px}.pos-cell{min-height:28px}.pos-chip{height:30px;min-width:34px;font-size:13px;padding:0 7px}.pos-flow .pos-chip{height:27px;font-size:11px}.pos-flow .pos-chip.start{height:28px;font-size:12px}.pos-flow .pos-chip.change,.pos-flow .pos-chip.change.current-inning{height:27px;font-size:11px}.pos-chip.change{height:26px;min-width:28px;font-size:13px;padding:0 5px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select,.date-button{font-size:12px;padding-left:6px;padding-right:6px}.calendar-panel{gap:6px;padding:7px}.calendar-weekdays,.calendar-grid{gap:2px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
   </style>
 </head>
 <body>
@@ -191,6 +194,7 @@
               <button type="button" class="order-reset-btn" id="orderResetDefenseBtn" hidden disabled>この回を戻す</button>
             </div>
           </div>
+          <div class="defense-grid-header" id="defenseGridHeader" aria-hidden="true"></div>
           <div class="row-list" id="orderList"></div>
         </div>
         <details class="bench-wrap">
@@ -861,6 +865,17 @@
     return [{ inning:1, pos:state.startPositions[playerId] || 'B', start:true }, ...defenseEntries(playerId).filter(e => e.inning <= maxInnings()).map(e => ({...e, start:false}))];
   }
 
+  function defenseColumns(){
+    const cols = [{ key:'start', label:'初', inning:1 }];
+    for(let inning=2; inning<=maxInnings(); inning++) cols.push({ key:String(inning), label:String(inning), inning });
+    return cols;
+  }
+
+  function activeDefenseColumnKey(){
+    const inning = activeInning();
+    return isInitialMode() || inning <= 1 ? 'start' : String(inning);
+  }
+
   function getLineupAt(inning){
     ensureStructures();
     inning = Math.min(maxInnings(), Math.max(1, Number(inning || 1)));
@@ -1120,6 +1135,7 @@
     ensureStructures();
     renderHeader();
     renderInningButtons();
+    renderDefenseGridHeader();
     renderOrder();
     renderBench();
     renderMemo();
@@ -1190,6 +1206,32 @@
     for(let i=1; i<=maxInnings(); i++) addButton(`${i}回`, i);
   }
 
+  function renderDefenseGridHeader(){
+    const wrap = $('defenseGridHeader');
+    const cols = defenseColumns();
+    const activeKey = activeDefenseColumnKey();
+    wrap.style.setProperty('--defense-cols', cols.length);
+    wrap.innerHTML = '';
+    const noSpacer = document.createElement('div');
+    noSpacer.className = 'defense-grid-no-spacer';
+    const main = document.createElement('div');
+    main.className = 'defense-grid-head-main';
+    const playerSpacer = document.createElement('div');
+    playerSpacer.className = 'defense-grid-player-spacer';
+    const colsWrap = document.createElement('div');
+    colsWrap.className = 'defense-cols defense-grid-cols';
+    cols.forEach(col => {
+      const label = document.createElement('div');
+      label.className = 'defense-col-head' + (col.key === activeKey ? ' is-active' : '');
+      label.textContent = col.label;
+      colsWrap.appendChild(label);
+    });
+    main.appendChild(playerSpacer);
+    main.appendChild(colsWrap);
+    wrap.appendChild(noSpacer);
+    wrap.appendChild(main);
+  }
+
   function renderOrder(){
     const list = $('orderList');
     const inning = activeInning();
@@ -1228,20 +1270,33 @@
       const hasDefenseTapFeedback = defenseTapFeedbackIds.has(pid);
       const showDefenseSelected = isDefSelected && !hasDefenseTapFeedback;
       posFlow.className = 'pos-flow defense-card' + (hasChange ? ' has-change' : '') + (showDefenseSelected ? ' def-selected is-defense-selected' : '') + (hasDefenseTapFeedback ? ' tap-feedback' : '') + (isDefenseFadingOut ? ' swap-fade-out is-chip-swapping' : '') + (isDefenseFadingIn ? ' swap-fade-in is-chip-swapping' : '');
+      const cols = defenseColumns();
+      const activeKey = activeDefenseColumnKey();
+      posFlow.style.setProperty('--defense-cols', cols.length);
       bindQuickTap(posFlow, (e) => {
         if(e.target.closest('.pos-chip')) return;
         handleDefenseTap(pid);
       });
-      const currentPos = effectivePosition(pid, inning);
+      const flowByColumn = new Map();
       flow.forEach(item => {
-        const chip = document.createElement('button');
-        chip.type = 'button';
-        const isCurrent = item.pos === currentPos && item.inning <= inning && !flow.some(x => x.inning > item.inning && x.inning <= inning);
-        chip.className = 'pos-chip ' + (item.start ? 'start' : 'change') + (isCurrent ? ' current-inning' : '');
-        chip.setAttribute('aria-label', `${isInitialMode() ? '初期' : state.selectedInning + '回'}の守備を入れ替え`);
-        chip.innerHTML = `<span>${escapeHtml(posShort(item.pos))}</span>`;
-        bindQuickTap(chip, () => handleDefenseTap(pid));
-        posFlow.appendChild(chip);
+        const key = item.start || item.inning <= 1 ? 'start' : String(item.inning);
+        flowByColumn.set(key, item);
+      });
+      cols.forEach(col => {
+        const item = flowByColumn.get(col.key);
+        const isActiveColumn = col.key === activeKey;
+        const cell = document.createElement('div');
+        cell.className = 'pos-cell' + (item ? '' : ' empty') + (isActiveColumn ? ' current-inning' : '');
+        if(item){
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'pos-chip ' + (item.start ? 'start' : 'change') + (isActiveColumn ? ' current-inning' : '');
+          chip.setAttribute('aria-label', `${col.key === 'start' ? '初期' : col.label + '回'}の守備 ${posShort(item.pos)}`);
+          chip.innerHTML = `<span>${escapeHtml(posShort(item.pos))}</span>`;
+          bindQuickTap(chip, () => handleDefenseTap(pid));
+          cell.appendChild(chip);
+        }
+        posFlow.appendChild(cell);
       });
       row.appendChild(main);
       list.appendChild(row);
