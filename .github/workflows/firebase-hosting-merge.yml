@@ -1,0 +1,34 @@
+name: Deploy to Firebase Hosting on merge
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: firebase-hosting-live
+  cancel-in-progress: true
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/208585410494/locations/global/workloadIdentityPools/github-actions/providers/lineup-app
+          service_account: github-hosting-deploy@lineup-app-b4f4e.iam.gserviceaccount.com
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - run: npm install -g firebase-tools
+
+      - run: firebase deploy --only hosting --project lineup-app-b4f4e --non-interactive
