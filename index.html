@@ -6,6 +6,8 @@
   <meta name="theme-color" content="#072b57" />
   <title>打順プランナー</title>
   <script>
+    window.LINEUP_APP_VERSION = '2026-06-25-number-badge-zoom-fix';
+    console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
       let showSplash = true;
@@ -156,7 +158,9 @@
     .order-card .order-row:last-child{border-bottom:0}
     .order-main{position:relative;display:grid;grid-template-columns:30px minmax(0,1fr);align-items:stretch;gap:7px;min-height:44px;padding:0}
     .order-no{color:var(--blue);font-size:21px;line-height:1;font-weight:950;text-align:center;display:flex;align-items:center;justify-content:center}
-    .player-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .player-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .player-name-text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .player-number-badge{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:34px;padding:0 8px;border:2px solid #8bc4ef;border-radius:11px;background:#fff;color:#043e76;font-size:16px;font-weight:950;line-height:1;box-shadow:0 2px 6px rgba(8,103,189,.10)}
     .player-main-group{
       min-width:0;display:grid;grid-template-columns:minmax(0,.9fr) minmax(158px,1fr);gap:7px;border-radius:15px;
       transition:background-color .14s ease,box-shadow .14s ease,transform .14s ease,opacity .14s ease;
@@ -167,7 +171,7 @@
       transition:background-color .14s ease,border-color .14s ease,box-shadow .14s ease,transform .14s ease,opacity .14s ease;
       touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
     }
-    .player-card{display:flex;align-items:center;justify-content:flex-start;text-align:left;padding:0 10px;font-size:14px;font-weight:950}
+    .player-card{display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;padding:0 8px 0 10px;font-size:16px;font-weight:950}
     .player-main-group:active,.player-card:active,.defense-card:active,.bench-chip:active{opacity:.82;transform:translateZ(0) scale(.985)}
     .player-main-group.is-selected-row,.bench-chip.selected,.bench-chip.is-selected{box-shadow:0 0 0 3px rgba(180,35,24,.88),0 5px 12px rgba(180,35,24,.14);background:rgba(180,35,24,.035)}
     .player-main-group.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback,.inning-btn.tap-feedback{will-change:transform,opacity;animation:tapGhost .12s ease-out}
@@ -220,6 +224,7 @@
     .setting-field{display:grid;grid-template-columns:58px minmax(0,1fr);align-items:center;gap:6px;margin:6px 0 0;color:var(--muted);font-size:12px;font-weight:950}.setting-field:last-child{margin-bottom:0}
     .dh-row{min-height:36px;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px dashed #cfe0ed;border-radius:11px;padding:8px 10px;color:var(--muted);font-size:12px;font-weight:900;background:#fbfdff}
     .settings-actions{display:flex;gap:8px;margin-top:10px}.settings-actions button{flex:1;height:36px;border:1px solid var(--line);border-radius:11px;background:#fff;font-weight:950}.settings-actions .primary{background:var(--blue);border-color:var(--blue);color:#fff}
+    input,select,textarea,.game-line input,.game-line select,.toolbar select,.setting-field select,.display-mode-row select,.player-row input[type="text"],.player-row input[type="number"],.player-row .number-input,.add-row input,.memo-body textarea{font-size:16px!important;line-height:1.2}.player-row input[type="text"],.player-row input[type="number"],.player-row .number-input,.add-row input{min-height:36px}
     @keyframes tapGhost{0%{opacity:.78;transform:translateZ(0) scale(.985)}58%{opacity:.78;transform:translateZ(0) scale(.985)}100%{opacity:1;transform:translateZ(0) scale(1)}}
     @keyframes swapFadeOut{0%{opacity:1;transform:translateZ(0) scale(1)}100%{opacity:.55;transform:translateZ(0) scale(.97)}}
     @keyframes swapFadeIn{0%{opacity:.55;transform:translateZ(0) scale(.97)}100%{opacity:1;transform:translateZ(0) scale(1)}}
@@ -758,18 +763,23 @@
   }
 
   function displayName(id){
-    const p = playerById(id);
-    if(!p) return '未設定';
-    const nick = p.nickname || p.fullName || '未設定';
-    const full = p.fullName || nick;
-    const no = String(p.number || '').trim();
-    switch(state.settings.displayMode){
-      case 'full': return full;
-      case 'fullNumber': return no ? `${full} #${no}` : full;
-      case 'nickNumber': return no ? `${nick} #${no}` : nick;
-      default: return nick;
-    }
+  const p = playerById(id);
+  if(!p) return '未設定';
+  const nick = p.nickname || p.fullName || '未設定';
+  const full = p.fullName || nick;
+  switch(state.settings.displayMode){
+    case 'full': return full;
+    case 'fullNumber': return full;
+    case 'nickNumber': return nick;
+    default: return nick;
   }
+}
+
+function playerNumber(id){
+  const p = playerById(id);
+  return String(p?.number || '').trim();
+}
+
 
   const FORM_CONTROL_SELECTOR = 'input, select, textarea, button';
   const FORM_CONTROL_GUARD_EVENTS = ['pointerdown', 'touchstart', 'mousedown', 'click'];
@@ -1381,11 +1391,15 @@
       const main = document.createElement('div');
       main.className = 'order-main';
       const playerLabel = isInitialMode() ? '打順入替で選択' : '交代で選択';
+      const numberLabel = playerNumber(pid);
       main.innerHTML = `
         <div class="order-no">${index + 1}</div>
         <div class="${groupClass}">
-          <button type="button" class="player-name player-card" aria-label="${escapeAttr(displayName(pid))}${playerLabel}">${escapeHtml(displayName(pid))}</button>
-          <div class="pos-flow defense-card" role="button" tabindex="0" aria-label="守備履歴"></div>
+<button type="button" class="player-name player-card" aria-label="${escapeAttr(displayName(pid))}${numberLabel ? ` 背番号${escapeAttr(numberLabel)}` : ''}${playerLabel}">
+  <span class="player-name-text">${escapeHtml(displayName(pid))}</span>
+  ${numberLabel ? `<span class="player-number-badge" aria-label="背番号 ${escapeAttr(numberLabel)}">${escapeHtml(numberLabel)}</span>` : ''}
+</button>
+<div class="pos-flow defense-card" role="button" tabindex="0" aria-label="守備履歴"></div>
         </div>
       `;
       const playerButton = main.querySelector('.player-name');
@@ -1555,7 +1569,7 @@
           <input class="nick-input" type="text" value="${escapeAttr(p.nickname)}" placeholder="ニックネーム" aria-label="ニックネーム" />
           <input class="full-input" type="text" value="${escapeAttr(p.fullName || '')}" placeholder="本名" aria-label="本名" />
         </div>
-        <input class="number-input" type="number" min="0" inputmode="numeric" value="${escapeAttr(p.number || '')}" placeholder="背番" aria-label="背番号" />
+        <input class="number-input" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" value="${escapeAttr(p.number || '')}" placeholder="背番" aria-label="背番号" />
         <button class="icon-del" type="button" aria-label="削除">×</button>
       `;
       const color = row.querySelector('.color-input');
@@ -1566,7 +1580,7 @@
       color.addEventListener('input', () => { p.color = color.value; saveState(); });
       nick.addEventListener('input', () => { p.nickname = nick.value; saveState(); });
       full.addEventListener('input', () => { p.fullName = full.value; saveState(); });
-      number.addEventListener('input', () => { p.number = number.value; saveState(); });
+      number.addEventListener('input', () => { p.number = number.value.replace(/\D/g, ''); number.value = p.number; saveState(); });
       del.addEventListener('click', () => deletePlayer(p.id));
       panel.appendChild(row);
     });
