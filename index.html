@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-25-app-icon';
+    window.LINEUP_APP_VERSION = '2026-06-25-dynamic-defense-cols';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -1008,10 +1008,33 @@ function playerNumber(id){
     return [{ inning:1, pos:state.startPositions[playerId] || 'B', start:true }, ...defenseEntries(playerId).filter(e => e.inning <= maxInnings()).map(e => ({...e, start:false}))];
   }
 
+  function sameLineup(a, b){
+    if(!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+    return a.every((id, index) => id === b[index]);
+  }
+
+  function changedDefenseInnings(){
+    const innings = new Set();
+    const max = maxInnings();
+    Object.values(state.defenseChanges || {}).forEach(changes => {
+      Object.keys(changes || {}).forEach(key => {
+        const inning = Number(key);
+        if(Number.isFinite(inning) && inning >= 2 && inning <= max) innings.add(inning);
+      });
+    });
+    if(state.battingMode === 'nine'){
+      for(let inning = 2; inning <= max; inning++){
+        if(!sameLineup(getLineupAt(inning), getLineupAt(inning - 1))) innings.add(inning);
+      }
+    }
+    return Array.from(innings).sort((a,b) => a - b);
+  }
+
   function defenseColumns(){
-    const cols = [{ key:'start', label:'初', inning:1 }];
-    for(let inning=2; inning<=maxInnings(); inning++) cols.push({ key:String(inning), label:String(inning), inning });
-    return cols;
+    return [
+      { key:'start', label:'初', inning:1 },
+      ...changedDefenseInnings().map(inning => ({ key:String(inning), label:String(inning), inning }))
+    ];
   }
 
   function activeDefenseColumnKey(){
