@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-26-touch-swipe';
+    window.LINEUP_APP_VERSION = '2026-06-26-swipe-calendar';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -167,10 +167,16 @@
     .calendar-month{text-align:center;color:var(--blue-dark);font-size:13px;font-weight:950}
     .calendar-weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
     .calendar-weekday{text-align:center;color:var(--muted);font-size:11px;font-weight:950;line-height:1.2}
+    .calendar-weekday.is-saturday{color:#0867bd}
+    .calendar-weekday.is-sunday{color:#b42318}
     .calendar-empty{min-height:44px}
-    .calendar-day{min-width:0;height:44px;border:1px solid transparent;border-radius:10px;background:#f8fbfd;color:var(--ink);font-size:13px;font-weight:950;padding:0}
+    .calendar-day{position:relative;min-width:0;height:44px;border:1px solid transparent;border-radius:10px;background:#f8fbfd;color:var(--ink);font-size:13px;font-weight:950;padding:0}
+    .calendar-day.is-saturday:not(.is-selected){color:#0867bd;background:#f3f9ff}
+    .calendar-day.is-sunday:not(.is-selected),.calendar-day.is-holiday:not(.is-selected){color:#b42318;background:#fff7f6}
+    .calendar-holiday-label{position:absolute;right:3px;bottom:3px;min-width:14px;height:14px;border-radius:999px;background:#ffe5e2;color:#b42318;font-size:9px;font-weight:950;line-height:14px}
     .calendar-day.is-today{border-color:#86bce9;background:#f0f8ff}
     .calendar-day.is-selected{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 3px 8px rgba(8,103,189,.20)}
+    .calendar-day.is-selected .calendar-holiday-label{background:rgba(255,255,255,.22);color:#fff}
     .toolbar{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}
     .toolbar button{grid-column:1 / -1;padding:0 9px;font-weight:950;white-space:nowrap}
     .inning-scroll{display:flex;gap:6px;overflow-x:auto;padding:8px 0 8px;margin-bottom:3px;-webkit-overflow-scrolling:touch;scroll-padding-inline:6px}
@@ -178,7 +184,8 @@
     .inning-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
     .inning-btn.initial{min-width:52px;background:#eef8ff;border-color:#b9d7ef}.inning-btn.initial.active{background:var(--blue-dark);border-color:var(--blue-dark);color:#fff}
     .tiny-note{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:11px;font-weight:850;margin:0 0 6px;line-height:1.35}
-    .panel{display:none}.panel.active{display:block;transition:transform .16s ease}.panel.is-page-swiping{transition:none;will-change:transform}
+    main{min-height:calc(100dvh - 126px - env(safe-area-inset-bottom));touch-action:pan-y}
+    .panel{display:none;min-height:calc(100dvh - 126px - env(safe-area-inset-bottom));touch-action:pan-y}.panel.active{display:block;transition:transform .2s cubic-bezier(.2,.8,.2,1)}.panel.is-page-swiping{transition:none;will-change:transform}
     .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
     .order-card{background:transparent;border:0;box-shadow:none;overflow:visible}
     .card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 9px;border-bottom:1px solid var(--line);background:#fbfdff}
@@ -245,7 +252,7 @@
     .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(0,0,0,.10)}
     .empty-state{color:var(--muted);font-size:13px;font-weight:850;padding:0 10px 10px}
     .memo-body{padding:0 10px 10px}.memo-body textarea{width:100%;min-height:120px;resize:vertical;border:1px solid var(--line);border-radius:11px;padding:8px;font-size:12px;line-height:1.45;font-weight:850;background:#fbfdff;color:#102033;outline:none}.memo-actions{display:flex;gap:7px;margin-top:7px}.memo-actions button{flex:1;min-height:34px;border:1px solid var(--line);border-radius:11px;background:#fff;font-weight:950}.memo-actions .primary{background:var(--blue);border-color:var(--blue);color:#fff}
-    .history-list{display:grid;gap:8px;padding:9px 9px calc(96px + env(safe-area-inset-bottom));background:#f7fbff}.history-item{position:relative;background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:0 4px 10px rgba(16,32,51,.045);overflow:hidden}.history-card-surface{position:relative;z-index:1;background:#fff;transition:transform .18s ease;touch-action:pan-y}.history-item.is-swiping .history-card-surface{transition:none}.history-item.is-delete-open .history-card-surface{transform:translateX(-92px)}.history-delete-action{position:absolute;inset:0 0 0 auto;width:92px;z-index:0;display:flex;align-items:stretch;justify-content:center;background:#fff1f0}.history-delete-action button{width:100%;border:0;background:#d92d20;color:#fff;font-size:13px;font-weight:950;touch-action:manipulation}.history-summary{width:100%;min-height:54px;border:0;background:#fff;display:grid;grid-template-columns:minmax(0,1fr) 20px;align-items:center;gap:8px;padding:10px 11px;text-align:left;color:var(--blue-dark);font-size:14px;font-weight:950;line-height:1.25;touch-action:pan-y}.history-summary-main{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.history-chevron{font-size:13px;color:#5f7f9b;text-align:right;transition:transform .16s ease}.history-item.is-open .history-chevron{transform:rotate(180deg)}.history-expanded{padding:0 9px 10px}.history-title{font-size:14px;font-weight:950;color:var(--blue-dark);line-height:1.3}.history-meta,.history-saved,.history-change-count{margin-top:3px;color:var(--muted);font-size:11px;font-weight:850;line-height:1.35}.history-starters{margin-top:8px;display:grid;gap:3px;font-size:12px;font-weight:900;color:#102033}.history-starter-row,.history-detail-row{display:grid;grid-template-columns:24px minmax(0,1fr) 38px 34px;gap:5px;align-items:center}.history-player-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.history-number-badge{justify-self:end;min-width:28px;min-height:22px;padding:0 6px;border:1px solid #9bc9f0;border-radius:9px;background:#f5fbff;color:#043e76;font-size:11px;font-weight:950;display:inline-flex;align-items:center;justify-content:center}.history-pos{justify-self:end;color:#043e76;font-weight:950}.history-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:9px}.history-actions button{min-height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--blue-dark);font-size:12px;font-weight:950;padding:0 4px;touch-action:manipulation}.history-actions button.primary{background:var(--blue);border-color:var(--blue);color:#fff}.history-detail{margin-top:9px;padding-top:8px;border-top:1px solid #edf2f7;display:grid;gap:8px}.history-detail h3{margin:0 0 4px;font-size:12px;color:var(--blue-dark)}.history-detail-list{display:grid;gap:4px}.history-detail-text{font-size:12px;line-height:1.5;color:#102033;font-weight:850;white-space:pre-wrap}.history-empty{padding:18px 10px;color:var(--muted);font-weight:900;text-align:center}
+    .history-list{display:grid;align-content:start;gap:8px;min-height:calc(100dvh - 184px - env(safe-area-inset-bottom));padding:9px 9px calc(96px + env(safe-area-inset-bottom));background:#f7fbff}.history-item{position:relative;background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:0 4px 10px rgba(16,32,51,.045);overflow:hidden}.history-card-surface{position:relative;z-index:1;background:#fff;transition:transform .18s ease;touch-action:pan-y}.history-item.is-swiping .history-card-surface{transition:none}.history-item.is-delete-open .history-card-surface{transform:translateX(-92px)}.history-delete-action{position:absolute;inset:0 0 0 auto;width:92px;z-index:0;display:flex;align-items:stretch;justify-content:center;background:#fff1f0}.history-delete-action button{width:100%;border:0;background:#d92d20;color:#fff;font-size:13px;font-weight:950;touch-action:manipulation}.history-summary{width:100%;min-height:54px;border:0;background:#fff;display:grid;grid-template-columns:minmax(0,1fr) 20px;align-items:center;gap:8px;padding:10px 11px;text-align:left;color:var(--blue-dark);font-size:14px;font-weight:950;line-height:1.25;touch-action:pan-y}.history-summary-main{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.history-chevron{font-size:13px;color:#5f7f9b;text-align:right;transition:transform .16s ease}.history-item.is-open .history-chevron{transform:rotate(180deg)}.history-expanded{padding:0 9px 10px}.history-title{font-size:14px;font-weight:950;color:var(--blue-dark);line-height:1.3}.history-meta,.history-saved,.history-change-count{margin-top:3px;color:var(--muted);font-size:11px;font-weight:850;line-height:1.35}.history-starters{margin-top:8px;display:grid;gap:3px;font-size:12px;font-weight:900;color:#102033}.history-starter-row,.history-detail-row{display:grid;grid-template-columns:24px minmax(0,1fr) 38px 34px;gap:5px;align-items:center}.history-player-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.history-number-badge{justify-self:end;min-width:28px;min-height:22px;padding:0 6px;border:1px solid #9bc9f0;border-radius:9px;background:#f5fbff;color:#043e76;font-size:11px;font-weight:950;display:inline-flex;align-items:center;justify-content:center}.history-pos{justify-self:end;color:#043e76;font-weight:950}.history-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:9px}.history-actions button{min-height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--blue-dark);font-size:12px;font-weight:950;padding:0 4px;touch-action:manipulation}.history-actions button.primary{background:var(--blue);border-color:var(--blue);color:#fff}.history-detail{margin-top:9px;padding-top:8px;border-top:1px solid #edf2f7;display:grid;gap:8px}.history-detail h3{margin:0 0 4px;font-size:12px;color:var(--blue-dark)}.history-detail-list{display:grid;gap:4px}.history-detail-text{font-size:12px;line-height:1.5;color:#102033;font-weight:850;white-space:pre-wrap}.history-empty{padding:18px 10px;color:var(--muted);font-weight:900;text-align:center}
     .player-panel{padding:9px}.display-mode-row{display:grid;grid-template-columns:66px minmax(0,1fr);align-items:center;gap:7px;margin-bottom:8px;color:var(--muted);font-size:12px;font-weight:950}.display-mode-row select{height:32px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:0 8px;font-weight:900}
     .player-row{display:grid;grid-template-columns:24px minmax(0,1fr) 52px 34px;align-items:center;gap:6px;min-height:42px;padding:4px 0;border-bottom:1px solid #edf2f7}.player-row:last-child{border-bottom:0}.color-input{width:24px;height:24px;padding:0;border:0;background:transparent}.player-names{display:grid;grid-template-columns:1fr 1fr;gap:5px;min-width:0}.player-row input[type="text"],.player-row input[type="number"]{min-width:0;height:31px;border:1px solid var(--line);border-radius:9px;padding:0 7px;font-size:12px;font-weight:850}.icon-del{height:31px;border:0;border-radius:9px;background:#fff1f0;color:var(--danger);font-weight:950}.add-row{display:grid;grid-template-columns:1fr 1fr 58px;gap:6px;padding-top:9px}.add-row input{min-width:0;height:34px;border:1px solid var(--line);border-radius:10px;padding:0 9px;font-size:12px;font-weight:850}.add-row button{border:0;border-radius:10px;background:var(--green);color:#fff;font-weight:950}
     .bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.96);border-top:1px solid var(--line);backdrop-filter:blur(12px);padding:5px max(7px,env(safe-area-inset-left)) calc(5px + env(safe-area-inset-bottom)) max(7px,env(safe-area-inset-right));display:block}.bottom-nav-inner{width:auto;max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.nav-btn{min-width:0;border:0;background:transparent;color:#7b8794;border-radius:14px;min-height:47px;font-weight:950;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}.nav-btn .icon{font-size:19px;line-height:1}.nav-btn.active{background:#eaf4ff;color:var(--blue)}
@@ -451,12 +458,35 @@
   const TAB_ORDER = ['order','history','players'];
   const HISTORY_SWIPE_OPEN_PX = 92;
   const HISTORY_SWIPE_THRESHOLD_PX = 78;
-  const PAGE_SWIPE_THRESHOLD_PX = 28;
+  const PAGE_SWIPE_THRESHOLD_PX = 34;
   const PAGE_SWIPE_FLICK_PX = 18;
   const PAGE_SWIPE_VELOCITY_PX_MS = 0.22;
-  const PAGE_SWIPE_FEEDBACK_MAX_PX = 36;
-  const PAGE_SWIPE_LOCK_PX = 8;
+  const PAGE_SWIPE_FEEDBACK_MAX_PX = 44;
+  const PAGE_SWIPE_LOCK_PX = 6;
+  const PAGE_SWIPE_FOLLOW_RATIO = 0.26;
+  const PAGE_SWIPE_HORIZONTAL_RATIO = 1.05;
+  const PAGE_SWIPE_VERTICAL_CANCEL_RATIO = 1.24;
   const MIGRATION_KEYS = ['lineupPlannerV9OrderTapShare','lineupPlannerV8InlineSwap','lineupPlannerV7InlineDefense','lineupPlannerV6TapCompact','lineupPlannerV5CompactIphone','lineupPlannerV4Iphone'];
+  const JAPANESE_HOLIDAYS = {
+    '2026-01-01':'元日',
+    '2026-01-12':'成人の日',
+    '2026-02-11':'建国記念の日',
+    '2026-02-23':'天皇誕生日',
+    '2026-03-20':'春分の日',
+    '2026-04-29':'昭和の日',
+    '2026-05-03':'憲法記念日',
+    '2026-05-04':'みどりの日',
+    '2026-05-05':'こどもの日',
+    '2026-05-06':'振替休日',
+    '2026-07-20':'海の日',
+    '2026-08-11':'山の日',
+    '2026-09-21':'敬老の日',
+    '2026-09-22':'国民の休日',
+    '2026-09-23':'秋分の日',
+    '2026-10-12':'スポーツの日',
+    '2026-11-03':'文化の日',
+    '2026-11-23':'勤労感謝の日'
+  };
   const FIELD_POSITIONS = [
     { code:'1', short:'投' }, { code:'2', short:'捕' }, { code:'3', short:'一' },
     { code:'4', short:'二' }, { code:'5', short:'三' }, { code:'6', short:'遊' },
@@ -809,6 +839,10 @@
     render();
   }
 
+  function holidayName(value){
+    return JAPANESE_HOLIDAYS[value] || '';
+  }
+
   function renderDateCalendar(){
     const calendar = $('dateCalendar');
     if(!calendar || calendar.hidden) return;
@@ -825,7 +859,7 @@
         <div class="calendar-month">${year}年${month + 1}月</div>
         <button class="calendar-nav" type="button" data-calendar-next aria-label="翌月">›</button>
       </div>
-      <div class="calendar-weekdays">${weekdays.map(day => `<div class="calendar-weekday">${day}</div>`).join('')}</div>
+      <div class="calendar-weekdays">${weekdays.map((day, idx) => `<div class="calendar-weekday${idx === 5 ? ' is-saturday' : ''}${idx === 6 ? ' is-sunday' : ''}">${day}</div>`).join('')}</div>
       <div class="calendar-grid"></div>
     `;
     const grid = calendar.querySelector('.calendar-grid');
@@ -836,11 +870,14 @@
     }
     for(let day=1; day<=daysInMonth; day++){
       const value = dateValue(year, month, day);
+      const dayOfWeek = new Date(year, month, day).getDay();
+      const holiday = holidayName(value);
       const button = document.createElement('button');
       button.type = 'button';
-      button.className = 'calendar-day' + (value === selected ? ' is-selected' : '') + (value === todayText ? ' is-today' : '');
-      button.textContent = String(day);
-      button.setAttribute('aria-label', displayFullDate(value));
+      button.className = 'calendar-day' + (dayOfWeek === 6 ? ' is-saturday' : '') + (dayOfWeek === 0 ? ' is-sunday' : '') + (holiday ? ' is-holiday' : '') + (value === selected ? ' is-selected' : '') + (value === todayText ? ' is-today' : '');
+      button.innerHTML = `<span class="calendar-day-number">${day}</span>${holiday ? '<span class="calendar-holiday-label" aria-hidden="true">祝</span>' : ''}`;
+      button.title = holiday || '';
+      button.setAttribute('aria-label', `${displayFullDate(value)}${holiday ? ` ${holiday}` : ''}`);
       button.addEventListener('click', e => {
         e.stopPropagation();
         selectCalendarDate(value);
@@ -1951,6 +1988,7 @@ function playerNumberIn(st, id){
   }
 
   function beginHistorySwipe(event){
+    if(event.pointerType === 'touch') return;
     if(event.pointerType === 'mouse' && event.button !== 0) return;
     const surface = event.target.closest('[data-history-swipe-surface]');
     if(!surface) return;
@@ -2031,7 +2069,7 @@ function playerNumberIn(st, id){
     if(target.closest?.('input, select, textarea, [contenteditable="true"], [contenteditable=""]')) return true;
     const button = target.closest?.('button');
     if(button && !button.classList.contains('history-summary') && !button.classList.contains('player-card')) return true;
-    return !!target.closest?.('.bottom-nav,.settings-modal,.inning-scroll,.memo-actions,.player-row,.add-row,.date-button,.calendar-panel,.settings-sheet,.history-delete-action,.history-actions');
+    return !!target.closest?.('.bottom-nav,.settings-modal,.inning-scroll,.memo-actions,.date-button,.calendar-panel,.settings-sheet,.history-delete-action,.history-actions');
   }
 
   function activePanel(){
@@ -2042,7 +2080,10 @@ function playerNumberIn(st, id){
     if(reducedMotion()) return;
     const panel = activePanel();
     if(!panel) return;
-    const offset = clamp(dx * 0.08, -PAGE_SWIPE_FEEDBACK_MAX_PX, PAGE_SWIPE_FEEDBACK_MAX_PX);
+    const currentIndex = TAB_ORDER.indexOf(currentTab);
+    const atEdge = (dx < 0 && currentIndex === TAB_ORDER.length - 1) || (dx > 0 && currentIndex === 0);
+    const ratio = atEdge ? PAGE_SWIPE_FOLLOW_RATIO * 0.36 : PAGE_SWIPE_FOLLOW_RATIO;
+    const offset = clamp(dx * ratio, -PAGE_SWIPE_FEEDBACK_MAX_PX, PAGE_SWIPE_FEEDBACK_MAX_PX);
     panel.classList.add('is-page-swiping');
     panel.style.transform = `translateX(${offset}px)`;
   }
@@ -2078,11 +2119,11 @@ function playerNumberIn(st, id){
     const absY = Math.abs(dy);
     if(!swipe.active){
       if(absX < PAGE_SWIPE_LOCK_PX && absY < PAGE_SWIPE_LOCK_PX) return;
-      if(absY > absX * 1.2){
+      if(absY > absX * PAGE_SWIPE_VERTICAL_CANCEL_RATIO){
         swipe.cancelled = true;
         return;
       }
-      if(absX <= absY * 1.02) return;
+      if(absX <= absY * PAGE_SWIPE_HORIZONTAL_RATIO) return;
       swipe.active = true;
     }
     if(swipe.active){
@@ -2102,10 +2143,11 @@ function playerNumberIn(st, id){
     const flickTrigger = absX >= PAGE_SWIPE_FLICK_PX && velocity >= PAGE_SWIPE_VELOCITY_PX_MS;
     const cardDeleteTrigger = swipe.historyId && dx < 0 && absX >= HISTORY_SWIPE_THRESHOLD_PX && absX > absY * 1.05;
     const closeDeleteTrigger = swipe.historyId && swipedHistoryId === swipe.historyId && dx > PAGE_SWIPE_FLICK_PX;
-    if(!swipe.active || absX <= absY * 1.02) return null;
+    const historyCardLeftSwipe = swipe.historyId && dx < 0;
+    if(!swipe.active || absX <= absY * PAGE_SWIPE_HORIZONTAL_RATIO) return null;
     if(closeDeleteTrigger) return { type:'close-delete' };
     if(cardDeleteTrigger) return { type:'open-delete', id:swipe.historyId };
-    if(live && swipe.historyId && dx < 0) return null;
+    if(live && historyCardLeftSwipe) return null;
     if(distanceTrigger || flickTrigger){
       const currentIndex = TAB_ORDER.indexOf(currentTab);
       const nextIndex = dx < 0 ? currentIndex + 1 : currentIndex - 1;
