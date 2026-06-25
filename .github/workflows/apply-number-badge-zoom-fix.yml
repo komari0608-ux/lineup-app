@@ -54,20 +54,8 @@ jobs:
                   1,
               )
 
-          old_display = """  function displayName(id){
-            const p = playerById(id);
-            if(!p) return '未設定';
-            const nick = p.nickname || p.fullName || '未設定';
-            const full = p.fullName || nick;
-            const no = String(p.number || '').trim();
-            switch(state.settings.displayMode){
-              case 'full': return full;
-              case 'fullNumber': return no ? `${full} #${no}` : full;
-              case 'nickNumber': return no ? `${nick} #${no}` : nick;
-              default: return nick;
-            }
-          }
-          """.replace('          ', '')
+          display_start = s.index('  function displayName(id){')
+          display_end = s.index('\n\n  const FORM_CONTROL_SELECTOR', display_start)
           new_display = """  function displayName(id){
             const p = playerById(id);
             if(!p) return '未設定';
@@ -86,18 +74,10 @@ jobs:
             return String(p?.number || '').trim();
           }
           """.replace('          ', '')
-          if old_display in s:
-              s = s.replace(old_display, new_display, 1)
+          s = s[:display_start] + new_display + s[display_end:]
 
-          old_card = """      const playerLabel = isInitialMode() ? '打順入替で選択' : '交代で選択';
-                main.innerHTML = `
-                  <div class="order-no">${index + 1}</div>
-                  <div class="${groupClass}">
-                    <button type="button" class="player-name player-card" aria-label="${escapeAttr(displayName(pid))}${playerLabel}">${escapeHtml(displayName(pid))}</button>
-                    <div class="pos-flow defense-card" role="button" tabindex="0" aria-label="守備履歴"></div>
-                  </div>
-                `;
-          """.replace('          ', '')
+          card_start = s.index("      const playerLabel = isInitialMode() ? '打順入替で選択' : '交代で選択';")
+          card_end = s.index("      const playerButton = main.querySelector('.player-name');", card_start)
           new_card = """      const playerLabel = isInitialMode() ? '打順入替で選択' : '交代で選択';
                 const numberLabel = playerNumber(pid);
                 main.innerHTML = `
@@ -111,8 +91,7 @@ jobs:
                   </div>
                 `;
           """.replace('          ', '')
-          if old_card in s:
-              s = s.replace(old_card, new_card, 1)
+          s = s[:card_start] + new_card + s[card_end:]
 
           s = s.replace(
               '<input class="number-input" type="number" min="0" inputmode="numeric" value="${escapeAttr(p.number || \'\')}" placeholder="背番" aria-label="背番号" />',
