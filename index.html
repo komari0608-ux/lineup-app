@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-25-history-image-share';
+    window.LINEUP_APP_VERSION = '2026-06-25-font-selector';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -21,11 +21,21 @@
         showSplash = true;
       }
       document.documentElement.classList.toggle('splash-pending', showSplash);
+      try{
+        const fontKey = localStorage.getItem('lineupPlannerFontFamily') || 'standard';
+        const allowed = new Set(['standard','biz-ud','noto','mplus','zen']);
+        document.documentElement.classList.add(`font-${allowed.has(fontKey) ? fontKey : 'standard'}`);
+      }catch(e){
+        document.documentElement.classList.add('font-standard');
+      }
     })();
   </script>
   <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png" />
   <link rel="icon" type="image/png" sizes="48x48" href="assets/icons/favicon.png" />
   <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=M+PLUS+1p:wght@500;700;800&family=Noto+Sans+JP:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet" />
   <link rel="preload" as="image" href="assets/splash-order.png" />
   <style>
     :root{
@@ -42,12 +52,19 @@
       --danger:#b42318;
       --shadow:0 8px 20px rgba(16,32,51,.10);
       --radius:15px;
+      --font-ui:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      --font-lineup:var(--font-ui);
     }
     *{box-sizing:border-box}
     html{-webkit-text-size-adjust:100%; background:var(--bg)}
+    html.font-standard{--font-lineup:var(--font-ui)}
+    html.font-biz-ud{--font-lineup:"BIZ UDPGothic",var(--font-ui)}
+    html.font-noto{--font-lineup:"Noto Sans JP",var(--font-ui)}
+    html.font-mplus{--font-lineup:"M PLUS 1p",var(--font-ui)}
+    html.font-zen{--font-lineup:"Zen Kaku Gothic New",var(--font-ui)}
     body{
       margin:0;
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      font-family:var(--font-ui);
       background:var(--bg);
       color:var(--ink);
       min-height:100svh;
@@ -55,6 +72,12 @@
     }
     button,input,select,textarea{font:inherit}
     button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .order-card,.order-card .card-head,.order-no,.player-main-group,.player-card,.defense-card,.pos-chip,.add-pos-chip,.player-number-badge,.bench-chip,.memo-body textarea,.history-item{font-family:var(--font-lineup)}
+    html.font-biz-ud .player-name-text,html.font-biz-ud .pos-chip,html.font-biz-ud .player-number-badge{font-weight:700}
+    html.font-noto .player-name-text,html.font-noto .pos-chip,html.font-noto .player-number-badge,
+    html.font-mplus .player-name-text,html.font-mplus .pos-chip,html.font-mplus .player-number-badge,
+    html.font-zen .player-name-text,html.font-zen .pos-chip,html.font-zen .player-number-badge{font-weight:800}
+    html.font-mplus .player-name-text,html.font-mplus .pos-chip,html.font-mplus .player-number-badge{letter-spacing:.01em}
     .startup-splash{
       position:fixed;
       inset:0;
@@ -383,6 +406,16 @@
             <option value="on">DHあり</option>
           </select>
         </label>
+        <label class="setting-field">
+          <span>表示フォント</span>
+          <select id="lineupFont" aria-label="表示フォント">
+            <option value="standard">標準</option>
+            <option value="biz-ud">BIZ UDゴシック</option>
+            <option value="noto">Noto Sans JP</option>
+            <option value="mplus">M PLUS 1p</option>
+            <option value="zen">ZEN角ゴシック</option>
+          </select>
+        </label>
       </section>
 
       <div class="settings-actions">
@@ -408,6 +441,8 @@
   const HISTORY_KEY = 'lineupPlannerSavedOrders';
   const MAX_SAVED_ORDERS = 50;
   const STARTUP_SPLASH_KEY = 'lineupSplashSeen';
+  const FONT_KEY = 'lineupPlannerFontFamily';
+  const FONT_OPTIONS = ['standard','biz-ud','noto','mplus','zen'];
   const MIGRATION_KEYS = ['lineupPlannerV9OrderTapShare','lineupPlannerV8InlineSwap','lineupPlannerV7InlineDefense','lineupPlannerV6TapCompact','lineupPlannerV5CompactIphone','lineupPlannerV4Iphone'];
   const FIELD_POSITIONS = [
     { code:'1', short:'投' }, { code:'2', short:'捕' }, { code:'3', short:'一' },
@@ -458,6 +493,26 @@
   const $ = (id) => document.getElementById(id);
 
   function clone(value){ return JSON.parse(JSON.stringify(value)); }
+  function validFontKey(value){ return FONT_OPTIONS.includes(value) ? value : 'standard'; }
+  function readStoredLineupFont(){
+    try{ return validFontKey(localStorage.getItem(FONT_KEY) || 'standard'); }
+    catch(e){ return 'standard'; }
+  }
+  function currentFontKey(st = state){ return validFontKey(st?.settings?.fontFamily || readStoredLineupFont()); }
+  function applyLineupFont(){
+    const key = currentFontKey();
+    document.documentElement.classList.remove('font-standard','font-biz-ud','font-noto','font-mplus','font-zen');
+    document.documentElement.classList.add(`font-${key}`);
+  }
+  function setLineupFont(value){
+    const key = validFontKey(value);
+    state.settings ||= {};
+    state.settings.fontFamily = key;
+    try{ localStorage.setItem(FONT_KEY, key); }catch(e){}
+    applyLineupFont();
+    saveState();
+    render();
+  }
   function playerById(id){ return state.players.find(p => p.id === id) || null; }
   function isFieldPos(pos){ return FIELD_POSITIONS.some(p => p.code === pos); }
   function isDhEnabled(st = state){ return st?.settings?.dhEnabled === true; }
@@ -477,7 +532,7 @@
       version: 10,
       team: { year:'2026', division:'C', name:'旭丘スカイヤーズ' },
       game: { date: todayText, place:'旭丘小', start:'14:00', format:'時間制', limit:'80', innings:6, opponent:'' },
-      settings: { displayMode:'nick', dhEnabled:false },
+      settings: { displayMode:'nick', dhEnabled:false, fontFamily:readStoredLineupFont() },
       battingMode: 'all',
       selectedInning: 0,
       players: clone(defaultPlayers),
@@ -551,6 +606,7 @@
     st.settings ||= {};
     st.settings.displayMode ||= 'nick';
     st.settings.dhEnabled = st.settings.dhEnabled === true;
+    st.settings.fontFamily = validFontKey(st.settings.fontFamily || readStoredLineupFont());
     st.battingMode = st.battingMode === 'nine' ? 'nine' : 'all';
     const selectedInning = Number(st.selectedInning);
     st.selectedInning = Number.isFinite(selectedInning) ? selectedInning : 0;
@@ -648,6 +704,7 @@
   }
 
   function saveState(show=false){
+    try{ localStorage.setItem(FONT_KEY, currentFontKey()); }catch(e){}
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     $('saveNote').textContent = '端末保存';
     if(show) showToast('保存しました');
@@ -1340,6 +1397,7 @@ function playerNumberIn(st, id){
 
   function render(){
     ensureStructures();
+    applyLineupFont();
     renderHeader();
     renderInningButtons();
     renderDefenseGridHeader();
@@ -1387,6 +1445,7 @@ function playerNumberIn(st, id){
     $('battingMode').value = state.battingMode;
     $('displayMode').value = state.settings.displayMode || 'nick';
     $('dhMode').value = isDhEnabled() ? 'on' : 'off';
+    $('lineupFont').value = currentFontKey();
     renderDateCalendar();
     const modeText = state.battingMode === 'all' ? '全員打ち' : '9人制';
     $('modeLabel').textContent = isInitialMode() ? `${modeText}｜初期` : `${modeText}｜${state.selectedInning}回守備`;
@@ -2195,6 +2254,7 @@ function playerNumberIn(st, id){
     $('battingMode').addEventListener('change', e => setBattingMode(e.target.value));
     $('displayMode').addEventListener('change', e => { state.settings.displayMode = e.target.value; saveState(); render(); });
     $('dhMode').addEventListener('change', e => setDhMode(e.target.value === 'on'));
+    $('lineupFont').addEventListener('change', e => setLineupFont(e.target.value));
     $('resetDefenseBtn').addEventListener('click', resetDefense);
     $('orderResetDefenseBtn').addEventListener('click', resetCurrentDefense);
     $('copyMemoBtn').addEventListener('click', copyMemo);
