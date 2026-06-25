@@ -1,10 +1,24 @@
 <!doctype html>
-<html lang="ja">
+<html lang="ja" class="splash-pending">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#072b57" />
   <title>打順プランナー</title>
+  <script>
+    (() => {
+      const SPLASH_KEY = 'lineupSplashSeen';
+      let showSplash = true;
+      try{
+        const force = new URLSearchParams(window.location.search).get('splash') === '1';
+        showSplash = force || sessionStorage.getItem(SPLASH_KEY) !== '1';
+      }catch(e){
+        showSplash = true;
+      }
+      document.documentElement.classList.toggle('splash-pending', showSplash);
+    })();
+  </script>
+  <link rel="preload" as="image" href="assets/splash-order.png" />
   <style>
     :root{
       --bg:#edf6f2;
@@ -47,7 +61,8 @@
       transition:opacity .28s ease;
     }
     .startup-splash[hidden]{display:none!important}
-    .startup-splash.is-visible{opacity:1;pointer-events:auto;animation:splashBackdrop .32s ease-out both}
+    html.splash-pending .app{visibility:hidden;opacity:0}
+    html.splash-pending .startup-splash,.startup-splash.is-visible{opacity:1;pointer-events:auto;animation:splashBackdrop .32s ease-out both}
     .startup-splash.is-hiding{opacity:0;pointer-events:none}
     .splash-inner{display:grid;justify-items:center;gap:10px;text-align:center;color:var(--blue-dark)}
     .splash-image{
@@ -219,7 +234,7 @@
   </style>
 </head>
 <body>
-  <div class="startup-splash" id="startupSplash" role="status" aria-live="polite" hidden>
+  <div class="startup-splash" id="startupSplash" role="status" aria-live="polite">
     <div class="splash-inner">
       <img class="splash-image" src="assets/splash-order.png" alt="打順プランナー" decoding="async" />
       <div class="splash-fallback" aria-hidden="true">ORDER</div>
@@ -828,13 +843,17 @@
   function setupStartupSplash(){
     const splash = $('startupSplash');
     if(!splash) return;
+    const root = document.documentElement;
+    const forceSplash = new URLSearchParams(window.location.search).get('splash') === '1';
     let alreadySeen = false;
-    try{ alreadySeen = sessionStorage.getItem(STARTUP_SPLASH_KEY) === '1'; }
+    try{ alreadySeen = !forceSplash && sessionStorage.getItem(STARTUP_SPLASH_KEY) === '1'; }
     catch(e){ alreadySeen = false; }
     if(alreadySeen){
+      root.classList.remove('splash-pending');
       splash.remove();
       return;
     }
+    root.classList.add('splash-pending');
     try{ sessionStorage.setItem(STARTUP_SPLASH_KEY, '1'); }
     catch(e){}
     const image = splash.querySelector('.splash-image');
@@ -842,9 +861,11 @@
     const reduce = reducedMotion();
     const hideDelay = reduce ? 280 : 2200;
     const removeDelay = reduce ? 460 : 2500;
-    splash.hidden = false;
     requestAnimationFrame(() => splash.classList.add('is-visible'));
-    window.setTimeout(() => splash.classList.add('is-hiding'), hideDelay);
+    window.setTimeout(() => {
+      splash.classList.add('is-hiding');
+      root.classList.remove('splash-pending');
+    }, hideDelay);
     window.setTimeout(() => splash.remove(), removeDelay);
   }
   function clearSwapAnimationState(){
