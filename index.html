@@ -33,6 +33,51 @@
     }
     button,input,select,textarea{font:inherit}
     button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .startup-splash{
+      position:fixed;
+      inset:0;
+      z-index:9999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px 18px calc(28px + env(safe-area-inset-bottom));
+      background:radial-gradient(circle at 50% 38%, #ffffff 0%, #f5fbf8 46%, #dff2e9 100%);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .28s ease;
+    }
+    .startup-splash[hidden]{display:none!important}
+    .startup-splash.is-visible{opacity:1;pointer-events:auto;animation:splashBackdrop .32s ease-out both}
+    .startup-splash.is-hiding{opacity:0;pointer-events:none}
+    .splash-inner{display:grid;justify-items:center;gap:10px;text-align:center;color:var(--blue-dark)}
+    .splash-image{
+      display:block;
+      width:min(82vw,420px);
+      max-height:58svh;
+      height:auto;
+      object-fit:contain;
+      filter:drop-shadow(0 12px 20px rgba(16,32,51,.14));
+      animation:splashImageIn 1.15s cubic-bezier(.2,.8,.2,1) .16s both;
+    }
+    .splash-fallback{
+      display:none;
+      width:min(70vw,320px);
+      min-height:150px;
+      place-items:center;
+      border:2px solid #bfe0cc;
+      border-radius:24px;
+      background:#fff;
+      color:var(--danger);
+      font-size:34px;
+      font-weight:950;
+      letter-spacing:.03em;
+      box-shadow:0 12px 22px rgba(16,32,51,.10);
+      animation:splashImageIn 1.15s cubic-bezier(.2,.8,.2,1) .16s both;
+    }
+    .startup-splash.image-missing .splash-image{display:none}
+    .startup-splash.image-missing .splash-fallback{display:grid}
+    .splash-title{font-size:22px;font-weight:950;line-height:1.1;opacity:0;animation:splashTextIn .42s ease-out 1.05s both}
+    .splash-sub{color:var(--green);font-size:13px;font-weight:900;opacity:0;animation:splashTextIn .42s ease-out 1.18s both}
     .app{
       width:min(560px,100%);
       margin:0 auto;
@@ -165,12 +210,23 @@
     @keyframes swapFadeIn{0%{opacity:.55;transform:translateZ(0) scale(.97)}100%{opacity:1;transform:translateZ(0) scale(1)}}
     @keyframes chipSwapFadeOut{0%{opacity:1;transform:translateZ(0) scale(1)}100%{opacity:.55;transform:translateZ(0) scale(.97)}}
     @keyframes chipSwapFadeIn{0%{opacity:.55;transform:translateZ(0) scale(.97)}100%{opacity:1;transform:translateZ(0) scale(1)}}
-    @media (prefers-reduced-motion: reduce){.player-main-group,.player-card,.defense-card,.pos-chip,.bench-chip,.inning-btn,.toast{transition:none!important}.player-main-group.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback,.inning-btn.tap-feedback,.pos-chip.tap-feedback,.player-main-group.swap-fade-out,.player-main-group.swap-fade-in,.defense-card.swap-fade-out,.defense-card.swap-fade-in,.bench-chip.swap-fade-out,.bench-chip.swap-fade-in,.pos-chip.swap-fade-out,.pos-chip.swap-fade-in{animation:none!important}}
+    @keyframes splashBackdrop{0%{opacity:0}100%{opacity:1}}
+    @keyframes splashImageIn{0%{opacity:0;transform:translate3d(0,12px,0) scale(.94)}48%{opacity:1;transform:translate3d(0,0,0) scale(1)}72%{transform:translate3d(0,-3px,0) scale(1.01)}100%{opacity:1;transform:translate3d(0,0,0) scale(1)}}
+    @keyframes splashTextIn{0%{opacity:0;transform:translate3d(0,6px,0)}100%{opacity:1;transform:translate3d(0,0,0)}}
+    @media (prefers-reduced-motion: reduce){.startup-splash,.splash-image,.splash-fallback,.splash-title,.splash-sub,.player-main-group,.player-card,.defense-card,.pos-chip,.bench-chip,.inning-btn,.toast{transition:none!important;animation:none!important}.player-main-group.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback,.inning-btn.tap-feedback,.pos-chip.tap-feedback,.player-main-group.swap-fade-out,.player-main-group.swap-fade-in,.defense-card.swap-fade-out,.defense-card.swap-fade-in,.bench-chip.swap-fade-out,.bench-chip.swap-fade-in,.pos-chip.swap-fade-out,.pos-chip.swap-fade-in{animation:none!important}}
     @media (max-width:560px){.title-text{flex:0 1 128px}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 7px;font-size:12px}.settings-btn{min-width:auto}}
     @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 8px;font-size:12px}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .card-head{padding:7px}.card-head h2{font-size:13px}.order-head-actions{gap:4px}.order-reset-btn{height:30px;min-width:88px;font-size:11px;padding:0 7px}.defense-grid-header{grid-template-columns:27px minmax(0,1fr);gap:6px;padding-top:5px}.defense-grid-head-main{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr);gap:6px}.defense-col-head{font-size:9px}.order-card .row-list{gap:5px;padding-top:4px}.order-main{grid-template-columns:27px minmax(0,1fr);gap:6px;min-height:44px;padding:0}.player-main-group{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr);gap:6px}.order-no{font-size:20px}.player-card{font-size:13px;padding-left:9px;padding-right:9px}.pos-flow{gap:2px;padding:4px 3px}.pos-cell{min-height:28px}.pos-chip{height:30px;min-width:34px;font-size:13px;padding:0 7px}.pos-flow .pos-chip{height:27px;font-size:11px}.pos-flow .pos-chip.start{height:28px;font-size:12px}.pos-flow .pos-chip.change,.pos-flow .pos-chip.change.current-inning{height:27px;font-size:11px}.pos-chip.change{height:26px;min-width:28px;font-size:13px;padding:0 5px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select,.date-button{font-size:12px;padding-left:6px;padding-right:6px}.calendar-panel{gap:6px;padding:7px}.calendar-weekdays,.calendar-grid{gap:2px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
   </style>
 </head>
 <body>
+  <div class="startup-splash" id="startupSplash" role="status" aria-live="polite" hidden>
+    <div class="splash-inner">
+      <img class="splash-image" src="assets/splash-order.png" alt="打順プランナー" decoding="async" />
+      <div class="splash-fallback" aria-hidden="true">ORDER</div>
+      <div class="splash-title">打順プランナー</div>
+      <div class="splash-sub">オーダー作成中…</div>
+    </div>
+  </div>
   <div class="app">
     <header class="top">
       <div class="titlebar">
@@ -310,6 +366,7 @@
   'use strict';
 
   const STORAGE_KEY = 'lineupPlannerV10OrderInlineGame';
+  const STARTUP_SPLASH_KEY = 'lineupSplashSeen';
   const MIGRATION_KEYS = ['lineupPlannerV9OrderTapShare','lineupPlannerV8InlineSwap','lineupPlannerV7InlineDefense','lineupPlannerV6TapCompact','lineupPlannerV5CompactIphone','lineupPlannerV4Iphone'];
   const FIELD_POSITIONS = [
     { code:'1', short:'投' }, { code:'2', short:'捕' }, { code:'3', short:'一' },
@@ -767,6 +824,28 @@
   }
   function reducedMotion(){
     return Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+  }
+  function setupStartupSplash(){
+    const splash = $('startupSplash');
+    if(!splash) return;
+    let alreadySeen = false;
+    try{ alreadySeen = sessionStorage.getItem(STARTUP_SPLASH_KEY) === '1'; }
+    catch(e){ alreadySeen = false; }
+    if(alreadySeen){
+      splash.remove();
+      return;
+    }
+    try{ sessionStorage.setItem(STARTUP_SPLASH_KEY, '1'); }
+    catch(e){}
+    const image = splash.querySelector('.splash-image');
+    image?.addEventListener('error', () => splash.classList.add('image-missing'), { once:true });
+    const reduce = reducedMotion();
+    const hideDelay = reduce ? 280 : 2200;
+    const removeDelay = reduce ? 460 : 2500;
+    splash.hidden = false;
+    requestAnimationFrame(() => splash.classList.add('is-visible'));
+    window.setTimeout(() => splash.classList.add('is-hiding'), hideDelay);
+    window.setTimeout(() => splash.remove(), removeDelay);
   }
   function clearSwapAnimationState(){
     clearTimeout(swapAnimationTimer);
@@ -1617,6 +1696,7 @@
     });
   }
 
+  setupStartupSplash();
   bindEvents();
   render();
   saveState();
