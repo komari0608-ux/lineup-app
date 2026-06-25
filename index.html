@@ -2,14 +2,14 @@
 <html lang="ja" class="splash-pending">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#072b57" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="打順プランナー" />
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-25-record-swipe';
+    window.LINEUP_APP_VERSION = '2026-06-25-swipe-zoom-guard';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -56,7 +56,7 @@
       --font-lineup:var(--font-ui);
     }
     *{box-sizing:border-box}
-    html{-webkit-text-size-adjust:100%; background:var(--bg)}
+    html{-webkit-text-size-adjust:100%;background:var(--bg);touch-action:manipulation;overscroll-behavior:none}
     html.font-standard{--font-lineup:var(--font-ui)}
     html.font-biz-ud{--font-lineup:"BIZ UDPGothic",var(--font-ui)}
     html.font-noto{--font-lineup:"Noto Sans JP",var(--font-ui)}
@@ -69,8 +69,13 @@
       color:var(--ink);
       min-height:100svh;
       touch-action:manipulation;
+      overscroll-behavior:none;
+      user-select:none;
+      -webkit-user-select:none;
+      -webkit-tap-highlight-color:transparent;
     }
     button,input,select,textarea{font:inherit}
+    input,select,textarea{user-select:text;-webkit-user-select:text}
     button{cursor:pointer;-webkit-tap-highlight-color:transparent}
     .order-card,.order-card .card-head,.order-no,.player-main-group,.player-card,.defense-card,.pos-chip,.add-pos-chip,.player-number-badge,.bench-chip,.memo-body textarea,.history-item{font-family:var(--font-lineup)}
     html.font-biz-ud .player-name-text,html.font-biz-ud .pos-chip,html.font-biz-ud .player-number-badge{font-weight:700}
@@ -173,7 +178,7 @@
     .inning-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
     .inning-btn.initial{min-width:52px;background:#eef8ff;border-color:#b9d7ef}.inning-btn.initial.active{background:var(--blue-dark);border-color:var(--blue-dark);color:#fff}
     .tiny-note{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:11px;font-weight:850;margin:0 0 6px;line-height:1.35}
-    .panel{display:none}.panel.active{display:block}
+    .panel{display:none}.panel.active{display:block;transition:transform .16s ease}.panel.is-page-swiping{transition:none;will-change:transform}
     .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
     .order-card{background:transparent;border:0;box-shadow:none;overflow:visible}
     .card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 9px;border-bottom:1px solid var(--line);background:#fbfdff}
@@ -446,7 +451,10 @@
   const TAB_ORDER = ['order','history','players'];
   const HISTORY_SWIPE_OPEN_PX = 92;
   const HISTORY_SWIPE_THRESHOLD_PX = 42;
-  const PAGE_SWIPE_THRESHOLD_PX = 82;
+  const PAGE_SWIPE_THRESHOLD_PX = 45;
+  const PAGE_SWIPE_FLICK_PX = 25;
+  const PAGE_SWIPE_VELOCITY_PX_MS = 0.32;
+  const PAGE_SWIPE_FEEDBACK_MAX_PX = 18;
   const MIGRATION_KEYS = ['lineupPlannerV9OrderTapShare','lineupPlannerV8InlineSwap','lineupPlannerV7InlineDefense','lineupPlannerV6TapCompact','lineupPlannerV5CompactIphone','lineupPlannerV4Iphone'];
   const FIELD_POSITIONS = [
     { code:'1', short:'投' }, { code:'2', short:'捕' }, { code:'3', short:'一' },
@@ -2022,12 +2030,38 @@ function playerNumberIn(st, id){
       !!target?.closest?.('.history-item,.bottom-nav,.settings-modal,.inning-scroll,.player-main-group,.player-card,.defense-card,.bench-chip,.memo-actions,.player-row,.add-row,.date-button,.calendar-panel,.settings-sheet');
   }
 
+  function activePanel(){
+    return document.querySelector('.panel.active');
+  }
+
+  function setPageSwipeFeedback(dx){
+    if(reducedMotion()) return;
+    const panel = activePanel();
+    if(!panel) return;
+    const offset = clamp(dx * 0.08, -PAGE_SWIPE_FEEDBACK_MAX_PX, PAGE_SWIPE_FEEDBACK_MAX_PX);
+    panel.classList.add('is-page-swiping');
+    panel.style.transform = `translateX(${offset}px)`;
+  }
+
+  function clearPageSwipeFeedback(){
+    const panel = activePanel();
+    if(!panel) return;
+    panel.classList.remove('is-page-swiping');
+    panel.style.transform = '';
+  }
+
   function beginPageSwipe(event){
     if(event.pointerType === 'mouse' && event.button !== 0) return;
+    if(swipedHistoryId && !event.target.closest('.history-item')){
+      swipedHistoryId = null;
+      renderHistory();
+      return;
+    }
     if(shouldIgnorePageSwipeTarget(event.target)) return;
     pageSwipeState = {
       startX: event.clientX,
       startY: event.clientY,
+      startTime: event.timeStamp || performance.now(),
       pointerId: event.pointerId,
       active: false,
       cancelled: false
@@ -2042,15 +2076,18 @@ function playerNumberIn(st, id){
     const absX = Math.abs(dx);
     const absY = Math.abs(dy);
     if(!swipe.active){
-      if(absX < 12 && absY < 12) return;
-      if(absY > absX * 1.2){
+      if(absX < 10 && absY < 10) return;
+      if(absY > absX * 1.15){
         swipe.cancelled = true;
         return;
       }
-      if(absX <= absY + 16) return;
+      if(absX <= absY * 1.2) return;
       swipe.active = true;
     }
-    if(swipe.active) event.preventDefault();
+    if(swipe.active){
+      event.preventDefault();
+      setPageSwipeFeedback(dx);
+    }
   }
 
   function endPageSwipe(event){
@@ -2058,7 +2095,14 @@ function playerNumberIn(st, id){
     if(!swipe || event.pointerId !== swipe.pointerId) return;
     const dx = event.clientX - swipe.startX;
     const dy = event.clientY - swipe.startY;
-    if(swipe.active && Math.abs(dx) >= PAGE_SWIPE_THRESHOLD_PX && Math.abs(dx) > Math.abs(dy) * 1.25){
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+    const elapsed = Math.max(1, (event.timeStamp || performance.now()) - swipe.startTime);
+    const velocity = absX / elapsed;
+    const distanceTrigger = absX >= PAGE_SWIPE_THRESHOLD_PX;
+    const flickTrigger = absX >= PAGE_SWIPE_FLICK_PX && velocity >= PAGE_SWIPE_VELOCITY_PX_MS;
+    clearPageSwipeFeedback();
+    if(swipe.active && (distanceTrigger || flickTrigger) && absX > absY * 1.2){
       const currentIndex = TAB_ORDER.indexOf(currentTab);
       const nextIndex = dx < 0 ? currentIndex + 1 : currentIndex - 1;
       if(nextIndex >= 0 && nextIndex < TAB_ORDER.length) switchTab(TAB_ORDER[nextIndex]);
@@ -2072,6 +2116,21 @@ function playerNumberIn(st, id){
     window.addEventListener('pointermove', movePageSwipe, { passive:false });
     window.addEventListener('pointerup', endPageSwipe, { capture:true });
     window.addEventListener('pointercancel', endPageSwipe, { capture:true });
+  }
+
+  function setupZoomGuards(){
+    const preventZoom = event => {
+      event.preventDefault();
+    };
+    ['gesturestart','gesturechange','gestureend'].forEach(type => {
+      document.addEventListener(type, preventZoom, { passive:false });
+    });
+    document.addEventListener('touchmove', event => {
+      if(event.touches && event.touches.length > 1) event.preventDefault();
+    }, { passive:false });
+    document.addEventListener('dblclick', event => {
+      if(!isFormControl(event.target)) event.preventDefault();
+    }, { passive:false });
   }
 
   function renderPlayers(){
@@ -2462,6 +2521,7 @@ function playerNumberIn(st, id){
   }
 
   setupStartupSplash();
+  setupZoomGuards();
   bindEvents();
   render();
   saveState();
