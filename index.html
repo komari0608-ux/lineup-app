@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-25-history-accordion';
+    window.LINEUP_APP_VERSION = '2026-06-25-record-swipe';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -240,7 +240,7 @@
     .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(0,0,0,.10)}
     .empty-state{color:var(--muted);font-size:13px;font-weight:850;padding:0 10px 10px}
     .memo-body{padding:0 10px 10px}.memo-body textarea{width:100%;min-height:120px;resize:vertical;border:1px solid var(--line);border-radius:11px;padding:8px;font-size:12px;line-height:1.45;font-weight:850;background:#fbfdff;color:#102033;outline:none}.memo-actions{display:flex;gap:7px;margin-top:7px}.memo-actions button{flex:1;min-height:34px;border:1px solid var(--line);border-radius:11px;background:#fff;font-weight:950}.memo-actions .primary{background:var(--blue);border-color:var(--blue);color:#fff}
-    .history-list{display:grid;gap:8px;padding:9px 9px calc(96px + env(safe-area-inset-bottom));background:#f7fbff}.history-item{background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:0 4px 10px rgba(16,32,51,.045);overflow:hidden}.history-summary{width:100%;min-height:54px;border:0;background:#fff;display:grid;grid-template-columns:minmax(0,1fr) 20px;align-items:center;gap:8px;padding:10px 11px;text-align:left;color:var(--blue-dark);font-size:14px;font-weight:950;line-height:1.25;touch-action:manipulation}.history-summary-main{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.history-chevron{font-size:13px;color:#5f7f9b;text-align:right;transition:transform .16s ease}.history-item.is-open .history-chevron{transform:rotate(180deg)}.history-expanded{padding:0 9px 10px}.history-title{font-size:14px;font-weight:950;color:var(--blue-dark);line-height:1.3}.history-meta,.history-saved,.history-change-count{margin-top:3px;color:var(--muted);font-size:11px;font-weight:850;line-height:1.35}.history-starters{margin-top:8px;display:grid;gap:3px;font-size:12px;font-weight:900;color:#102033}.history-starter-row,.history-detail-row{display:grid;grid-template-columns:24px minmax(0,1fr) 38px 34px;gap:5px;align-items:center}.history-player-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.history-number-badge{justify-self:end;min-width:28px;min-height:22px;padding:0 6px;border:1px solid #9bc9f0;border-radius:9px;background:#f5fbff;color:#043e76;font-size:11px;font-weight:950;display:inline-flex;align-items:center;justify-content:center}.history-pos{justify-self:end;color:#043e76;font-weight:950}.history-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:9px}.history-actions button{min-height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--blue-dark);font-size:12px;font-weight:950;padding:0 4px;touch-action:manipulation}.history-actions button.primary{background:var(--blue);border-color:var(--blue);color:#fff}.history-actions button.danger{background:#fff1f0;border-color:#ffd1cd;color:var(--danger)}.history-detail{margin-top:9px;padding-top:8px;border-top:1px solid #edf2f7;display:grid;gap:8px}.history-detail h3{margin:0 0 4px;font-size:12px;color:var(--blue-dark)}.history-detail-list{display:grid;gap:4px}.history-detail-text{font-size:12px;line-height:1.5;color:#102033;font-weight:850;white-space:pre-wrap}.history-empty{padding:18px 10px;color:var(--muted);font-weight:900;text-align:center}
+    .history-list{display:grid;gap:8px;padding:9px 9px calc(96px + env(safe-area-inset-bottom));background:#f7fbff}.history-item{position:relative;background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:0 4px 10px rgba(16,32,51,.045);overflow:hidden}.history-card-surface{position:relative;z-index:1;background:#fff;transition:transform .18s ease;touch-action:pan-y}.history-item.is-swiping .history-card-surface{transition:none}.history-item.is-delete-open .history-card-surface{transform:translateX(-92px)}.history-delete-action{position:absolute;inset:0 0 0 auto;width:92px;z-index:0;display:flex;align-items:stretch;justify-content:center;background:#fff1f0}.history-delete-action button{width:100%;border:0;background:#d92d20;color:#fff;font-size:13px;font-weight:950;touch-action:manipulation}.history-summary{width:100%;min-height:54px;border:0;background:#fff;display:grid;grid-template-columns:minmax(0,1fr) 20px;align-items:center;gap:8px;padding:10px 11px;text-align:left;color:var(--blue-dark);font-size:14px;font-weight:950;line-height:1.25;touch-action:pan-y}.history-summary-main{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.history-chevron{font-size:13px;color:#5f7f9b;text-align:right;transition:transform .16s ease}.history-item.is-open .history-chevron{transform:rotate(180deg)}.history-expanded{padding:0 9px 10px}.history-title{font-size:14px;font-weight:950;color:var(--blue-dark);line-height:1.3}.history-meta,.history-saved,.history-change-count{margin-top:3px;color:var(--muted);font-size:11px;font-weight:850;line-height:1.35}.history-starters{margin-top:8px;display:grid;gap:3px;font-size:12px;font-weight:900;color:#102033}.history-starter-row,.history-detail-row{display:grid;grid-template-columns:24px minmax(0,1fr) 38px 34px;gap:5px;align-items:center}.history-player-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.history-number-badge{justify-self:end;min-width:28px;min-height:22px;padding:0 6px;border:1px solid #9bc9f0;border-radius:9px;background:#f5fbff;color:#043e76;font-size:11px;font-weight:950;display:inline-flex;align-items:center;justify-content:center}.history-pos{justify-self:end;color:#043e76;font-weight:950}.history-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:9px}.history-actions button{min-height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--blue-dark);font-size:12px;font-weight:950;padding:0 4px;touch-action:manipulation}.history-actions button.primary{background:var(--blue);border-color:var(--blue);color:#fff}.history-detail{margin-top:9px;padding-top:8px;border-top:1px solid #edf2f7;display:grid;gap:8px}.history-detail h3{margin:0 0 4px;font-size:12px;color:var(--blue-dark)}.history-detail-list{display:grid;gap:4px}.history-detail-text{font-size:12px;line-height:1.5;color:#102033;font-weight:850;white-space:pre-wrap}.history-empty{padding:18px 10px;color:var(--muted);font-weight:900;text-align:center}
     .player-panel{padding:9px}.display-mode-row{display:grid;grid-template-columns:66px minmax(0,1fr);align-items:center;gap:7px;margin-bottom:8px;color:var(--muted);font-size:12px;font-weight:950}.display-mode-row select{height:32px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:0 8px;font-weight:900}
     .player-row{display:grid;grid-template-columns:24px minmax(0,1fr) 52px 34px;align-items:center;gap:6px;min-height:42px;padding:4px 0;border-bottom:1px solid #edf2f7}.player-row:last-child{border-bottom:0}.color-input{width:24px;height:24px;padding:0;border:0;background:transparent}.player-names{display:grid;grid-template-columns:1fr 1fr;gap:5px;min-width:0}.player-row input[type="text"],.player-row input[type="number"]{min-width:0;height:31px;border:1px solid var(--line);border-radius:9px;padding:0 7px;font-size:12px;font-weight:850}.icon-del{height:31px;border:0;border-radius:9px;background:#fff1f0;color:var(--danger);font-weight:950}.add-row{display:grid;grid-template-columns:1fr 1fr 58px;gap:6px;padding-top:9px}.add-row input{min-width:0;height:34px;border:1px solid var(--line);border-radius:10px;padding:0 9px;font-size:12px;font-weight:850}.add-row button{border:0;border-radius:10px;background:var(--green);color:#fff;font-weight:950}
     .bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.96);border-top:1px solid var(--line);backdrop-filter:blur(12px);padding:5px max(7px,env(safe-area-inset-left)) calc(5px + env(safe-area-inset-bottom)) max(7px,env(safe-area-inset-right));display:block}.bottom-nav-inner{width:auto;max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.nav-btn{min-width:0;border:0;background:transparent;color:#7b8794;border-radius:14px;min-height:47px;font-weight:950;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}.nav-btn .icon{font-size:19px;line-height:1}.nav-btn.active{background:#eaf4ff;color:var(--blue)}
@@ -326,7 +326,7 @@
         <p class="tiny-note">登録した選手は削除するまで保持。</p>
         <div class="card">
           <div class="card-head">
-            <h2>選手管理</h2>
+            <h2>選手登録</h2>
             <span class="subhead">ニックネーム・本名・背番号</span>
           </div>
           <div class="player-panel" id="playerPanel"></div>
@@ -336,7 +336,7 @@
       <section class="panel" id="historyPanel">
         <div class="card">
           <div class="card-head">
-            <h2>保存履歴</h2>
+            <h2>保存記録</h2>
             <span class="subhead" id="historyCount">0件</span>
           </div>
           <div class="history-list" id="historyList"></div>
@@ -427,8 +427,8 @@
   <nav class="bottom-nav" aria-label="画面切替">
     <div class="bottom-nav-inner">
       <button class="nav-btn active" data-tab="order" type="button"><span class="icon">☷</span><span>オーダー</span></button>
-      <button class="nav-btn" data-tab="players" type="button"><span class="icon">👥</span><span>選手</span></button>
-      <button class="nav-btn" data-tab="history" type="button"><span class="icon">▤</span><span>履歴</span></button>
+      <button class="nav-btn" data-tab="history" type="button"><span class="icon">▤</span><span>記録</span></button>
+      <button class="nav-btn" data-tab="players" type="button"><span class="icon">👥</span><span>登録</span></button>
     </div>
   </nav>
   <div class="toast" id="toast">保存しました</div>
@@ -443,6 +443,10 @@
   const STARTUP_SPLASH_KEY = 'lineupSplashSeen';
   const FONT_KEY = 'lineupPlannerFontFamily';
   const FONT_OPTIONS = ['standard','biz-ud','noto','mplus','zen'];
+  const TAB_ORDER = ['order','history','players'];
+  const HISTORY_SWIPE_OPEN_PX = 92;
+  const HISTORY_SWIPE_THRESHOLD_PX = 42;
+  const PAGE_SWIPE_THRESHOLD_PX = 82;
   const MIGRATION_KEYS = ['lineupPlannerV9OrderTapShare','lineupPlannerV8InlineSwap','lineupPlannerV7InlineDefense','lineupPlannerV6TapCompact','lineupPlannerV5CompactIphone','lineupPlannerV4Iphone'];
   const FIELD_POSITIONS = [
     { code:'1', short:'投' }, { code:'2', short:'捕' }, { code:'3', short:'一' },
@@ -472,7 +476,10 @@
   let state = loadState();
   let currentTab = 'order';
   let expandedHistoryId = null;
-  let pendingDeleteHistoryId = null;
+  let swipedHistoryId = null;
+  let historySwipeState = null;
+  let pageSwipeState = null;
+  let suppressHistoryTapUntil = 0;
   let selectedSwapId = null;
   let selectedDefense = null;
   let swapFadeOutIds = new Set();
@@ -1755,7 +1762,7 @@ function playerNumberIn(st, id){
   function saveCurrentOrder(){
     saveState(false);
     addSavedOrder();
-    pendingDeleteHistoryId = null;
+    swipedHistoryId = null;
     renderMemo();
     renderHistory();
     showToast('保存しました');
@@ -1804,22 +1811,28 @@ function playerNumberIn(st, id){
     $('historyCount').textContent = `${entries.length}件`;
     wrap.innerHTML = '';
     if(!entries.length){
-      wrap.innerHTML = '<div class="history-empty">保存した打順はまだありません。</div>';
+      wrap.innerHTML = '<div class="history-empty">保存した記録はまだありません。</div>';
       return;
     }
     entries.forEach(entry => {
       const st = entry.state;
       const changes = changeCountForState(st);
       const isOpen = expandedHistoryId === entry.id;
-      const isPendingDelete = pendingDeleteHistoryId === entry.id;
+      const isDeleteOpen = swipedHistoryId === entry.id;
       const card = document.createElement('article');
-      card.className = `history-item${isOpen ? ' is-open' : ''}`;
+      card.className = `history-item${isOpen ? ' is-open' : ''}${isDeleteOpen ? ' is-delete-open' : ''}`;
+      card.dataset.historyId = entry.id;
       card.innerHTML = `
-        <button class="history-summary" type="button" data-history-action="toggle" data-history-id="${escapeAttr(entry.id)}" aria-expanded="${isOpen ? 'true' : 'false'}">
-          <span class="history-summary-main">${escapeHtml(historyClosedTitle(st))}</span>
-          <span class="history-chevron" aria-hidden="true">▼</span>
-        </button>
-        ${isOpen ? historyExpandedHtml(entry, st, changes, isPendingDelete) : ''}
+        <div class="history-delete-action" aria-hidden="${isDeleteOpen ? 'false' : 'true'}">
+          <button type="button" data-history-action="delete" data-history-id="${escapeAttr(entry.id)}">削除</button>
+        </div>
+        <div class="history-card-surface" data-history-swipe-surface data-history-id="${escapeAttr(entry.id)}">
+          <button class="history-summary" type="button" data-history-action="toggle" data-history-id="${escapeAttr(entry.id)}" aria-expanded="${isOpen ? 'true' : 'false'}">
+            <span class="history-summary-main">${escapeHtml(historyClosedTitle(st))}</span>
+            <span class="history-chevron" aria-hidden="true">▼</span>
+          </button>
+          ${isOpen ? historyExpandedHtml(entry, st, changes) : ''}
+        </div>
       `;
       wrap.appendChild(card);
     });
@@ -1851,7 +1864,7 @@ function playerNumberIn(st, id){
     </div>`;
   }
 
-  function historyExpandedHtml(entry, st, changes, isPendingDelete){
+  function historyExpandedHtml(entry, st, changes){
     return `<div class="history-expanded">
       <div class="history-title">${escapeHtml(gameTitleForState(st))}</div>
       <div class="history-meta">${escapeHtml(historyInfoLineForState(st))}</div>
@@ -1862,7 +1875,6 @@ function playerNumberIn(st, id){
         <button class="primary" type="button" data-history-action="load" data-history-id="${escapeAttr(entry.id)}">読み込み</button>
         <button type="button" data-history-action="duplicate" data-history-id="${escapeAttr(entry.id)}">複製</button>
         <button type="button" data-history-action="share" data-history-id="${escapeAttr(entry.id)}">画像共有</button>
-        <button class="danger" type="button" data-history-action="delete" data-history-id="${escapeAttr(entry.id)}">${isPendingDelete ? 'もう一度削除' : '削除'}</button>
       </div>
     </div>`;
   }
@@ -1883,24 +1895,18 @@ function playerNumberIn(st, id){
     saveState(false);
     currentTab = 'order';
     expandedHistoryId = null;
-    pendingDeleteHistoryId = null;
+    swipedHistoryId = null;
     render();
     window.scrollTo({ top:0, behavior:'smooth' });
     showToast(duplicate ? '複製しました' : '読み込みました');
   }
 
   function deleteSavedOrder(id){
-    if(pendingDeleteHistoryId !== id){
-      pendingDeleteHistoryId = id;
-      renderHistory();
-      showToast('もう一度で削除');
-      return;
-    }
     saveSavedOrders(loadSavedOrders().filter(entry => entry.id !== id));
-    pendingDeleteHistoryId = null;
+    swipedHistoryId = null;
     if(expandedHistoryId === id) expandedHistoryId = null;
     renderHistory();
-    showToast('削除しました');
+    showToast('記録を削除しました');
   }
 
   function handleHistoryAction(event){
@@ -1910,7 +1916,12 @@ function playerNumberIn(st, id){
     event.stopPropagation();
     const id = button.dataset.historyId;
     const action = button.dataset.historyAction;
-    if(action !== 'delete') pendingDeleteHistoryId = null;
+    if(action === 'toggle' && Date.now() < suppressHistoryTapUntil) return;
+    if(action !== 'delete' && swipedHistoryId){
+      swipedHistoryId = null;
+      renderHistory();
+      return;
+    }
     if(action === 'toggle'){
       expandedHistoryId = expandedHistoryId === id ? null : id;
       renderHistory();
@@ -1924,6 +1935,143 @@ function playerNumberIn(st, id){
       const entry = savedOrderById(id);
       if(entry) shareOrder(entry.state);
     }
+  }
+
+  function clamp(value, min, max){
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function beginHistorySwipe(event){
+    if(event.pointerType === 'mouse' && event.button !== 0) return;
+    const surface = event.target.closest('[data-history-swipe-surface]');
+    if(!surface) return;
+    if(event.target.closest('.history-actions,.history-delete-action')) return;
+    const isSummaryTap = !!event.target.closest('.history-summary');
+    if(isFormControl(event.target) && !isSummaryTap) return;
+    historySwipeState = {
+      id: surface.dataset.historyId,
+      surface,
+      startX: event.clientX,
+      startY: event.clientY,
+      baseX: swipedHistoryId === surface.dataset.historyId ? -HISTORY_SWIPE_OPEN_PX : 0,
+      lastX: swipedHistoryId === surface.dataset.historyId ? -HISTORY_SWIPE_OPEN_PX : 0,
+      pointerId: event.pointerId,
+      active: false,
+      cancelled: false
+    };
+  }
+
+  function moveHistorySwipe(event){
+    const swipe = historySwipeState;
+    if(!swipe || swipe.cancelled || event.pointerId !== swipe.pointerId) return;
+    const dx = event.clientX - swipe.startX;
+    const dy = event.clientY - swipe.startY;
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+    if(!swipe.active){
+      if(absX < 8 && absY < 8) return;
+      if(absY > absX * 1.15){
+        swipe.cancelled = true;
+        return;
+      }
+      if(absX <= absY + 6) return;
+      swipe.active = true;
+      swipe.surface.closest('.history-item')?.classList.add('is-swiping');
+    }
+    if(!swipe.active) return;
+    event.preventDefault();
+    const nextX = clamp(swipe.baseX + dx, -HISTORY_SWIPE_OPEN_PX, 0);
+    swipe.lastX = nextX;
+    swipe.surface.style.transform = `translateX(${nextX}px)`;
+  }
+
+  function endHistorySwipe(event){
+    const swipe = historySwipeState;
+    if(!swipe || event.pointerId !== swipe.pointerId) return;
+    const item = swipe.surface.closest('.history-item');
+    item?.classList.remove('is-swiping');
+    swipe.surface.style.transform = '';
+    if(swipe.active){
+      suppressHistoryTapUntil = Date.now() + 260;
+      swipedHistoryId = swipe.lastX <= -HISTORY_SWIPE_THRESHOLD_PX ? swipe.id : null;
+      renderHistory();
+    }
+    historySwipeState = null;
+  }
+
+  function setupHistorySwipe(){
+    const list = $('historyList');
+    list.addEventListener('pointerdown', beginHistorySwipe, { capture:true });
+    window.addEventListener('pointermove', moveHistorySwipe, { passive:false });
+    window.addEventListener('pointerup', endHistorySwipe, { capture:true });
+    window.addEventListener('pointercancel', endHistorySwipe, { capture:true });
+  }
+
+  function switchTab(tab, scrollTop = true){
+    if(!TAB_ORDER.includes(tab)) return;
+    currentTab = tab;
+    selectedSwapId = null;
+    selectedDefense = null;
+    swipedHistoryId = null;
+    renderTabs();
+    if(scrollTop) window.scrollTo({ top:0, behavior:'smooth' });
+  }
+
+  function shouldIgnorePageSwipeTarget(target){
+    return isFormControl(target) ||
+      !!target?.closest?.('.history-item,.bottom-nav,.settings-modal,.inning-scroll,.player-main-group,.player-card,.defense-card,.bench-chip,.memo-actions,.player-row,.add-row,.date-button,.calendar-panel,.settings-sheet');
+  }
+
+  function beginPageSwipe(event){
+    if(event.pointerType === 'mouse' && event.button !== 0) return;
+    if(shouldIgnorePageSwipeTarget(event.target)) return;
+    pageSwipeState = {
+      startX: event.clientX,
+      startY: event.clientY,
+      pointerId: event.pointerId,
+      active: false,
+      cancelled: false
+    };
+  }
+
+  function movePageSwipe(event){
+    const swipe = pageSwipeState;
+    if(!swipe || swipe.cancelled || event.pointerId !== swipe.pointerId) return;
+    const dx = event.clientX - swipe.startX;
+    const dy = event.clientY - swipe.startY;
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+    if(!swipe.active){
+      if(absX < 12 && absY < 12) return;
+      if(absY > absX * 1.2){
+        swipe.cancelled = true;
+        return;
+      }
+      if(absX <= absY + 16) return;
+      swipe.active = true;
+    }
+    if(swipe.active) event.preventDefault();
+  }
+
+  function endPageSwipe(event){
+    const swipe = pageSwipeState;
+    if(!swipe || event.pointerId !== swipe.pointerId) return;
+    const dx = event.clientX - swipe.startX;
+    const dy = event.clientY - swipe.startY;
+    if(swipe.active && Math.abs(dx) >= PAGE_SWIPE_THRESHOLD_PX && Math.abs(dx) > Math.abs(dy) * 1.25){
+      const currentIndex = TAB_ORDER.indexOf(currentTab);
+      const nextIndex = dx < 0 ? currentIndex + 1 : currentIndex - 1;
+      if(nextIndex >= 0 && nextIndex < TAB_ORDER.length) switchTab(TAB_ORDER[nextIndex]);
+    }
+    pageSwipeState = null;
+  }
+
+  function setupPageSwipe(){
+    const app = document.querySelector('.app');
+    app.addEventListener('pointerdown', beginPageSwipe, { capture:true });
+    window.addEventListener('pointermove', movePageSwipe, { passive:false });
+    window.addEventListener('pointerup', endPageSwipe, { capture:true });
+    window.addEventListener('pointercancel', endPageSwipe, { capture:true });
   }
 
   function renderPlayers(){
@@ -2281,7 +2429,9 @@ function playerNumberIn(st, id){
     $('copyMemoBtn').addEventListener('click', copyMemo);
     $('shareBtn').addEventListener('click', shareOrder);
     $('shareMemoBtn').addEventListener('click', shareOrder);
-    $('historyList').addEventListener('click', handleHistoryAction);
+    $('historyList').addEventListener('click', handleHistoryAction, { capture:true });
+    setupHistorySwipe();
+    setupPageSwipe();
     $('refreshMemoBtn').addEventListener('click', () => { renderMemo(); showToast('メモ更新'); });
     $('gameDateBtn').addEventListener('click', e => {
       e.stopPropagation();
@@ -2307,7 +2457,7 @@ function playerNumberIn(st, id){
       });
     });
     document.querySelectorAll('.nav-btn').forEach(btn => {
-      btn.addEventListener('click', () => { currentTab = btn.dataset.tab; selectedSwapId = null; selectedDefense = null; renderTabs(); window.scrollTo({ top:0, behavior:'smooth' }); });
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
   }
 
