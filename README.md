@@ -18,6 +18,10 @@ python -m http.server 8000
 
 GitHub Pagesで公開すると、iPhoneのSafariからURLで操作確認できます。
 
+確認用URL：
+
+- https://komari0608-ux.github.io/lineup-app/
+
 1. GitHubにこのフォルダをアップロードする
 2. GitHubの Settings → Pages を開く
 3. Source を Deploy from a branch にする
@@ -46,10 +50,22 @@ Firebase Hostingで正式運用用URLとして公開できます。
 公開対象はリポジトリ直下の `index.html` と `assets/` です。
 Firebase設定では `public` を `.` にしているため、GitHub Pagesの `/root` 公開構成も維持できます。
 
+### GitHub Actions自動デプロイ
+
+`main` ブランチにpushすると、GitHub ActionsからFirebase Hostingの本番URLへ自動デプロイされます。
+
+- Workflow：`.github/workflows/firebase-hosting-merge.yml`
+- 反映先：https://lineup-app-b4f4e.web.app
+- 確認場所：GitHubリポジトリの Actions タブ
+
+この自動デプロイはGitHub Actions OIDCとGoogle Cloud Workload Identity Federationを使います。
+FirebaseサービスアカウントキーやFirebaseトークンはリポジトリに保存しません。
+
 ### 公開環境と保存方式の役割
 
 - GitHub Pages：開発確認用
 - Firebase Hosting：正式運用用
+- GitHub Actions：main push時にFirebase Hostingへ自動デプロイ
 - localStorage：現時点の端末内保存
 - Firestore：今後のクラウド保存候補
 
