@@ -1,0 +1,179 @@
+name: Apply number badge and zoom fix
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/apply-number-badge-zoom-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Patch index and Firebase headers
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          index = Path('index.html')
+          s = index.read_text(encoding='utf-8')
+
+          if "window.LINEUP_APP_VERSION" not in s:
+              s = s.replace(
+                  "  <script>\n    (() => {",
+                  "  <script>\n    window.LINEUP_APP_VERSION = '2026-06-25-number-badge-zoom-fix';\n    console.log('lineup-app version', window.LINEUP_APP_VERSION);\n    (() => {",
+                  1,
+              )
+
+          if ".player-number-badge" not in s:
+              s = s.replace(
+                  "    .player-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n",
+                  "    .player-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n    .player-name-text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n    .player-number-badge{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:34px;padding:0 8px;border:2px solid #8bc4ef;border-radius:11px;background:#fff;color:#043e76;font-size:16px;font-weight:950;line-height:1;box-shadow:0 2px 6px rgba(8,103,189,.10)}\n",
+                  1,
+              )
+              s = s.replace(
+                  "    .player-card{display:flex;align-items:center;justify-content:flex-start;text-align:left;padding:0 10px;font-size:14px;font-weight:950}\n",
+                  "    .player-card{display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;padding:0 8px 0 10px;font-size:16px;font-weight:950}\n",
+                  1,
+              )
+
+          form_rule = 'input,select,textarea,.game-line input,.game-line select,.toolbar select,.setting-field select,.display-mode-row select,.player-row input[type="text"],.player-row input[type="number"],.player-row .number-input,.add-row input,.memo-body textarea{font-size:16px!important;line-height:1.2}.player-row input[type="text"],.player-row input[type="number"],.player-row .number-input,.add-row input{min-height:36px}'
+          if form_rule not in s:
+              s = s.replace(
+                  "    .settings-actions{display:flex;gap:8px;margin-top:10px}.settings-actions button{flex:1;height:36px;border:1px solid var(--line);border-radius:11px;background:#fff;font-weight:950}.settings-actions .primary{background:var(--blue);border-color:var(--blue);color:#fff}\n",
+                  "    .settings-actions{display:flex;gap:8px;margin-top:10px}.settings-actions button{flex:1;height:36px;border:1px solid var(--line);border-radius:11px;background:#fff;font-weight:950}.settings-actions .primary{background:var(--blue);border-color:var(--blue);color:#fff}\n    " + form_rule + "\n",
+                  1,
+              )
+
+          old_display = """  function displayName(id){
+            const p = playerById(id);
+            if(!p) return '未設定';
+            const nick = p.nickname || p.fullName || '未設定';
+            const full = p.fullName || nick;
+            const no = String(p.number || '').trim();
+            switch(state.settings.displayMode){
+              case 'full': return full;
+              case 'fullNumber': return no ? `${full} #${no}` : full;
+              case 'nickNumber': return no ? `${nick} #${no}` : nick;
+              default: return nick;
+            }
+          }
+          """.replace('          ', '')
+          new_display = """  function displayName(id){
+            const p = playerById(id);
+            if(!p) return '未設定';
+            const nick = p.nickname || p.fullName || '未設定';
+            const full = p.fullName || nick;
+            switch(state.settings.displayMode){
+              case 'full': return full;
+              case 'fullNumber': return full;
+              case 'nickNumber': return nick;
+              default: return nick;
+            }
+          }
+
+          function playerNumber(id){
+            const p = playerById(id);
+            return String(p?.number || '').trim();
+          }
+          """.replace('          ', '')
+          if old_display in s:
+              s = s.replace(old_display, new_display, 1)
+
+          old_card = """      const playerLabel = isInitialMode() ? '打順入替で選択' : '交代で選択';
+                main.innerHTML = `
+                  <div class="order-no">${index + 1}</div>
+                  <div class="${groupClass}">
+                    <button type="button" class="player-name player-card" aria-label="${escapeAttr(displayName(pid))}${playerLabel}">${escapeHtml(displayName(pid))}</button>
+                    <div class="pos-flow defense-card" role="button" tabindex="0" aria-label="守備履歴"></div>
+                  </div>
+                `;
+          """.replace('          ', '')
+          new_card = """      const playerLabel = isInitialMode() ? '打順入替で選択' : '交代で選択';
+                const numberLabel = playerNumber(pid);
+                main.innerHTML = `
+                  <div class="order-no">${index + 1}</div>
+                  <div class="${groupClass}">
+                    <button type="button" class="player-name player-card" aria-label="${escapeAttr(displayName(pid))}${numberLabel ? ` 背番号${escapeAttr(numberLabel)}` : ''}${playerLabel}">
+                      <span class="player-name-text">${escapeHtml(displayName(pid))}</span>
+                      ${numberLabel ? `<span class="player-number-badge" aria-label="背番号 ${escapeAttr(numberLabel)}">${escapeHtml(numberLabel)}</span>` : ''}
+                    </button>
+                    <div class="pos-flow defense-card" role="button" tabindex="0" aria-label="守備履歴"></div>
+                  </div>
+                `;
+          """.replace('          ', '')
+          if old_card in s:
+              s = s.replace(old_card, new_card, 1)
+
+          s = s.replace(
+              '<input class="number-input" type="number" min="0" inputmode="numeric" value="${escapeAttr(p.number || \'\')}" placeholder="背番" aria-label="背番号" />',
+              '<input class="number-input" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" value="${escapeAttr(p.number || \'\')}" placeholder="背番" aria-label="背番号" />',
+              1,
+          )
+          s = s.replace(
+              "number.addEventListener('input', () => { p.number = number.value; saveState(); });",
+              "number.addEventListener('input', () => { p.number = number.value.replace(/\\D/g, ''); number.value = p.number; saveState(); });",
+              1,
+          )
+
+          index.write_text(s, encoding='utf-8')
+
+          firebase = Path('firebase.json')
+          data = json.loads(firebase.read_text(encoding='utf-8'))
+          hosting = data.setdefault('hosting', {})
+          no_cache_headers = [
+              {'key': 'Cache-Control', 'value': 'no-cache, no-store, must-revalidate'}
+          ]
+          wanted = [
+              {'source': '/', 'headers': no_cache_headers},
+              {'source': '/index.html', 'headers': no_cache_headers},
+              {'source': '**/*.html', 'headers': no_cache_headers},
+          ]
+          existing = hosting.get('headers') or []
+          sources = {item.get('source') for item in existing}
+          for item in wanted:
+              if item['source'] not in sources:
+                  existing.append(item)
+          hosting['headers'] = existing
+          firebase.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          workflow = Path('.github/workflows/apply-number-badge-zoom-fix.yml')
+          if workflow.exists():
+              workflow.unlink()
+          PY
+
+      - name: Validate patched files
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path('index.html').read_text(encoding='utf-8')
+          assert 'player-number-badge' in html
+          assert '${full} #${no}' not in html
+          assert '${nick} #${no}' not in html
+          assert 'font-size:16px!important' in html
+          assert 'inputmode="numeric" pattern="[0-9]*"' in html
+          assert 'user-scalable=no' not in html
+          assert 'maximum-scale=1' not in html
+          scripts = '\n;\n'.join(re.findall(r'<script>([\s\S]*?)</script>', html))
+          Path('/tmp/index-scripts.js').write_text(scripts, encoding='utf-8')
+          PY
+          node --check /tmp/index-scripts.js
+          python -m json.tool firebase.json > /tmp/firebase.json
+
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html firebase.json .github/workflows/apply-number-badge-zoom-fix.yml
+          git commit -m "Fix number badge display and input zoom" || exit 0
+          git push
