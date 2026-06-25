@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-25-swipe-zoom-guard';
+    window.LINEUP_APP_VERSION = '2026-06-26-touch-swipe';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -450,11 +450,12 @@
   const FONT_OPTIONS = ['standard','biz-ud','noto','mplus','zen'];
   const TAB_ORDER = ['order','history','players'];
   const HISTORY_SWIPE_OPEN_PX = 92;
-  const HISTORY_SWIPE_THRESHOLD_PX = 42;
-  const PAGE_SWIPE_THRESHOLD_PX = 45;
-  const PAGE_SWIPE_FLICK_PX = 25;
-  const PAGE_SWIPE_VELOCITY_PX_MS = 0.32;
-  const PAGE_SWIPE_FEEDBACK_MAX_PX = 18;
+  const HISTORY_SWIPE_THRESHOLD_PX = 78;
+  const PAGE_SWIPE_THRESHOLD_PX = 28;
+  const PAGE_SWIPE_FLICK_PX = 18;
+  const PAGE_SWIPE_VELOCITY_PX_MS = 0.22;
+  const PAGE_SWIPE_FEEDBACK_MAX_PX = 36;
+  const PAGE_SWIPE_LOCK_PX = 8;
   const MIGRATION_KEYS = ['lineupPlannerV9OrderTapShare','lineupPlannerV8InlineSwap','lineupPlannerV7InlineDefense','lineupPlannerV6TapCompact','lineupPlannerV5CompactIphone','lineupPlannerV4Iphone'];
   const FIELD_POSITIONS = [
     { code:'1', short:'投' }, { code:'2', short:'捕' }, { code:'3', short:'一' },
@@ -2026,8 +2027,11 @@ function playerNumberIn(st, id){
   }
 
   function shouldIgnorePageSwipeTarget(target){
-    return isFormControl(target) ||
-      !!target?.closest?.('.history-item,.bottom-nav,.settings-modal,.inning-scroll,.player-main-group,.player-card,.defense-card,.bench-chip,.memo-actions,.player-row,.add-row,.date-button,.calendar-panel,.settings-sheet');
+    if(!target) return true;
+    if(target.closest?.('input, select, textarea, [contenteditable="true"], [contenteditable=""]')) return true;
+    const button = target.closest?.('button');
+    if(button && !button.classList.contains('history-summary') && !button.classList.contains('player-card')) return true;
+    return !!target.closest?.('.bottom-nav,.settings-modal,.inning-scroll,.memo-actions,.player-row,.add-row,.date-button,.calendar-panel,.settings-sheet,.history-delete-action,.history-actions');
   }
 
   function activePanel(){
@@ -2050,64 +2054,141 @@ function playerNumberIn(st, id){
     panel.style.transform = '';
   }
 
-  function beginPageSwipe(event){
-    if(event.pointerType === 'mouse' && event.button !== 0) return;
-    if(swipedHistoryId && !event.target.closest('.history-item')){
-      swipedHistoryId = null;
-      renderHistory();
-      return;
-    }
-    if(shouldIgnorePageSwipeTarget(event.target)) return;
+  function startPageSwipe(clientX, clientY, target, pointerId, timeStamp, source){
+    if(shouldIgnorePageSwipeTarget(target)) return;
+    const historyItem = target.closest?.('.history-item');
     pageSwipeState = {
-      startX: event.clientX,
-      startY: event.clientY,
-      startTime: event.timeStamp || performance.now(),
-      pointerId: event.pointerId,
+      startX: clientX,
+      startY: clientY,
+      startTime: timeStamp || performance.now(),
+      pointerId,
+      source,
+      historyId: currentTab === 'history' ? historyItem?.dataset.historyId || null : null,
       active: false,
       cancelled: false
     };
   }
 
-  function movePageSwipe(event){
+  function updatePageSwipe(clientX, clientY, timeStamp, event){
     const swipe = pageSwipeState;
-    if(!swipe || swipe.cancelled || event.pointerId !== swipe.pointerId) return;
-    const dx = event.clientX - swipe.startX;
-    const dy = event.clientY - swipe.startY;
+    if(!swipe || swipe.cancelled) return;
+    const dx = clientX - swipe.startX;
+    const dy = clientY - swipe.startY;
     const absX = Math.abs(dx);
     const absY = Math.abs(dy);
     if(!swipe.active){
-      if(absX < 10 && absY < 10) return;
-      if(absY > absX * 1.15){
+      if(absX < PAGE_SWIPE_LOCK_PX && absY < PAGE_SWIPE_LOCK_PX) return;
+      if(absY > absX * 1.2){
         swipe.cancelled = true;
         return;
       }
-      if(absX <= absY * 1.2) return;
+      if(absX <= absY * 1.02) return;
       swipe.active = true;
     }
     if(swipe.active){
       event.preventDefault();
       setPageSwipeFeedback(dx);
+      const action = pageSwipeAction(swipe, dx, dy, timeStamp, true);
+      if(action) applyPageSwipeAction(action);
     }
+  }
+
+  function pageSwipeAction(swipe, dx, dy, timeStamp, live = false){
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+    const elapsed = Math.max(1, (timeStamp || performance.now()) - swipe.startTime);
+    const velocity = absX / elapsed;
+    const distanceTrigger = absX >= PAGE_SWIPE_THRESHOLD_PX;
+    const flickTrigger = absX >= PAGE_SWIPE_FLICK_PX && velocity >= PAGE_SWIPE_VELOCITY_PX_MS;
+    const cardDeleteTrigger = swipe.historyId && dx < 0 && absX >= HISTORY_SWIPE_THRESHOLD_PX && absX > absY * 1.05;
+    const closeDeleteTrigger = swipe.historyId && swipedHistoryId === swipe.historyId && dx > PAGE_SWIPE_FLICK_PX;
+    if(!swipe.active || absX <= absY * 1.02) return null;
+    if(closeDeleteTrigger) return { type:'close-delete' };
+    if(cardDeleteTrigger) return { type:'open-delete', id:swipe.historyId };
+    if(live && swipe.historyId && dx < 0) return null;
+    if(distanceTrigger || flickTrigger){
+      const currentIndex = TAB_ORDER.indexOf(currentTab);
+      const nextIndex = dx < 0 ? currentIndex + 1 : currentIndex - 1;
+      if(nextIndex >= 0 && nextIndex < TAB_ORDER.length) return { type:'tab', tab:TAB_ORDER[nextIndex] };
+    }
+    return null;
+  }
+
+  function applyPageSwipeAction(action){
+    clearPageSwipeFeedback();
+    pageSwipeState = null;
+    if(action.type === 'close-delete'){
+      swipedHistoryId = null;
+      renderHistory();
+    }else if(action.type === 'open-delete'){
+      swipedHistoryId = action.id;
+      renderHistory();
+    }else if(action.type === 'tab'){
+      switchTab(action.tab);
+    }
+  }
+
+  function finishPageSwipe(clientX, clientY, timeStamp, pointerId){
+    const swipe = pageSwipeState;
+    if(!swipe || pointerId !== swipe.pointerId) return;
+    const dx = clientX - swipe.startX;
+    const dy = clientY - swipe.startY;
+    const action = pageSwipeAction(swipe, dx, dy, timeStamp, false);
+    if(action) applyPageSwipeAction(action);
+    else clearPageSwipeFeedback();
+    pageSwipeState = null;
+  }
+
+  function beginPageSwipe(event){
+    if(event.pointerType === 'touch') return;
+    if(event.pointerType === 'mouse' && event.button !== 0) return;
+    if(!event.target.closest?.('.app')) return;
+    if(swipedHistoryId && !event.target.closest('.history-item')){
+      swipedHistoryId = null;
+      renderHistory();
+      return;
+    }
+    startPageSwipe(event.clientX, event.clientY, event.target, event.pointerId, event.timeStamp, 'pointer');
+  }
+
+  function movePageSwipe(event){
+    const swipe = pageSwipeState;
+    if(!swipe || swipe.source !== 'pointer' || swipe.cancelled || event.pointerId !== swipe.pointerId) return;
+    updatePageSwipe(event.clientX, event.clientY, event.timeStamp, event);
   }
 
   function endPageSwipe(event){
     const swipe = pageSwipeState;
-    if(!swipe || event.pointerId !== swipe.pointerId) return;
-    const dx = event.clientX - swipe.startX;
-    const dy = event.clientY - swipe.startY;
-    const absX = Math.abs(dx);
-    const absY = Math.abs(dy);
-    const elapsed = Math.max(1, (event.timeStamp || performance.now()) - swipe.startTime);
-    const velocity = absX / elapsed;
-    const distanceTrigger = absX >= PAGE_SWIPE_THRESHOLD_PX;
-    const flickTrigger = absX >= PAGE_SWIPE_FLICK_PX && velocity >= PAGE_SWIPE_VELOCITY_PX_MS;
-    clearPageSwipeFeedback();
-    if(swipe.active && (distanceTrigger || flickTrigger) && absX > absY * 1.2){
-      const currentIndex = TAB_ORDER.indexOf(currentTab);
-      const nextIndex = dx < 0 ? currentIndex + 1 : currentIndex - 1;
-      if(nextIndex >= 0 && nextIndex < TAB_ORDER.length) switchTab(TAB_ORDER[nextIndex]);
+    if(!swipe || swipe.source !== 'pointer') return;
+    finishPageSwipe(event.clientX, event.clientY, event.timeStamp, event.pointerId);
+  }
+
+  function beginTouchPageSwipe(event){
+    if(event.touches.length !== 1) return;
+    if(!event.target.closest?.('.app')) return;
+    const touch = event.touches[0];
+    if(swipedHistoryId && !event.target.closest('.history-item')){
+      swipedHistoryId = null;
+      renderHistory();
+      return;
     }
-    pageSwipeState = null;
+    startPageSwipe(touch.clientX, touch.clientY, event.target, touch.identifier, event.timeStamp, 'touch');
+  }
+
+  function moveTouchPageSwipe(event){
+    const swipe = pageSwipeState;
+    if(!swipe || swipe.source !== 'touch' || swipe.cancelled) return;
+    const touch = [...event.touches].find(t => t.identifier === swipe.pointerId);
+    if(!touch) return;
+    updatePageSwipe(touch.clientX, touch.clientY, event.timeStamp, event);
+  }
+
+  function endTouchPageSwipe(event){
+    const swipe = pageSwipeState;
+    if(!swipe || swipe.source !== 'touch') return;
+    const touch = [...event.changedTouches].find(t => t.identifier === swipe.pointerId);
+    if(!touch) return;
+    finishPageSwipe(touch.clientX, touch.clientY, event.timeStamp, touch.identifier);
   }
 
   function setupPageSwipe(){
@@ -2116,6 +2197,10 @@ function playerNumberIn(st, id){
     window.addEventListener('pointermove', movePageSwipe, { passive:false });
     window.addEventListener('pointerup', endPageSwipe, { capture:true });
     window.addEventListener('pointercancel', endPageSwipe, { capture:true });
+    document.addEventListener('touchstart', beginTouchPageSwipe, { capture:true, passive:true });
+    window.addEventListener('touchmove', moveTouchPageSwipe, { passive:false });
+    window.addEventListener('touchend', endTouchPageSwipe, { capture:true });
+    window.addEventListener('touchcancel', endTouchPageSwipe, { capture:true });
   }
 
   function setupZoomGuards(){
