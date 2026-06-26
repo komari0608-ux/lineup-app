@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-26-share-ui-simple';
+    window.LINEUP_APP_VERSION = '2026-06-26-share-defense-chip-padding';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -2818,9 +2818,12 @@ function playerNumberIn(st, id){
     const playerW = hasDefenseColumns ? 370 : 650;
     const innerGap = 14;
     const defenseW = cardW - orderPad * 2 - noW - playerW - innerGap * 2;
+    const defenseInnerPadX = hasDefenseColumns ? 30 : 18;
+    const defenseOuterPadX = hasDefenseColumns ? 18 : 18;
+    const defenseContentW = Math.max(80, defenseW - defenseInnerPadX - defenseOuterPadX);
     const colGap = columns.length >= 5 ? 4 : 8;
     const chipW = hasDefenseColumns
-      ? Math.max(30, Math.min(58, Math.floor((defenseW - colGap * (columns.length - 1)) / columns.length)))
+      ? Math.max(30, Math.min(58, Math.floor((defenseContentW - colGap * (columns.length - 1)) / columns.length)))
       : 62;
     const chipH = hasDefenseColumns ? Math.max(30, Math.min(42, Math.floor(chipW * .78))) : 42;
     const headerRowH = hasDefenseColumns ? 28 : 0;
@@ -2866,11 +2869,12 @@ function playerNumberIn(st, id){
     const noX = margin + orderPad;
     const playerX = noX + noW + innerGap;
     const defenseX = playerX + playerW + innerGap;
+    const defenseContentX = defenseX + defenseInnerPadX;
     if(hasDefenseColumns){
       ctx.textAlign = 'center';
       ctx.font = canvasFont(900, 18, imageFontKey);
       columns.forEach((col, colIndex) => {
-        const x = defenseX + colIndex * (chipW + colGap);
+        const x = defenseContentX + colIndex * (chipW + colGap);
         const active = col.key === (inning <= 1 ? 'start' : String(inning));
         if(active){
           drawRoundRect(ctx, x - 4, y + orderPad - 4, chipW + 8, 24, 9);
@@ -2932,14 +2936,14 @@ function playerNumberIn(st, id){
         columns.forEach((col, colIndex) => {
           const item = defenseColumnItemIn(st, pid, col);
           if(!item) return;
-          const x = defenseX + colIndex * (chipW + colGap);
+          const x = defenseContentX + colIndex * (chipW + colGap);
           const chipY = rowY + rowH / 2 - chipH / 2;
           const active = col.key === (inning <= 1 ? 'start' : String(inning));
           drawCanvasDefenseChip(ctx, posShort(item.pos), x, chipY, chipW, chipH, item.start ? 'start' : 'change', active, imageFontKey);
         });
       }else{
         const item = defenseColumnItemIn(st, pid, columns[0]);
-        drawCanvasDefenseChip(ctx, posShort(item.pos), defenseX + 18, rowY + rowH / 2 - 21, 62, 42, 'start', false, imageFontKey);
+        drawCanvasDefenseChip(ctx, posShort(item.pos), defenseContentX, rowY + rowH / 2 - 21, 62, 42, 'start', false, imageFontKey);
       }
     });
     y += orderCardH + 22;
