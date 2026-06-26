@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-26-player-name-balance';
+    window.LINEUP_APP_VERSION = '2026-06-26-simple-share-image';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -2561,9 +2561,48 @@ function playerNumberIn(st, id){
     return lines;
   }
 
+  function fitCanvasFontSize(ctx, text, maxWidth, weight, startSize, minSize, key = currentFontKey()){
+    const safeText = String(text || '');
+    let size = startSize;
+    while(size > minSize){
+      ctx.font = canvasFont(weight, size, key);
+      if(ctx.measureText(safeText).width <= maxWidth) break;
+      size -= 1;
+    }
+    return size;
+  }
+
   function orderImageFileName(st){
     const date = String(st.game?.date || todayText).replaceAll('-','') || 'lineup';
     return `lineup-${date}.png`;
+  }
+
+  function shareGameMainLine(st){
+    const g = st.game || {};
+    const date = formatGameDate(g.date) || '日付未入力';
+    const opponent = `vs ${g.opponent || '未入力'}`;
+    return [date, g.start || '', opponent].filter(Boolean).join('  ');
+  }
+
+  function shareGamePlaceLine(st){
+    const place = String(st.game?.place || '').trim();
+    return place ? `@${place}` : '';
+  }
+
+  function buildSimpleShareTextForState(sourceState){
+    const st = normalizeState(clone(sourceState));
+    const starters = getLineupAtIn(st, 1);
+    const bench = benchPlayersForState(st);
+    const lines = ['【スターティングオーダー】', shareGameMainLine(st)];
+    const placeLine = shareGamePlaceLine(st);
+    if(placeLine) lines.push(placeLine);
+    lines.push('');
+    starters.forEach((pid, index) => {
+      lines.push(`${index + 1} ${displayNameIn(st, pid)} ${posShort(st.startPositions?.[pid] || 'B')}`);
+    });
+    lines.push('', '【ベンチ・未守備】');
+    lines.push(bench.length ? bench.map(p => displayNameIn(st, p.id)).join('、') : 'なし');
+    return lines.join('\n');
   }
 
   async function createOrderImageBlob(sourceState){
@@ -2572,77 +2611,76 @@ function playerNumberIn(st, id){
     await waitForLineupFonts();
     const starters = getLineupAtIn(st, 1);
     const bench = benchPlayersForState(st);
-    const defenseLines = defenseChangeLinesForState(st);
-    const lineupLines = lineupChangeLinesForState(st);
-    const changeLines = [...defenseLines, ...lineupLines];
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const width = 1080;
-    const margin = 54;
-    const rowH = 64;
-    ctx.font = canvasFont(700, 30, imageFontKey);
-    const benchText = bench.map(p => {
-      const number = playerNumberIn(st, p.id);
-      return `${displayNameIn(st, p.id)}${number ? ` #${number}` : ''}`;
-    }).join('、');
-    const benchLines = benchText ? wrappedLines(ctx, benchText, width - margin * 2 - 40) : [];
-    const changeDrawLines = changeLines.slice(0, 10);
-    const height = 250 + 68 + starters.length * rowH + (benchLines.length ? 96 + benchLines.length * 38 : 0) + (changeDrawLines.length ? 98 + changeDrawLines.length * 38 : 0) + 70;
+    const margin = 58;
+    const cardW = width - margin * 2;
+    const rowH = 66;
+    const headerY = 42;
+    const headerH = 174;
+    const orderCardH = 86 + Math.max(starters.length, 1) * rowH + 30;
+    ctx.font = canvasFont(700, 28, imageFontKey);
+    const benchText = bench.length ? bench.map(p => displayNameIn(st, p.id)).join('、') : 'なし';
+    const benchLines = wrappedLines(ctx, benchText, cardW - 72);
+    const benchCardH = 82 + Math.max(benchLines.length, 1) * 40;
+    const height = headerY + headerH + 34 + orderCardH + 34 + benchCardH + 58;
     canvas.width = width;
     canvas.height = height;
 
     ctx.fillStyle = '#eaf8f3';
     ctx.fillRect(0, 0, width, height);
-    drawRoundRect(ctx, margin, 44, width - margin * 2, 150, 34);
+    drawRoundRect(ctx, margin, headerY, cardW, headerH, 34);
     ctx.fillStyle = '#0b6fc6';
     ctx.fill();
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(width - margin - 58, headerY + 54, 74, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
     ctx.fillStyle = '#ffffff';
     ctx.font = canvasFont(800, 52, imageFontKey);
-    ctx.fillText('打順プランナー', margin + 36, 112);
-    ctx.font = canvasFont(700, 28, imageFontKey);
-    const meta = [formatGameDate(st.game?.date), st.game?.opponent ? `vs ${st.game.opponent}` : '', st.game?.place ? `@${st.game.place}` : '', st.game?.start || '', modeLabelForState(st), `${maxInnings(st)}回`, isDhEnabled(st) ? 'DHあり' : ''].filter(Boolean).join('  ');
-    ctx.fillText(truncateCanvasText(ctx, meta, width - margin * 2 - 72), margin + 36, 158);
+    ctx.fillText('打順プランナー', margin + 36, headerY + 70);
+    ctx.font = canvasFont(700, 30, imageFontKey);
+    ctx.fillText(truncateCanvasText(ctx, shareGameMainLine(st), cardW - 72), margin + 36, headerY + 118);
+    const placeLine = shareGamePlaceLine(st);
+    if(placeLine){
+      ctx.font = canvasFont(700, 25, imageFontKey);
+      ctx.fillText(truncateCanvasText(ctx, placeLine, cardW - 72), margin + 36, headerY + 154);
+    }
 
-    let y = 226;
-    drawRoundRect(ctx, margin, y, width - margin * 2, 54 + starters.length * rowH, 28);
+    let y = headerY + headerH + 34;
+    drawRoundRect(ctx, margin, y, cardW, orderCardH, 28);
     ctx.fillStyle = '#ffffff';
     ctx.fill();
     ctx.strokeStyle = '#d8e5f0';
     ctx.lineWidth = 3;
     ctx.stroke();
     ctx.fillStyle = '#0b355c';
-    ctx.font = canvasFont(800, 28, imageFontKey);
-    ctx.fillText('スターティングオーダー', margin + 28, y + 38);
-    y += 62;
+    ctx.font = canvasFont(800, 32, imageFontKey);
+    ctx.fillText('スターティングオーダー', margin + 32, y + 44);
+    y += 74;
     starters.forEach((pid, index) => {
       const rowY = y + index * rowH;
       if(index % 2 === 0){
         ctx.fillStyle = '#f6fbff';
-        ctx.fillRect(margin + 18, rowY - 8, width - margin * 2 - 36, rowH - 8);
+        ctx.fillRect(margin + 20, rowY - 10, cardW - 40, rowH - 8);
       }
       ctx.fillStyle = '#0867bd';
-      ctx.font = canvasFont(900, 30, imageFontKey);
+      ctx.font = canvasFont(900, 31, imageFontKey);
       ctx.textAlign = 'center';
       ctx.fillText(String(index + 1), margin + 54, rowY + 32);
       ctx.textAlign = 'left';
       ctx.fillStyle = '#102033';
-      ctx.font = canvasFont(800, 30, imageFontKey);
-      ctx.fillText(truncateCanvasText(ctx, displayNameIn(st, pid), 520), margin + 98, rowY + 32);
-      const number = playerNumberIn(st, pid);
-      if(number){
-        drawRoundRect(ctx, width - margin - 222, rowY + 2, 92, 40, 14);
-        ctx.fillStyle = '#f5fbff';
-        ctx.fill();
-        ctx.strokeStyle = '#9bc9f0';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-        ctx.fillStyle = '#043e76';
-        ctx.font = canvasFont(900, 26, imageFontKey);
-        ctx.textAlign = 'center';
-        ctx.fillText(number, width - margin - 176, rowY + 31);
-        ctx.textAlign = 'left';
-      }
-      drawRoundRect(ctx, width - margin - 104, rowY + 2, 68, 40, 18);
+      const name = displayNameIn(st, pid);
+      const nameX = margin + 98;
+      const posX = width - margin - 112;
+      const nameMaxW = posX - nameX - 26;
+      const nameSize = fitCanvasFontSize(ctx, name, nameMaxW, 800, 31, 22, imageFontKey);
+      ctx.font = canvasFont(800, nameSize, imageFontKey);
+      ctx.fillText(truncateCanvasText(ctx, name, nameMaxW), nameX, rowY + 32);
+      drawRoundRect(ctx, posX, rowY + 2, 76, 40, 18);
       ctx.fillStyle = '#ffffff';
       ctx.fill();
       ctx.strokeStyle = '#9bc9f0';
@@ -2651,33 +2689,23 @@ function playerNumberIn(st, id){
       ctx.fillStyle = '#043e76';
       ctx.font = canvasFont(900, 26, imageFontKey);
       ctx.textAlign = 'center';
-      ctx.fillText(posShort(st.startPositions?.[pid] || 'B'), width - margin - 70, rowY + 31);
+      ctx.fillText(posShort(st.startPositions?.[pid] || 'B'), posX + 38, rowY + 31);
       ctx.textAlign = 'left';
     });
-    y += starters.length * rowH + 38;
+    y += Math.max(starters.length, 1) * rowH + 40;
 
-    if(benchLines.length){
-      ctx.fillStyle = '#0b355c';
-      ctx.font = canvasFont(800, 28, imageFontKey);
-      ctx.fillText('ベンチ・未守備', margin + 28, y);
-      ctx.fillStyle = '#102033';
-      ctx.font = canvasFont(700, 25, imageFontKey);
-      benchLines.forEach((line, idx) => ctx.fillText(line, margin + 28, y + 42 + idx * 38));
-      y += 82 + benchLines.length * 38;
-    }
-
-    if(changeDrawLines.length){
-      ctx.fillStyle = '#0b355c';
-      ctx.font = canvasFont(800, 28, imageFontKey);
-      ctx.fillText('守備変更・選手交代', margin + 28, y);
-      ctx.fillStyle = '#102033';
-      ctx.font = canvasFont(700, 24, imageFontKey);
-      changeDrawLines.forEach((line, idx) => ctx.fillText(truncateCanvasText(ctx, line, width - margin * 2 - 56), margin + 28, y + 42 + idx * 38));
-      if(changeLines.length > changeDrawLines.length){
-        ctx.fillStyle = '#667085';
-        ctx.fillText(`ほか${changeLines.length - changeDrawLines.length}件`, margin + 28, y + 42 + changeDrawLines.length * 38);
-      }
-    }
+    drawRoundRect(ctx, margin, y, cardW, benchCardH, 24);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = '#d8e5f0';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.fillStyle = '#0b355c';
+    ctx.font = canvasFont(800, 28, imageFontKey);
+    ctx.fillText('ベンチ・未守備', margin + 32, y + 40);
+    ctx.fillStyle = '#102033';
+    ctx.font = canvasFont(700, 25, imageFontKey);
+    benchLines.forEach((line, idx) => ctx.fillText(line, margin + 32, y + 82 + idx * 40));
 
     return new Promise((resolve, reject) => {
       canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('画像生成に失敗しました')), 'image/png', 0.92);
@@ -2705,8 +2733,9 @@ function playerNumberIn(st, id){
   }
 
   async function shareOrder(sourceState = state){
-    const st = normalizeState(clone(sourceState));
-    const text = buildSaveMemoForState(st);
+    const baseState = sourceState?.players && sourceState?.game ? sourceState : state;
+    const st = normalizeState(clone(baseState));
+    const text = buildSimpleShareTextForState(st);
     const opponent = st.game?.opponent ? `vs ${st.game.opponent}` : 'オーダー';
     const title = `打順プランナー｜${opponent}`;
     try{
