@@ -2720,25 +2720,78 @@ function playerNumberIn(st, id){
     return lines;
   }
 
+  function sameLineupIn(a, b){
+    if(!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+    return a.every((id, index) => id === b[index]);
+  }
+
+  function changedDefenseInningsForState(st){
+    const innings = new Set();
+    const max = maxInnings(st);
+    Object.values(st.defenseChanges || {}).forEach(changes => {
+      Object.keys(changes || {}).forEach(key => {
+        const inning = Number(key);
+        if(Number.isFinite(inning) && inning >= 2 && inning <= max) innings.add(inning);
+      });
+    });
+    if(st.battingMode === 'nine'){
+      for(let inning=2; inning<=max; inning++){
+        if(!sameLineupIn(getLineupAtIn(st, inning), getLineupAtIn(st, inning - 1))) innings.add(inning);
+      }
+    }
+    return Array.from(innings).sort((a,b) => a - b);
+  }
+
+  function defenseColumnsForState(st){
+    return [
+      { key:'start', label:'初', inning:1 },
+      ...changedDefenseInningsForState(st).map(inning => ({ key:String(inning), label:String(inning), inning }))
+    ];
+  }
+
+  function defenseColumnItemIn(st, playerId, column){
+    if(!column || column.key === 'start' || column.inning <= 1){
+      return { inning:1, pos:st.startPositions?.[playerId] || 'B', start:true };
+    }
+    const inning = column.inning;
+    const before = effectivePositionIn(st, playerId, inning - 1);
+    const after = effectivePositionIn(st, playerId, inning);
+    const beforeLineup = st.battingMode === 'nine' ? getLineupAtIn(st, inning - 1).includes(playerId) : before !== 'B';
+    const afterLineup = st.battingMode === 'nine' ? getLineupAtIn(st, inning).includes(playerId) : after !== 'B';
+    if(before === after && beforeLineup === afterLineup) return null;
+    return { inning, pos:after || 'B', start:false };
+  }
+
+  function drawCanvasCard(ctx, x, y, w, h, radius = 20){
+    drawRoundRect(ctx, x, y, w, h, radius);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = '#d8e5f0';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
+
+  function drawCanvasDefenseChip(ctx, text, x, y, w, h, type, active, fontKey){
+    drawRoundRect(ctx, x, y, w, h, Math.min(16, h / 2));
+    ctx.fillStyle = type === 'start' ? '#f5fbff' : '#fff7ed';
+    ctx.fill();
+    ctx.strokeStyle = active ? '#3b94dd' : (type === 'start' ? '#9bc9f0' : '#fdba74');
+    ctx.lineWidth = active ? 4 : 3;
+    ctx.stroke();
+    ctx.fillStyle = type === 'start' ? '#043e76' : '#7c2d12';
+    ctx.font = canvasFont(900, Math.max(18, Math.min(28, h * .62)), fontKey);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, x + w / 2, y + h / 2 + 1);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+  }
+
   function buildSimpleShareTextForState(sourceState){
     const st = normalizeState(clone(sourceState));
-    const inning = shareInningForState(st);
-    const starters = getLineupAtIn(st, inning);
-    const bench = benchPlayersForStateAt(st, inning);
-    const changes = shareChangeLinesForState(st, inning);
-    const lines = ['【スターティングオーダー】', shareGameMainLine(st)];
+    const lines = [shareGameMainLine(st)];
     const placeLine = shareGamePlaceLine(st);
     if(placeLine) lines.push(placeLine);
-    lines.push('');
-    starters.forEach((pid, index) => {
-      lines.push(`${index + 1} ${shareDisplayNameIn(st, pid)} ${posShort(effectivePositionIn(st, pid, inning))}`);
-    });
-    lines.push('', '【ベンチ】');
-    lines.push(bench.length ? bench.map(p => shareDisplayNameIn(st, p.id)).join('、') : 'なし');
-    if(changes.length){
-      lines.push('', '【交代・守備変更】');
-      changes.forEach(line => lines.push(line));
-    }
     return lines.join('\n');
   }
 
@@ -2750,23 +2803,32 @@ function playerNumberIn(st, id){
     const inning = shareInningForState(st);
     const starters = getLineupAtIn(st, inning);
     const bench = benchPlayersForStateAt(st, inning);
-    const changeLines = shareChangeLinesForState(st, inning);
+    const columns = defenseColumnsForState(st);
+    const hasDefenseColumns = columns.length > 1;
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const width = 1080;
-    const margin = 58;
+    const margin = 46;
     const cardW = width - margin * 2;
-    const rowH = 72;
+    const rowH = hasDefenseColumns ? 82 : 70;
     const headerY = 34;
-    const headerH = 250;
-    const orderCardH = 96 + Math.max(starters.length, 1) * rowH + 30;
+    const headerH = 176;
+    const orderPad = 24;
+    const noW = 46;
+    const playerW = hasDefenseColumns ? 370 : 650;
+    const innerGap = 14;
+    const defenseW = cardW - orderPad * 2 - noW - playerW - innerGap * 2;
+    const colGap = columns.length >= 5 ? 4 : 8;
+    const chipW = hasDefenseColumns
+      ? Math.max(30, Math.min(58, Math.floor((defenseW - colGap * (columns.length - 1)) / columns.length)))
+      : 62;
+    const chipH = hasDefenseColumns ? Math.max(30, Math.min(42, Math.floor(chipW * .78))) : 42;
+    const headerRowH = hasDefenseColumns ? 28 : 0;
+    const orderCardH = orderPad + headerRowH + Math.max(starters.length, 1) * rowH + orderPad;
     ctx.font = canvasFont(700, 28, imageFontKey);
-    const benchLines = bench.length ? wrappedItems(ctx, bench.map(p => shareDisplayNameIn(st, p.id)), cardW - 72) : ['なし'];
-    const benchCardH = 86 + Math.max(benchLines.length, 1) * 42;
-    const visibleChangeLines = changeLines.slice(0, 8);
-    const hiddenChangeCount = Math.max(0, changeLines.length - visibleChangeLines.length);
-    const changeCardH = changeLines.length ? 88 + (visibleChangeLines.length + (hiddenChangeCount ? 1 : 0)) * 36 : 0;
-    const height = headerY + headerH + 34 + orderCardH + 34 + benchCardH + (changeCardH ? 28 + changeCardH : 0) + 58;
+    const benchLines = bench.length ? wrappedItems(ctx, bench.map(p => shareDisplayNameIn(st, p.id)), cardW - 64) : ['なし'];
+    const benchCardH = 74 + Math.max(benchLines.length, 1) * 38;
+    const height = headerY + headerH + 28 + orderCardH + 22 + benchCardH + 46;
     canvas.width = width;
     canvas.height = height;
 
@@ -2776,69 +2838,79 @@ function playerNumberIn(st, id){
     drawRoundRect(ctx, margin, headerY, cardW, headerH, 34);
     ctx.fillStyle = '#0b6fc6';
     ctx.fill();
-    ctx.globalAlpha = 0.18;
+    ctx.globalAlpha = 0.14;
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
-    ctx.arc(width - margin - 38, headerY + 52, 104, 0, Math.PI * 2);
+    ctx.arc(width - margin - 38, headerY + 38, 92, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 10;
-    ctx.beginPath();
-    ctx.arc(width - margin - 42, headerY + 125, 146, Math.PI * .48, Math.PI * 1.58);
-    ctx.stroke();
     ctx.globalAlpha = 1;
+    const mascotBoxW = 150;
+    const mascotBoxH = 130;
     if(mascotImage){
-      drawContainedImage(ctx, mascotImage, margin + 18, headerY + 24, 238, 198);
+      drawContainedImage(ctx, mascotImage, width - margin - mascotBoxW - 22, headerY + 24, mascotBoxW, mascotBoxH);
     }
-    const titleX = mascotImage ? margin + 292 : margin + 42;
-    const titleMaxW = margin + cardW - titleX - 34;
+    const titleX = margin + 34;
+    const titleMaxW = cardW - (mascotImage ? mascotBoxW + 92 : 68);
     ctx.fillStyle = '#ffffff';
-    const titleSize = fitCanvasFontSize(ctx, '打順プランナー', titleMaxW, 900, 62, 46, imageFontKey);
-    ctx.font = canvasFont(900, titleSize, imageFontKey);
-    ctx.fillText('打順プランナー', titleX, headerY + 82);
-    ctx.font = canvasFont(800, 32, imageFontKey);
-    ctx.fillText(truncateCanvasText(ctx, shareGameMainLine(st), titleMaxW), titleX, headerY + 150);
+    ctx.font = canvasFont(900, 42, imageFontKey);
+    ctx.fillText(truncateCanvasText(ctx, shareGameMainLine(st), titleMaxW), titleX, headerY + 78);
     const placeLine = shareGamePlaceLine(st);
     if(placeLine){
       ctx.font = canvasFont(800, 27, imageFontKey);
-      ctx.fillText(truncateCanvasText(ctx, placeLine, titleMaxW), titleX, headerY + 195);
+      ctx.fillText(truncateCanvasText(ctx, placeLine, titleMaxW), titleX, headerY + 126);
     }
 
-    let y = headerY + headerH + 34;
-    drawRoundRect(ctx, margin, y, cardW, orderCardH, 28);
-    ctx.fillStyle = '#ffffff';
-    ctx.fill();
-    ctx.strokeStyle = '#d8e5f0';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    ctx.fillStyle = '#0b355c';
-    ctx.font = canvasFont(900, 34, imageFontKey);
-    ctx.fillText('スターティングオーダー', margin + 32, y + 50);
-    y += 84;
+    let y = headerY + headerH + 28;
+    drawCanvasCard(ctx, margin, y, cardW, orderCardH, 28);
+    let rowStartY = y + orderPad + headerRowH;
+    const noX = margin + orderPad;
+    const playerX = noX + noW + innerGap;
+    const defenseX = playerX + playerW + innerGap;
+    if(hasDefenseColumns){
+      ctx.textAlign = 'center';
+      ctx.font = canvasFont(900, 18, imageFontKey);
+      columns.forEach((col, colIndex) => {
+        const x = defenseX + colIndex * (chipW + colGap);
+        const active = col.key === (inning <= 1 ? 'start' : String(inning));
+        if(active){
+          drawRoundRect(ctx, x - 4, y + orderPad - 4, chipW + 8, 24, 9);
+          ctx.fillStyle = '#eaf6ff';
+          ctx.fill();
+        }
+        ctx.fillStyle = active ? '#043e76' : '#64748b';
+        ctx.fillText(col.label, x + chipW / 2, y + orderPad + 14);
+      });
+      ctx.textAlign = 'left';
+    }
     starters.forEach((pid, index) => {
-      const rowY = y + index * rowH;
-      if(index % 2 === 0){
-        ctx.fillStyle = '#f6fbff';
-        ctx.fillRect(margin + 20, rowY - 12, cardW - 40, rowH - 10);
-      }
+      const rowY = rowStartY + index * rowH;
       ctx.fillStyle = '#0867bd';
       ctx.font = canvasFont(900, 33, imageFontKey);
       ctx.textAlign = 'center';
-      ctx.fillText(String(index + 1), margin + 54, rowY + 36);
+      ctx.fillText(String(index + 1), noX + noW / 2, rowY + rowH / 2 + 11);
       ctx.textAlign = 'left';
+      drawRoundRect(ctx, playerX, rowY + 6, playerW, rowH - 12, 18);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.strokeStyle = '#bdd7ef';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      const player = (st.players || []).find(p => p.id === pid);
+      ctx.fillStyle = player?.color || '#94a3b8';
+      drawRoundRect(ctx, playerX, rowY + 6, 8, rowH - 12, 18);
+      ctx.fill();
       ctx.fillStyle = '#102033';
       const name = displayNameIn(st, pid);
       const number = shareShowsNumber(st) ? playerNumberIn(st, pid) : '';
-      const nameX = margin + 104;
-      const posX = width - margin - 112;
-      const numberW = number ? 82 : 0;
-      const numberGap = number ? 18 : 0;
-      const nameMaxW = posX - nameX - numberW - numberGap - 28;
-      const nameSize = fitCanvasFontSize(ctx, name, nameMaxW, 900, 35, 23, imageFontKey);
+      const nameX = playerX + 26;
+      const numberW = number ? 74 : 0;
+      const nameMaxW = playerW - 48 - numberW - (number ? 16 : 0);
+      const nameSize = fitCanvasFontSize(ctx, name, nameMaxW, 900, 31, 20, imageFontKey);
       ctx.font = canvasFont(900, nameSize, imageFontKey);
-      ctx.fillText(truncateCanvasText(ctx, name, nameMaxW), nameX, rowY + 32);
+      ctx.fillText(truncateCanvasText(ctx, name, nameMaxW), nameX, rowY + rowH / 2 + 10);
       if(number){
-        drawRoundRect(ctx, nameX + nameMaxW + numberGap, rowY - 3, numberW, 46, 16);
+        const numberX = playerX + playerW - numberW - 20;
+        drawRoundRect(ctx, numberX, rowY + rowH / 2 - 22, numberW, 44, 14);
         ctx.fillStyle = '#f5fbff';
         ctx.fill();
         ctx.strokeStyle = '#9bc9f0';
@@ -2847,57 +2919,39 @@ function playerNumberIn(st, id){
         ctx.fillStyle = '#043e76';
         ctx.font = canvasFont(900, 28, imageFontKey);
         ctx.textAlign = 'center';
-        ctx.fillText(number, nameX + nameMaxW + numberGap + numberW / 2, rowY + 31);
+        ctx.fillText(number, numberX + numberW / 2, rowY + rowH / 2 + 10);
         ctx.textAlign = 'left';
       }
-      drawRoundRect(ctx, posX, rowY - 3, 76, 46, 18);
+      drawRoundRect(ctx, defenseX, rowY + 6, defenseW, rowH - 12, 18);
       ctx.fillStyle = '#ffffff';
       ctx.fill();
       ctx.strokeStyle = '#9bc9f0';
       ctx.lineWidth = 3;
       ctx.stroke();
-      ctx.fillStyle = '#043e76';
-      ctx.font = canvasFont(900, 28, imageFontKey);
-      ctx.textAlign = 'center';
-      ctx.fillText(posShort(effectivePositionIn(st, pid, inning)), posX + 38, rowY + 31);
-      ctx.textAlign = 'left';
+      if(hasDefenseColumns){
+        columns.forEach((col, colIndex) => {
+          const item = defenseColumnItemIn(st, pid, col);
+          if(!item) return;
+          const x = defenseX + colIndex * (chipW + colGap);
+          const chipY = rowY + rowH / 2 - chipH / 2;
+          const active = col.key === (inning <= 1 ? 'start' : String(inning));
+          drawCanvasDefenseChip(ctx, posShort(item.pos), x, chipY, chipW, chipH, item.start ? 'start' : 'change', active, imageFontKey);
+        });
+      }else{
+        const item = defenseColumnItemIn(st, pid, columns[0]);
+        drawCanvasDefenseChip(ctx, posShort(item.pos), defenseX + 18, rowY + rowH / 2 - 21, 62, 42, 'start', false, imageFontKey);
+      }
     });
-    y += Math.max(starters.length, 1) * rowH + 40;
+    y += orderCardH + 22;
 
-    drawRoundRect(ctx, margin, y, cardW, benchCardH, 24);
-    ctx.fillStyle = '#ffffff';
-    ctx.fill();
-    ctx.strokeStyle = '#d8e5f0';
-    ctx.lineWidth = 3;
-    ctx.stroke();
+    drawCanvasCard(ctx, margin, y, cardW, benchCardH, 24);
     ctx.fillStyle = '#0b355c';
     ctx.font = canvasFont(900, 30, imageFontKey);
     const benchTitle = bench.length ? `ベンチ（${bench.length}人）` : 'ベンチ';
     ctx.fillText(benchTitle, margin + 32, y + 42);
     ctx.fillStyle = '#102033';
     ctx.font = canvasFont(800, 27, imageFontKey);
-    benchLines.forEach((line, idx) => ctx.fillText(line, margin + 32, y + 86 + idx * 42));
-    y += benchCardH;
-
-    if(changeLines.length){
-      y += 28;
-      drawRoundRect(ctx, margin, y, cardW, changeCardH, 24);
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-      ctx.strokeStyle = '#d8e5f0';
-      ctx.lineWidth = 3;
-      ctx.stroke();
-      ctx.fillStyle = '#0b355c';
-      ctx.font = canvasFont(900, 28, imageFontKey);
-      ctx.fillText('交代・守備変更', margin + 32, y + 40);
-      ctx.fillStyle = '#102033';
-      ctx.font = canvasFont(800, 23, imageFontKey);
-      visibleChangeLines.forEach((line, idx) => ctx.fillText(truncateCanvasText(ctx, line, cardW - 64), margin + 32, y + 80 + idx * 36));
-      if(hiddenChangeCount){
-        ctx.fillStyle = '#667085';
-        ctx.fillText(`ほか${hiddenChangeCount}件`, margin + 32, y + 80 + visibleChangeLines.length * 36);
-      }
-    }
+    benchLines.forEach((line, idx) => ctx.fillText(line, margin + 32, y + 82 + idx * 38));
 
     return new Promise((resolve, reject) => {
       canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('画像生成に失敗しました')), 'image/png', 0.92);
@@ -2928,8 +2982,7 @@ function playerNumberIn(st, id){
     const baseState = sourceState?.players && sourceState?.game ? sourceState : state;
     const st = normalizeState(clone(baseState));
     const text = buildSimpleShareTextForState(st);
-    const opponent = st.game?.opponent ? `vs ${st.game.opponent}` : 'オーダー';
-    const title = `打順プランナー｜${opponent}`;
+    const title = shareGameMainLine(st) || 'オーダー';
     try{
       const blob = await createOrderImageBlob(st);
       const filename = orderImageFileName(st);
