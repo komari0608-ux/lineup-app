@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-27-bench-label-only';
+    window.LINEUP_APP_VERSION = '2026-06-27-save-overwrite-choice';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -289,7 +289,7 @@
     .player-row{position:relative;display:grid;grid-template-columns:24px minmax(0,1fr) 52px 34px;align-items:center;gap:6px;min-height:48px;padding:6px 6px;border:1px solid #edf2f7;border-radius:11px;background:#fff;margin-bottom:6px;box-shadow:0 2px 7px rgba(16,32,51,.025)}.player-row::before,.player-row::after{content:"";position:absolute;left:0;right:0;height:9px;z-index:3;touch-action:pan-y}.player-row::before{top:0}.player-row::after{bottom:0}.player-row:last-child{margin-bottom:0}.color-input{width:24px;height:24px;padding:0;border:0;background:transparent}.player-names{display:grid;grid-template-columns:1fr 1fr;gap:5px;min-width:0}.player-row input[type="text"],.player-row input[type="number"]{min-width:0;height:31px;border:1px solid var(--line);border-radius:9px;padding:0 7px;font-size:12px;font-weight:850}.icon-del{height:31px;border:0;border-radius:9px;background:#fff1f0;color:var(--danger);font-weight:950}.add-row{position:relative;display:grid;grid-template-columns:1fr 1fr 58px;gap:6px;padding:17px 6px 0}.add-row::before{content:"";position:absolute;left:0;right:0;top:0;height:17px;z-index:3;touch-action:pan-y}.add-row input{min-width:0;height:34px;border:1px solid var(--line);border-radius:10px;padding:0 9px;font-size:12px;font-weight:850}.add-row button{border:0;border-radius:10px;background:var(--green);color:#fff;font-weight:950}
     .bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.96);border-top:1px solid var(--line);backdrop-filter:blur(12px);padding:5px max(7px,env(safe-area-inset-left)) calc(5px + env(safe-area-inset-bottom)) max(7px,env(safe-area-inset-right));display:block}.bottom-nav-inner{width:auto;max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.nav-btn{min-width:0;border:0;background:transparent;color:#7b8794;border-radius:14px;min-height:47px;font-weight:950;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}.nav-btn .icon{font-size:19px;line-height:1}.nav-btn.active{background:#eaf4ff;color:var(--blue)}
     .toast{position:fixed;left:50%;bottom:calc(65px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(16px);opacity:0;pointer-events:none;z-index:80;background:#071226;color:#fff;border-radius:999px;padding:9px 14px;font-size:13px;font-weight:900;transition:.2s ease;white-space:nowrap}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-    body.modal-open{overflow:hidden}
+    body.modal-open,body.save-choice-open{overflow:hidden}
     .settings-modal[hidden]{display:none!important}
     .settings-modal{position:fixed;inset:0;z-index:90;background:rgba(7,18,38,.36);display:flex;align-items:flex-end;justify-content:center;padding:16px 10px calc(16px + env(safe-area-inset-bottom))}
     .settings-sheet{width:min(540px,100%);max-height:min(85dvh,720px);overflow:auto;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 42px rgba(16,32,51,.28);padding:10px;-webkit-overflow-scrolling:touch}
@@ -299,6 +299,7 @@
     .setting-field{display:grid;grid-template-columns:58px minmax(0,1fr);align-items:center;gap:6px;margin:6px 0 0;color:var(--muted);font-size:12px;font-weight:950}.setting-field:last-child{margin-bottom:0}
     .dh-row{min-height:36px;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px dashed #cfe0ed;border-radius:11px;padding:8px 10px;color:var(--muted);font-size:12px;font-weight:900;background:#fbfdff}
     .settings-actions{display:flex;gap:8px;margin-top:10px}.settings-actions button{flex:1;height:36px;border:1px solid var(--line);border-radius:11px;background:#fff;font-weight:950}.settings-actions .primary{background:var(--blue);border-color:var(--blue);color:#fff}
+    .save-choice-modal[hidden]{display:none!important}.save-choice-modal{position:fixed;inset:0;z-index:96;background:rgba(7,18,38,.38);display:flex;align-items:flex-end;justify-content:center;padding:16px 10px calc(16px + env(safe-area-inset-bottom))}.save-choice-sheet{width:min(460px,100%);background:#fff;border-radius:18px;box-shadow:0 18px 42px rgba(7,18,38,.22);border:1px solid #d9e7f3;padding:14px}.save-choice-sheet h2{margin:0;color:var(--blue-dark);font-size:16px;line-height:1.25}.save-choice-note{margin:8px 0 0;color:#4b6075;font-size:13px;font-weight:850;line-height:1.45}.save-choice-game{margin-top:10px;padding:10px 11px;border:1px solid #d9e7f3;border-radius:12px;background:#f7fbff;color:#102033;font-size:13px;font-weight:900;line-height:1.55;white-space:pre-line}.save-choice-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}.save-choice-actions button{min-height:42px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--blue-dark);font-size:14px;font-weight:950;touch-action:manipulation}.save-choice-actions button.primary{background:var(--blue);border-color:var(--blue);color:#fff}.save-choice-actions button.cancel{background:#f8fafc;color:#64748b}
     input,select,textarea,.game-line input,.game-line select,.toolbar select,.setting-field select,.display-mode-row select,.player-row input[type="text"],.player-row input[type="number"],.player-row .number-input,.add-row input,.memo-body textarea{font-size:16px!important;line-height:1.2}.player-row input[type="text"],.player-row input[type="number"],.player-row .number-input,.add-row input{min-height:36px}
     @keyframes tapGhost{0%{opacity:.78;transform:translateZ(0) scale(.985)}58%{opacity:.78;transform:translateZ(0) scale(.985)}100%{opacity:1;transform:translateZ(0) scale(1)}}
     @keyframes swapFadeOut{0%{opacity:1;transform:translateZ(0) scale(1)}100%{opacity:.55;transform:translateZ(0) scale(.97)}}
@@ -483,6 +484,19 @@
     </div>
   </div>
 
+  <div class="save-choice-modal" id="saveChoiceModal" hidden>
+    <div class="save-choice-sheet" role="dialog" aria-modal="true" aria-labelledby="saveChoiceTitle">
+      <h2 id="saveChoiceTitle">同じ試合の記録があります</h2>
+      <p class="save-choice-note">保存方法を選んでください。</p>
+      <div class="save-choice-game" id="saveChoiceGame"></div>
+      <div class="save-choice-actions">
+        <button class="primary" type="button" id="saveOverwriteBtn">上書き保存</button>
+        <button type="button" id="saveNewBtn">新規保存</button>
+        <button class="cancel" type="button" id="saveCancelBtn">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
   <nav class="bottom-nav" aria-label="画面切替">
     <div class="bottom-nav-inner">
       <button class="nav-btn active" data-tab="order" type="button"><span class="icon">☷</span><span>オーダー</span></button>
@@ -565,6 +579,7 @@
   let swipedHistoryId = null;
   let historySwipeState = null;
   let pageSwipeState = null;
+  let pendingSaveChoice = null;
   let suppressHistoryTapUntil = 0;
   let selectedSwapId = null;
   let selectedDefense = null;
@@ -661,7 +676,9 @@
       startPositions: clone(defaultStartPositions),
       defenseChanges: {},
       lineupByInning: {},
-      attendanceByPlayerId: {}
+      attendanceByPlayerId: {},
+      currentSavedOrderId: '',
+      currentSavedOrderKey: ''
     };
     ensureStructures(st);
     return st;
@@ -732,6 +749,8 @@
     st.battingMode = st.battingMode === 'nine' ? 'nine' : 'all';
     const selectedInning = Number(st.selectedInning);
     st.selectedInning = Number.isFinite(selectedInning) ? selectedInning : 0;
+    st.currentSavedOrderId = String(st.currentSavedOrderId || '');
+    st.currentSavedOrderKey = String(st.currentSavedOrderKey || '');
     st.players ||= clone(defaultPlayers);
     st.players.forEach((p, i) => {
       const oldName = p.name || p.nickname || p.fullName || '';
@@ -2053,16 +2072,51 @@ function playerNumberIn(st, id){
     $('saveMemo').value = buildSaveMemo();
   }
 
+  function normalizeSaveKeyPart(value){
+    return String(value || '').trim().replace(/\s+/g, ' ');
+  }
+
+  function savedOrderKeyForState(st){
+    const g = st.game || {};
+    return [
+      normalizeSaveKeyPart(g.date),
+      normalizeSaveKeyPart(g.start),
+      normalizeSaveKeyPart(g.opponent),
+      normalizeSaveKeyPart(g.place)
+    ].join('|');
+  }
+
+  function savedOrderGameLabelForState(st){
+    const g = st.game || {};
+    const main = [
+      formatGameDate(g.date) || '日付未入力',
+      g.start || '',
+      `vs ${g.opponent || '未入力'}`
+    ].filter(Boolean).join(' ');
+    return `${main}\n@${g.place || '未入力'}`;
+  }
+
+  function newSavedOrderId(now = new Date().toISOString()){
+    return `order-${Date.parse(now) || Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+  }
+
   function normalizeSavedOrder(entry){
     if(!entry) return null;
     try{
       const source = entry.state || entry.snapshot || entry;
       const snapshot = normalizeState(clone(source));
-      const savedAt = entry.savedAt || new Date().toISOString();
-      const id = entry.id || `order-${Date.parse(savedAt) || Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+      const createdAt = entry.createdAt || entry.savedAt || entry.updatedAt || new Date().toISOString();
+      const updatedAt = entry.updatedAt || entry.savedAt || createdAt;
+      const id = entry.id || newSavedOrderId(createdAt);
+      const savedOrderKey = entry.savedOrderKey || snapshot.currentSavedOrderKey || savedOrderKeyForState(snapshot);
+      snapshot.currentSavedOrderId = id;
+      snapshot.currentSavedOrderKey = savedOrderKey;
       return {
         id,
-        savedAt,
+        savedAt: updatedAt,
+        createdAt,
+        updatedAt,
+        savedOrderKey,
         game: clone(snapshot.game),
         battingMode: snapshot.battingMode,
         dhEnabled: isDhEnabled(snapshot),
@@ -2086,14 +2140,18 @@ function playerNumberIn(st, id){
     try{
       const parsed = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
       if(!Array.isArray(parsed)) return [];
-      return parsed.map(normalizeSavedOrder).filter(Boolean).sort((a,b) => String(b.savedAt).localeCompare(String(a.savedAt)));
+      return parsed.map(normalizeSavedOrder).filter(Boolean).sort((a,b) => String(b.updatedAt || b.savedAt).localeCompare(String(a.updatedAt || a.savedAt)));
     }catch(e){
       return [];
     }
   }
 
   function saveSavedOrders(list){
-    const safe = list.map(normalizeSavedOrder).filter(Boolean).slice(0, MAX_SAVED_ORDERS);
+    const safe = list
+      .map(normalizeSavedOrder)
+      .filter(Boolean)
+      .sort((a,b) => String(b.updatedAt || b.savedAt).localeCompare(String(a.updatedAt || a.savedAt)))
+      .slice(0, MAX_SAVED_ORDERS);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(safe));
     return safe;
   }
@@ -2103,27 +2161,106 @@ function playerNumberIn(st, id){
     return (st.players || []).filter(p => st.battingMode === 'nine' ? !lineup.has(p.id) : effectivePositionIn(st, p.id, 1) === 'B');
   }
 
-  function createSavedOrderSnapshot(){
-    const snapshot = normalizeState(clone(state));
-    const savedAt = new Date().toISOString();
-    const id = `order-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
-    return normalizeSavedOrder({ id, savedAt, state:snapshot, memo:buildSaveMemoForState(snapshot) });
+  function createSavedOrderSnapshot(options = {}){
+    const now = options.updatedAt || new Date().toISOString();
+    const id = options.id || newSavedOrderId(now);
+    const key = options.savedOrderKey || savedOrderKeyForState(state);
+    const snapshot = normalizeState(clone(options.sourceState || state));
+    snapshot.currentSavedOrderId = id;
+    snapshot.currentSavedOrderKey = key;
+    return normalizeSavedOrder({
+      id,
+      savedOrderKey:key,
+      createdAt: options.createdAt || now,
+      updatedAt: now,
+      savedAt: now,
+      state:snapshot,
+      memo:buildSaveMemoForState(snapshot)
+    });
   }
 
-  function addSavedOrder(){
-    const list = loadSavedOrders();
-    const entry = createSavedOrderSnapshot();
-    saveSavedOrders([entry, ...list]);
-    return entry;
+  function linkedSavedOrderForKey(list, key){
+    const currentId = String(state.currentSavedOrderId || '');
+    if(currentId){
+      const linked = list.find(entry => entry.id === currentId && entry.savedOrderKey === key);
+      if(linked) return linked;
+    }
+    return list.find(entry => entry.savedOrderKey === key) || null;
   }
 
-  function saveCurrentOrder(){
+  function finishSavedOrderWrite(entry, list){
+    state.currentSavedOrderId = entry.id;
+    state.currentSavedOrderKey = entry.savedOrderKey;
+    saveSavedOrders([entry, ...list.filter(item => item.id !== entry.id)]);
     saveState(false);
-    addSavedOrder();
     swipedHistoryId = null;
     renderMemo();
     renderHistory();
+    render();
     showToast('保存しました');
+    return entry;
+  }
+
+  function saveOrderAsNew(list = loadSavedOrders(), key = savedOrderKeyForState(state)){
+    const now = new Date().toISOString();
+    const entry = createSavedOrderSnapshot({
+      id:newSavedOrderId(now),
+      savedOrderKey:key,
+      createdAt:now,
+      updatedAt:now
+    });
+    return finishSavedOrderWrite(entry, list);
+  }
+
+  function overwriteSavedOrder(targetId, key = savedOrderKeyForState(state)){
+    const list = loadSavedOrders();
+    const existing = list.find(entry => entry.id === targetId);
+    if(!existing) return saveOrderAsNew(list, key);
+    const now = new Date().toISOString();
+    const entry = createSavedOrderSnapshot({
+      id:existing.id,
+      savedOrderKey:key,
+      createdAt:existing.createdAt || existing.savedAt || now,
+      updatedAt:now
+    });
+    return finishSavedOrderWrite(entry, list);
+  }
+
+  function openSaveChoice(targetEntry, key){
+    pendingSaveChoice = { targetId:targetEntry.id, key };
+    $('saveChoiceGame').textContent = savedOrderGameLabelForState(state);
+    $('saveChoiceModal').hidden = false;
+    document.body.classList.add('save-choice-open');
+    bindFormControlTapGuards($('saveChoiceModal'));
+  }
+
+  function closeSaveChoice(){
+    pendingSaveChoice = null;
+    $('saveChoiceModal').hidden = true;
+    document.body.classList.remove('save-choice-open');
+  }
+
+  function handleSaveChoice(action){
+    const choice = pendingSaveChoice;
+    closeSaveChoice();
+    if(!choice) return;
+    if(action === 'overwrite'){
+      overwriteSavedOrder(choice.targetId, choice.key);
+    }else if(action === 'new'){
+      saveOrderAsNew(loadSavedOrders(), choice.key);
+    }
+  }
+
+  function saveCurrentOrder(){
+    ensureStructures();
+    const key = savedOrderKeyForState(state);
+    const list = loadSavedOrders();
+    const target = linkedSavedOrderForKey(list, key);
+    if(target){
+      openSaveChoice(target, key);
+      return;
+    }
+    saveOrderAsNew(list, key);
   }
 
   function formatSavedAt(value){
@@ -2245,6 +2382,13 @@ function playerNumberIn(st, id){
     const entry = savedOrderById(id);
     if(!entry) return;
     state = normalizeState(clone(entry.state));
+    if(duplicate){
+      state.currentSavedOrderId = '';
+      state.currentSavedOrderKey = '';
+    }else{
+      state.currentSavedOrderId = entry.id;
+      state.currentSavedOrderKey = entry.savedOrderKey || savedOrderKeyForState(state);
+    }
     state.selectedInning = 0;
     selectedSwapId = null;
     selectedDefense = null;
@@ -2261,6 +2405,11 @@ function playerNumberIn(st, id){
 
   function deleteSavedOrder(id){
     saveSavedOrders(loadSavedOrders().filter(entry => entry.id !== id));
+    if(state.currentSavedOrderId === id){
+      state.currentSavedOrderId = '';
+      state.currentSavedOrderKey = '';
+      saveState(false);
+    }
     swipedHistoryId = null;
     if(expandedHistoryId === id) expandedHistoryId = null;
     renderHistory();
@@ -2381,7 +2530,7 @@ function playerNumberIn(st, id){
     if(target.closest?.('input, select, textarea, [contenteditable="true"], [contenteditable=""]')) return true;
     const button = target.closest?.('button');
     if(button && !button.closest('.history-summary,.player-card,.pos-chip,.bench-chip')) return true;
-    return !!target.closest?.('.bottom-nav,.settings-modal,.inning-scroll,.memo-actions,.date-button,.calendar-panel,.settings-sheet,.history-delete-action,.history-actions');
+    return !!target.closest?.('.bottom-nav,.settings-modal,.save-choice-modal,.inning-scroll,.memo-actions,.date-button,.calendar-panel,.settings-sheet,.history-delete-action,.history-actions');
   }
 
   function currentTabIndex(){
@@ -3296,7 +3445,15 @@ function playerNumberIn(st, id){
     $('settingsCloseBtn').addEventListener('click', closeSettings);
     $('settingsDoneBtn').addEventListener('click', closeSettings);
     $('settingsModal').addEventListener('click', e => { if(e.target === $('settingsModal')) closeSettings(); });
-    document.addEventListener('keydown', e => { if(e.key === 'Escape' && !$('settingsModal').hidden) closeSettings(); });
+    $('saveChoiceModal').addEventListener('click', e => { if(e.target === $('saveChoiceModal')) closeSaveChoice(); });
+    $('saveOverwriteBtn').addEventListener('click', () => handleSaveChoice('overwrite'));
+    $('saveNewBtn').addEventListener('click', () => handleSaveChoice('new'));
+    $('saveCancelBtn').addEventListener('click', closeSaveChoice);
+    document.addEventListener('keydown', e => {
+      if(e.key !== 'Escape') return;
+      if(!$('saveChoiceModal').hidden) closeSaveChoice();
+      else if(!$('settingsModal').hidden) closeSettings();
+    });
     $('battingMode').addEventListener('change', e => setBattingMode(e.target.value));
     $('displayMode').addEventListener('change', e => { state.settings.displayMode = e.target.value; saveState(); render(); });
     $('dhMode').addEventListener('change', e => setDhMode(e.target.value === 'on'));
