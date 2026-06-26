@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-26-share-image-current-state';
+    window.LINEUP_APP_VERSION = '2026-06-26-share-image-change-summary';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -2602,6 +2602,16 @@ function playerNumberIn(st, id){
     });
   }
 
+  function drawContainedImage(ctx, img, x, y, w, h){
+    const iw = img?.naturalWidth || img?.width || 0;
+    const ih = img?.naturalHeight || img?.height || 0;
+    if(!iw || !ih) return;
+    const scale = Math.min(w / iw, h / ih);
+    const dw = iw * scale;
+    const dh = ih * scale;
+    ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+  }
+
   function orderImageFileName(st){
     const date = String(st.game?.date || todayText).replaceAll('-','') || 'lineup';
     return `lineup-${date}.png`;
@@ -2635,9 +2645,43 @@ function playerNumberIn(st, id){
     return shareShowsNumber(st) && number ? `${name} #${number}` : name;
   }
 
+  function shareChangePosLabel(pos){
+    return pos === 'B' ? 'ベンチ' : posShort(pos);
+  }
+
   function benchPlayersForStateAt(st, inning){
     const lineup = new Set(getLineupAtIn(st, inning));
     return (st.players || []).filter(p => st.battingMode === 'nine' ? !lineup.has(p.id) : effectivePositionIn(st, p.id, inning) === 'B');
+  }
+
+  function shareChangeLinesForState(st, inning){
+    const end = Math.min(maxInnings(st), Math.max(1, Number(inning || 1)));
+    if(end <= 1) return [];
+    const orderIndex = Object.fromEntries((st.battingOrder || []).map((id, i) => [id, i]));
+    const lines = [];
+    for(let current=2; current<=end; current++){
+      const beforeLineup = getLineupAtIn(st, current - 1);
+      const currentLineup = getLineupAtIn(st, current);
+      const activeIds = new Set([...beforeLineup, ...currentLineup, ...(st.players || []).map(p => p.id)]);
+      (st.players || [])
+        .filter(p => activeIds.has(p.id))
+        .map(p => ({
+          player: p,
+          before: effectivePositionIn(st, p.id, current - 1),
+          after: effectivePositionIn(st, p.id, current)
+        }))
+        .filter(item => item.before !== item.after)
+        .sort((a,b) => {
+          const aCur = currentLineup.indexOf(a.player.id);
+          const bCur = currentLineup.indexOf(b.player.id);
+          if(aCur !== -1 || bCur !== -1) return (aCur === -1 ? 999 : aCur) - (bCur === -1 ? 999 : bCur);
+          return (orderIndex[a.player.id] ?? 999) - (orderIndex[b.player.id] ?? 999);
+        })
+        .forEach(item => {
+          lines.push(`${current}回 ${shareDisplayNameIn(st, item.player.id)} ${shareChangePosLabel(item.before)} → ${shareChangePosLabel(item.after)}`);
+        });
+    }
+    return lines;
   }
 
   function buildSimpleShareTextForState(sourceState){
@@ -2645,6 +2689,7 @@ function playerNumberIn(st, id){
     const inning = shareInningForState(st);
     const starters = getLineupAtIn(st, inning);
     const bench = benchPlayersForStateAt(st, inning);
+    const changes = shareChangeLinesForState(st, inning);
     const lines = ['【スターティングオーダー】', shareGameMainLine(st)];
     const placeLine = shareGamePlaceLine(st);
     if(placeLine) lines.push(placeLine);
@@ -2654,6 +2699,10 @@ function playerNumberIn(st, id){
     });
     lines.push('', '【ベンチ】');
     lines.push(bench.length ? bench.map(p => shareDisplayNameIn(st, p.id)).join('、') : 'なし');
+    if(changes.length){
+      lines.push('', '【交代・守備変更】');
+      changes.forEach(line => lines.push(line));
+    }
     return lines.join('\n');
   }
 
@@ -2665,6 +2714,7 @@ function playerNumberIn(st, id){
     const inning = shareInningForState(st);
     const starters = getLineupAtIn(st, inning);
     const bench = benchPlayersForStateAt(st, inning);
+    const changeLines = shareChangeLinesForState(st, inning);
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const width = 1080;
@@ -2677,7 +2727,10 @@ function playerNumberIn(st, id){
     ctx.font = canvasFont(700, 28, imageFontKey);
     const benchLines = bench.length ? wrappedItems(ctx, bench.map(p => shareDisplayNameIn(st, p.id)), cardW - 72) : ['なし'];
     const benchCardH = 86 + Math.max(benchLines.length, 1) * 42;
-    const height = headerY + headerH + 34 + orderCardH + 34 + benchCardH + 58;
+    const visibleChangeLines = changeLines.slice(0, 8);
+    const hiddenChangeCount = Math.max(0, changeLines.length - visibleChangeLines.length);
+    const changeCardH = changeLines.length ? 88 + (visibleChangeLines.length + (hiddenChangeCount ? 1 : 0)) * 36 : 0;
+    const height = headerY + headerH + 34 + orderCardH + 34 + benchCardH + (changeCardH ? 28 + changeCardH : 0) + 58;
     canvas.width = width;
     canvas.height = height;
 
@@ -2699,10 +2752,9 @@ function playerNumberIn(st, id){
     ctx.stroke();
     ctx.globalAlpha = 1;
     if(mascotImage){
-      const imgSize = 216;
-      ctx.drawImage(mascotImage, margin + 18, headerY + 16, imgSize, imgSize);
+      drawContainedImage(ctx, mascotImage, margin + 18, headerY + 24, 238, 198);
     }
-    const titleX = mascotImage ? margin + 276 : margin + 42;
+    const titleX = mascotImage ? margin + 292 : margin + 42;
     const titleMaxW = margin + cardW - titleX - 34;
     ctx.fillStyle = '#ffffff';
     const titleSize = fitCanvasFontSize(ctx, '打順プランナー', titleMaxW, 900, 62, 46, imageFontKey);
@@ -2789,6 +2841,27 @@ function playerNumberIn(st, id){
     ctx.fillStyle = '#102033';
     ctx.font = canvasFont(800, 27, imageFontKey);
     benchLines.forEach((line, idx) => ctx.fillText(line, margin + 32, y + 86 + idx * 42));
+    y += benchCardH;
+
+    if(changeLines.length){
+      y += 28;
+      drawRoundRect(ctx, margin, y, cardW, changeCardH, 24);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.strokeStyle = '#d8e5f0';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.fillStyle = '#0b355c';
+      ctx.font = canvasFont(900, 28, imageFontKey);
+      ctx.fillText('交代・守備変更', margin + 32, y + 40);
+      ctx.fillStyle = '#102033';
+      ctx.font = canvasFont(800, 23, imageFontKey);
+      visibleChangeLines.forEach((line, idx) => ctx.fillText(truncateCanvasText(ctx, line, cardW - 64), margin + 32, y + 80 + idx * 36));
+      if(hiddenChangeCount){
+        ctx.fillStyle = '#667085';
+        ctx.fillText(`ほか${hiddenChangeCount}件`, margin + 32, y + 80 + visibleChangeLines.length * 36);
+      }
+    }
 
     return new Promise((resolve, reject) => {
       canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('画像生成に失敗しました')), 'image/png', 0.92);
