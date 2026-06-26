@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-26-track-swipe';
+    window.LINEUP_APP_VERSION = '2026-06-26-font-scope';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -23,7 +23,7 @@
       document.documentElement.classList.toggle('splash-pending', showSplash);
       try{
         const fontKey = localStorage.getItem('lineupPlannerFontFamily') || 'standard';
-        const allowed = new Set(['standard','biz-ud','noto','mplus','zen']);
+        const allowed = new Set(['standard','biz-ud','biz-udp','noto','mplus','zen']);
         document.documentElement.classList.add(`font-${allowed.has(fontKey) ? fontKey : 'standard'}`);
       }catch(e){
         document.documentElement.classList.add('font-standard');
@@ -35,7 +35,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=M+PLUS+1p:wght@500;700;800&family=Noto+Sans+JP:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@400;700&family=BIZ+UDPGothic:wght@400;700&family=M+PLUS+1p:wght@500;700;800&family=Noto+Sans+JP:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet" />
   <link rel="preload" as="image" href="assets/splash-order.png" />
   <style>
     :root{
@@ -53,18 +53,20 @@
       --shadow:0 8px 20px rgba(16,32,51,.10);
       --radius:15px;
       --font-ui:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      --font-lineup:var(--font-ui);
+      --font-app:var(--font-ui);
+      --font-lineup:var(--font-app);
     }
     *{box-sizing:border-box}
     html{-webkit-text-size-adjust:100%;background:var(--bg);touch-action:manipulation;overscroll-behavior:none}
-    html.font-standard{--font-lineup:var(--font-ui)}
-    html.font-biz-ud{--font-lineup:"BIZ UDPGothic",var(--font-ui)}
-    html.font-noto{--font-lineup:"Noto Sans JP",var(--font-ui)}
-    html.font-mplus{--font-lineup:"M PLUS 1p",var(--font-ui)}
-    html.font-zen{--font-lineup:"Zen Kaku Gothic New",var(--font-ui)}
+    html.font-standard{--font-app:var(--font-ui)}
+    html.font-biz-ud{--font-app:"BIZ UDGothic","BIZ UDPGothic",var(--font-ui)}
+    html.font-biz-udp{--font-app:"BIZ UDPGothic","BIZ UDGothic",var(--font-ui)}
+    html.font-noto{--font-app:"Noto Sans JP",var(--font-ui)}
+    html.font-mplus{--font-app:"M PLUS 1p",var(--font-ui)}
+    html.font-zen{--font-app:"Zen Kaku Gothic New",var(--font-ui)}
     body{
       margin:0;
-      font-family:var(--font-ui);
+      font-family:var(--font-app);
       background:var(--bg);
       color:var(--ink);
       min-height:100svh;
@@ -74,11 +76,13 @@
       -webkit-user-select:none;
       -webkit-tap-highlight-color:transparent;
     }
-    button,input,select,textarea{font:inherit}
+    .app,.settings-modal,.bottom-nav,.toast,.startup-splash{font-family:var(--font-app)}
+    button,input,select,textarea{font:inherit;font-family:var(--font-app)}
     input,select,textarea{user-select:text;-webkit-user-select:text}
     button{cursor:pointer;-webkit-tap-highlight-color:transparent}
     .order-card,.order-card .card-head,.order-no,.player-main-group,.player-card,.defense-card,.pos-chip,.add-pos-chip,.player-number-badge,.bench-chip,.memo-body textarea,.history-item{font-family:var(--font-lineup)}
-    html.font-biz-ud .player-name-text,html.font-biz-ud .pos-chip,html.font-biz-ud .player-number-badge{font-weight:700}
+    html.font-biz-ud .player-name-text,html.font-biz-ud .pos-chip,html.font-biz-ud .player-number-badge,
+    html.font-biz-udp .player-name-text,html.font-biz-udp .pos-chip,html.font-biz-udp .player-number-badge{font-weight:700}
     html.font-noto .player-name-text,html.font-noto .pos-chip,html.font-noto .player-number-badge,
     html.font-mplus .player-name-text,html.font-mplus .pos-chip,html.font-mplus .player-number-badge,
     html.font-zen .player-name-text,html.font-zen .pos-chip,html.font-zen .player-number-badge{font-weight:800}
@@ -430,6 +434,7 @@
           <select id="lineupFont" aria-label="表示フォント">
             <option value="standard">標準</option>
             <option value="biz-ud">BIZ UDゴシック</option>
+            <option value="biz-udp">BIZ UDPゴシック</option>
             <option value="noto">Noto Sans JP</option>
             <option value="mplus">M PLUS 1p</option>
             <option value="zen">ZEN角ゴシック</option>
@@ -461,7 +466,7 @@
   const MAX_SAVED_ORDERS = 50;
   const STARTUP_SPLASH_KEY = 'lineupSplashSeen';
   const FONT_KEY = 'lineupPlannerFontFamily';
-  const FONT_OPTIONS = ['standard','biz-ud','noto','mplus','zen'];
+  const FONT_OPTIONS = ['standard','biz-ud','biz-udp','noto','mplus','zen'];
   const TAB_ORDER = ['order','history','players'];
   const HISTORY_SWIPE_OPEN_PX = 92;
   const HISTORY_SWIPE_THRESHOLD_PX = 88;
@@ -545,15 +550,35 @@
   const $ = (id) => document.getElementById(id);
 
   function clone(value){ return JSON.parse(JSON.stringify(value)); }
-  function validFontKey(value){ return FONT_OPTIONS.includes(value) ? value : 'standard'; }
+  function validFontKey(value){
+    const key = String(value || '').trim();
+    if(key === 'biz-udgothic') return 'biz-ud';
+    if(key === 'biz-udpgothic' || key === 'biz-udp-gothic') return 'biz-udp';
+    return FONT_OPTIONS.includes(key) ? key : 'standard';
+  }
   function readStoredLineupFont(){
     try{ return validFontKey(localStorage.getItem(FONT_KEY) || 'standard'); }
     catch(e){ return 'standard'; }
   }
   function currentFontKey(st = state){ return validFontKey(st?.settings?.fontFamily || readStoredLineupFont()); }
+  function fontFamilyForKey(key = currentFontKey()){
+    if(key === 'biz-ud') return '"BIZ UDGothic","BIZ UDPGothic",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    if(key === 'biz-udp') return '"BIZ UDPGothic","BIZ UDGothic",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    if(key === 'noto') return '"Noto Sans JP",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    if(key === 'mplus') return '"M PLUS 1p",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    if(key === 'zen') return '"Zen Kaku Gothic New",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    return 'system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  }
+  function canvasFont(weight, size, key = currentFontKey()){
+    return `${weight} ${size}px ${fontFamilyForKey(key)}`;
+  }
+  async function waitForLineupFonts(){
+    if(!document.fonts?.ready) return;
+    try{ await document.fonts.ready; }catch(e){}
+  }
   function applyLineupFont(){
     const key = currentFontKey();
-    document.documentElement.classList.remove('font-standard','font-biz-ud','font-noto','font-mplus','font-zen');
+    document.documentElement.classList.remove('font-standard','font-biz-ud','font-biz-udp','font-noto','font-mplus','font-zen');
     document.documentElement.classList.add(`font-${key}`);
   }
   function setLineupFont(value){
@@ -2408,6 +2433,8 @@ function playerNumberIn(st, id){
 
   async function createOrderImageBlob(sourceState){
     const st = normalizeState(clone(sourceState));
+    const imageFontKey = currentFontKey(st);
+    await waitForLineupFonts();
     const starters = getLineupAtIn(st, 1);
     const bench = benchPlayersForState(st);
     const defenseLines = defenseChangeLinesForState(st);
@@ -2418,7 +2445,7 @@ function playerNumberIn(st, id){
     const width = 1080;
     const margin = 54;
     const rowH = 64;
-    ctx.font = '30px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.font = canvasFont(700, 30, imageFontKey);
     const benchText = bench.map(p => {
       const number = playerNumberIn(st, p.id);
       return `${displayNameIn(st, p.id)}${number ? ` #${number}` : ''}`;
@@ -2435,9 +2462,9 @@ function playerNumberIn(st, id){
     ctx.fillStyle = '#0b6fc6';
     ctx.fill();
     ctx.fillStyle = '#ffffff';
-    ctx.font = '800 52px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.font = canvasFont(800, 52, imageFontKey);
     ctx.fillText('打順プランナー', margin + 36, 112);
-    ctx.font = '700 28px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.font = canvasFont(700, 28, imageFontKey);
     const meta = [formatGameDate(st.game?.date), st.game?.opponent ? `vs ${st.game.opponent}` : '', st.game?.place ? `@${st.game.place}` : '', st.game?.start || '', modeLabelForState(st), `${maxInnings(st)}回`, isDhEnabled(st) ? 'DHあり' : ''].filter(Boolean).join('  ');
     ctx.fillText(truncateCanvasText(ctx, meta, width - margin * 2 - 72), margin + 36, 158);
 
@@ -2449,7 +2476,7 @@ function playerNumberIn(st, id){
     ctx.lineWidth = 3;
     ctx.stroke();
     ctx.fillStyle = '#0b355c';
-    ctx.font = '800 28px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.font = canvasFont(800, 28, imageFontKey);
     ctx.fillText('スターティングオーダー', margin + 28, y + 38);
     y += 62;
     starters.forEach((pid, index) => {
@@ -2459,12 +2486,12 @@ function playerNumberIn(st, id){
         ctx.fillRect(margin + 18, rowY - 8, width - margin * 2 - 36, rowH - 8);
       }
       ctx.fillStyle = '#0867bd';
-      ctx.font = '900 30px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.font = canvasFont(900, 30, imageFontKey);
       ctx.textAlign = 'center';
       ctx.fillText(String(index + 1), margin + 54, rowY + 32);
       ctx.textAlign = 'left';
       ctx.fillStyle = '#102033';
-      ctx.font = '800 30px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.font = canvasFont(800, 30, imageFontKey);
       ctx.fillText(truncateCanvasText(ctx, displayNameIn(st, pid), 520), margin + 98, rowY + 32);
       const number = playerNumberIn(st, pid);
       if(number){
@@ -2475,7 +2502,7 @@ function playerNumberIn(st, id){
         ctx.lineWidth = 3;
         ctx.stroke();
         ctx.fillStyle = '#043e76';
-        ctx.font = '900 26px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.font = canvasFont(900, 26, imageFontKey);
         ctx.textAlign = 'center';
         ctx.fillText(number, width - margin - 176, rowY + 31);
         ctx.textAlign = 'left';
@@ -2487,7 +2514,7 @@ function playerNumberIn(st, id){
       ctx.lineWidth = 3;
       ctx.stroke();
       ctx.fillStyle = '#043e76';
-      ctx.font = '900 26px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.font = canvasFont(900, 26, imageFontKey);
       ctx.textAlign = 'center';
       ctx.fillText(posShort(st.startPositions?.[pid] || 'B'), width - margin - 70, rowY + 31);
       ctx.textAlign = 'left';
@@ -2496,20 +2523,20 @@ function playerNumberIn(st, id){
 
     if(benchLines.length){
       ctx.fillStyle = '#0b355c';
-      ctx.font = '800 28px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.font = canvasFont(800, 28, imageFontKey);
       ctx.fillText('ベンチ・未守備', margin + 28, y);
       ctx.fillStyle = '#102033';
-      ctx.font = '700 25px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.font = canvasFont(700, 25, imageFontKey);
       benchLines.forEach((line, idx) => ctx.fillText(line, margin + 28, y + 42 + idx * 38));
       y += 82 + benchLines.length * 38;
     }
 
     if(changeDrawLines.length){
       ctx.fillStyle = '#0b355c';
-      ctx.font = '800 28px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.font = canvasFont(800, 28, imageFontKey);
       ctx.fillText('守備変更・選手交代', margin + 28, y);
       ctx.fillStyle = '#102033';
-      ctx.font = '700 24px system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.font = canvasFont(700, 24, imageFontKey);
       changeDrawLines.forEach((line, idx) => ctx.fillText(truncateCanvasText(ctx, line, width - margin * 2 - 56), margin + 28, y + 42 + idx * 38));
       if(changeLines.length > changeDrawLines.length){
         ctx.fillStyle = '#667085';
