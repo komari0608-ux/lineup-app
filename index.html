@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-26-font-scope';
+    window.LINEUP_APP_VERSION = '2026-06-26-fast-swipe';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -189,7 +189,7 @@
     .inning-btn.initial{min-width:52px;background:#eef8ff;border-color:#b9d7ef}.inning-btn.initial.active{background:var(--blue-dark);border-color:var(--blue-dark);color:#fff}
     .tiny-note{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:11px;font-weight:850;margin:0 0 6px;line-height:1.35}
     .tabs-viewport{min-height:calc(100dvh - 126px - env(safe-area-inset-bottom));overflow-x:hidden;overflow-y:visible;touch-action:pan-y}
-    .tabs-track{display:flex;width:100%;min-height:inherit;transform:translate3d(0,0,0);transition:transform .24s cubic-bezier(.22,.61,.36,1);will-change:transform;touch-action:pan-y}
+    .tabs-track{display:flex;width:100%;min-height:inherit;transform:translate3d(0,0,0);transition:transform .18s cubic-bezier(.2,.8,.2,1);will-change:transform;touch-action:pan-y}
     .tabs-track.is-dragging{transition:none}
     .panel{display:block;flex:0 0 100%;width:100%;min-height:calc(100dvh - 126px - env(safe-area-inset-bottom));touch-action:pan-y}
     #orderPanel{order:0}#historyPanel{order:1}#playersPanel{order:2}
@@ -469,14 +469,14 @@
   const FONT_OPTIONS = ['standard','biz-ud','biz-udp','noto','mplus','zen'];
   const TAB_ORDER = ['order','history','players'];
   const HISTORY_SWIPE_OPEN_PX = 92;
-  const HISTORY_SWIPE_THRESHOLD_PX = 88;
-  const PAGE_SWIPE_THRESHOLD_PX = 34;
-  const PAGE_SWIPE_FLICK_PX = 18;
-  const PAGE_SWIPE_VELOCITY_PX_MS = 0.22;
-  const PAGE_SWIPE_EDGE_MAX_PX = 34;
-  const PAGE_SWIPE_LOCK_PX = 6;
-  const PAGE_SWIPE_HORIZONTAL_RATIO = 1.05;
-  const PAGE_SWIPE_VERTICAL_CANCEL_RATIO = 1.24;
+  const HISTORY_SWIPE_THRESHOLD_PX = 96;
+  const PAGE_SWIPE_THRESHOLD_PX = 28;
+  const PAGE_SWIPE_FLICK_PX = 14;
+  const PAGE_SWIPE_VELOCITY_PX_MS = 0.18;
+  const PAGE_SWIPE_EDGE_MAX_PX = 28;
+  const PAGE_SWIPE_LOCK_PX = 4;
+  const PAGE_SWIPE_HORIZONTAL_RATIO = 1.03;
+  const PAGE_SWIPE_VERTICAL_CANCEL_RATIO = 1.35;
   const MIGRATION_KEYS = ['lineupPlannerV9OrderTapShare','lineupPlannerV8InlineSwap','lineupPlannerV7InlineDefense','lineupPlannerV6TapCompact','lineupPlannerV5CompactIphone','lineupPlannerV4Iphone'];
   const JAPANESE_HOLIDAYS = {
     '2026-01-01':'元日',
@@ -543,6 +543,8 @@
   const quickTapTimers = new WeakMap();
   let isSwapAnimating = false;
   let calendarMonth = null;
+  let tabsTrackFrame = null;
+  let tabsTrackPending = null;
   const SWAP_FADE_OUT_MS = 90;
   const SWAP_FADE_IN_MS = 120;
   const TAP_FEEDBACK_MS = 120;
@@ -2070,7 +2072,7 @@ function playerNumberIn(st, id){
     item?.classList.remove('is-swiping');
     swipe.surface.style.transform = '';
     if(swipe.active){
-      suppressHistoryTapUntil = Date.now() + 260;
+      suppressHistoryTapUntil = Date.now() + 180;
       swipedHistoryId = swipe.lastX <= -HISTORY_SWIPE_THRESHOLD_PX ? swipe.id : null;
       renderHistory();
     }
@@ -2092,7 +2094,7 @@ function playerNumberIn(st, id){
     selectedDefense = null;
     swipedHistoryId = null;
     renderTabs();
-    if(scrollTop) window.scrollTo({ top:0, behavior:'smooth' });
+    if(scrollTop) window.scrollTo({ top:0, behavior:'auto' });
   }
 
   function shouldIgnorePageSwipeTarget(target){
@@ -2111,16 +2113,36 @@ function playerNumberIn(st, id){
     const index = currentTabIndex();
     const atEdge = (dx > 0 && index === 0) || (dx < 0 && index === TAB_ORDER.length - 1);
     if(!atEdge) return dx;
-    return clamp(dx * 0.32, -PAGE_SWIPE_EDGE_MAX_PX, PAGE_SWIPE_EDGE_MAX_PX);
+    return clamp(dx * 0.30, -PAGE_SWIPE_EDGE_MAX_PX, PAGE_SWIPE_EDGE_MAX_PX);
   }
 
-  function setTabsTrackPosition(dragOffset = 0, dragging = false){
+  function applyTabsTrackPosition(dragOffset = 0, dragging = false){
     const track = $('tabsTrack');
     if(!track) return;
     const index = currentTabIndex();
     track.classList.toggle('is-dragging', dragging && !reducedMotion());
     const offset = reducedMotion() ? 0 : dragOffset;
     track.style.transform = `translate3d(calc(${-index * 100}% + ${offset}px),0,0)`;
+  }
+
+  function setTabsTrackPosition(dragOffset = 0, dragging = false){
+    if(!dragging){
+      if(tabsTrackFrame){
+        cancelAnimationFrame(tabsTrackFrame);
+        tabsTrackFrame = null;
+        tabsTrackPending = null;
+      }
+      applyTabsTrackPosition(dragOffset, false);
+      return;
+    }
+    tabsTrackPending = { dragOffset, dragging };
+    if(tabsTrackFrame) return;
+    tabsTrackFrame = requestAnimationFrame(() => {
+      tabsTrackFrame = null;
+      const next = tabsTrackPending;
+      tabsTrackPending = null;
+      if(next) applyTabsTrackPosition(next.dragOffset, next.dragging);
+    });
   }
 
   function setPageSwipeFeedback(dx){
@@ -2179,7 +2201,7 @@ function playerNumberIn(st, id){
     const velocity = absX / elapsed;
     const distanceTrigger = absX >= PAGE_SWIPE_THRESHOLD_PX;
     const flickTrigger = absX >= PAGE_SWIPE_FLICK_PX && velocity >= PAGE_SWIPE_VELOCITY_PX_MS;
-    const cardDeleteTrigger = swipe.historyId && dx < 0 && absX >= HISTORY_SWIPE_THRESHOLD_PX && absX > absY * 1.05;
+    const cardDeleteTrigger = swipe.historyId && dx < 0 && absX >= HISTORY_SWIPE_THRESHOLD_PX && absX > absY * PAGE_SWIPE_HORIZONTAL_RATIO;
     const closeDeleteTrigger = swipe.historyId && swipedHistoryId === swipe.historyId && dx > PAGE_SWIPE_FLICK_PX;
     const historyCardLeftSwipe = swipe.historyId && dx < 0;
     if(!swipe.active || absX <= absY * PAGE_SWIPE_HORIZONTAL_RATIO) return null;
