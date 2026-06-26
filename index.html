@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-26-unified-defense-flow';
+    window.LINEUP_APP_VERSION = '2026-06-26-defense-clear-compact';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -232,7 +232,8 @@
     .player-main-group.swap-fade-in,.defense-card.swap-fade-in,.bench-chip.swap-fade-in{will-change:transform,opacity;animation:swapFadeIn .12s ease-out}
     .pos-flow{min-width:0;display:grid;grid-template-columns:repeat(var(--defense-cols),minmax(0,1fr));align-items:center;gap:2px;overflow:visible;white-space:normal;padding:4px 3px;scrollbar-width:none}.pos-flow::-webkit-scrollbar{display:none}
     .pos-flow.single-defense{display:inline-flex;grid-template-columns:none;width:auto;min-width:58px;max-width:70px;justify-self:start;justify-content:center;padding:5px 6px}
-    .pos-flow.timeline-defense{display:flex;grid-template-columns:none;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:6px;width:100%;padding:5px 6px}
+    .pos-flow.timeline-defense{display:flex;grid-template-columns:none;flex-wrap:wrap;align-items:center;align-content:center;justify-content:flex-start;gap:6px;width:100%;padding:5px 6px}
+    .pos-flow.timeline-defense .pos-cell{flex:0 0 auto}
     .pos-cell{min-width:0;min-height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px}.pos-cell.current-inning{background:#eef8ff}.pos-cell.empty.current-inning{box-shadow:inset 0 0 0 1px #cfe4fb}
     .defense-card.has-change{background:linear-gradient(90deg,#fff 0%,rgba(255,247,237,.78) 100%)}
     .defense-card.def-selected,.defense-card.is-defense-selected{background:#fffafa;border-color:var(--danger);box-shadow:0 0 0 3px rgba(180,35,24,.88),0 5px 12px rgba(180,35,24,.14);transform:translate3d(0,-1px,0) scale(1.01)}
@@ -250,10 +251,12 @@
     .pos-flow.timeline-defense .pos-chip,.pos-flow.timeline-defense .pos-chip.start,.pos-flow.timeline-defense .pos-chip.change,.pos-flow.timeline-defense .pos-chip.change.current-inning{width:auto;min-width:48px;height:34px;padding:0 8px;font-size:14px}
     .pos-flow.single-defense .pos-cell{min-height:32px}.pos-flow.single-defense .pos-chip,.pos-flow.single-defense .pos-chip.start{width:auto;min-width:48px;height:32px;padding:0 9px;font-size:15px}
     .order-card.has-defense-changes:not(.has-many-defense-chips) .player-card,.order-card.has-defense-changes:not(.has-many-defense-chips) .defense-card{min-height:46px}
-    .order-card.has-defense-changes.has-many-defense-chips .player-main-group{min-height:80px}
-    .order-card.has-defense-changes.has-many-defense-chips .player-card,.order-card.has-defense-changes.has-many-defense-chips .defense-card{min-height:78px}
-    .order-card.has-defense-changes.has-many-defense-chips .pos-flow.timeline-defense{align-content:center;gap:5px}
-    .order-card.has-defense-changes.has-many-defense-chips .pos-flow.timeline-defense .pos-chip,.order-card.has-defense-changes.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.start,.order-card.has-defense-changes.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.change,.order-card.has-defense-changes.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.change.current-inning{min-width:44px;height:30px;font-size:13px;padding:0 7px}
+    .order-card.has-compact-defense-chips .pos-flow.timeline-defense{gap:4px;padding:5px 5px}
+    .order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip,.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip.start,.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip.change,.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip.change.current-inning{min-width:38px;height:31px;font-size:13px;padding:0 5px}
+    .order-card.has-many-defense-chips .player-main-group{min-height:66px}
+    .order-card.has-many-defense-chips .player-card,.order-card.has-many-defense-chips .defense-card{min-height:66px}
+    .order-card.has-many-defense-chips .pos-flow.timeline-defense{gap:2px 3px;padding:3px 4px}
+    .order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip,.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.start,.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.change,.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.change.current-inning{min-width:32px;height:26px;font-size:12px;padding:0 4px}
     .pos-chip:active{opacity:.82;transform:translateZ(0) scale(.975)}
     .pos-chip.tap-feedback{will-change:transform,opacity;animation:tapGhost .12s ease-out}
     .pos-chip.swap-fade-out{will-change:transform,opacity;animation:chipSwapFadeOut .09s ease forwards}
@@ -299,7 +302,7 @@
     @keyframes splashTextIn{0%{opacity:0;transform:translate3d(0,6px,0)}100%{opacity:1;transform:translate3d(0,0,0)}}
     @media (prefers-reduced-motion: reduce){.startup-splash,.splash-image,.splash-fallback,.splash-title,.splash-sub,.player-main-group,.player-card,.defense-card,.pos-chip,.bench-chip,.inning-btn,.toast{transition:none!important;animation:none!important}.player-main-group.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback,.inning-btn.tap-feedback,.pos-chip.tap-feedback,.player-main-group.swap-fade-out,.player-main-group.swap-fade-in,.defense-card.swap-fade-out,.defense-card.swap-fade-in,.bench-chip.swap-fade-out,.bench-chip.swap-fade-in,.pos-chip.swap-fade-out,.pos-chip.swap-fade-in{animation:none!important}}
     @media (max-width:560px){.title-text{flex:0 1 128px}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 7px;font-size:12px}.settings-btn{min-width:auto}}
-    @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 8px;font-size:12px}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .card-head{padding:7px}.card-head h2{font-size:13px}.order-head-actions{gap:4px}.order-reset-btn{height:30px;min-width:88px;font-size:11px;padding:0 7px}.defense-grid-header{grid-template-columns:27px minmax(0,1fr);gap:6px;padding-top:5px}.defense-grid-head-main{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr);gap:6px}.defense-col-head{width:48px;font-size:9px}.order-card .row-list{gap:5px;padding-top:4px}.order-main{grid-template-columns:27px minmax(0,1fr);gap:6px;min-height:44px;padding:0}.player-main-group{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr);gap:6px}.player-main-group.single-defense{grid-template-columns:minmax(0,1fr) max-content}.order-card.has-defense-changes .player-main-group{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr)}.order-no{font-size:20px}.player-card{font-size:13px;padding-left:9px;padding-right:9px}.pos-flow{gap:2px;padding:4px 3px}.pos-flow.single-defense{min-width:58px;max-width:70px;padding:5px}.pos-flow.timeline-defense{gap:6px;padding:5px 6px}.pos-cell{min-height:28px}.pos-chip{height:30px;min-width:34px;font-size:13px;padding:0 7px}.pos-flow .pos-chip{height:27px;font-size:11px}.pos-flow .pos-chip.start{height:28px;font-size:12px}.pos-flow.single-defense .pos-chip,.pos-flow.single-defense .pos-chip.start{min-width:48px;height:32px;font-size:15px;padding:0 9px}.pos-flow.timeline-defense .pos-chip,.pos-flow.timeline-defense .pos-chip.start,.pos-flow.timeline-defense .pos-chip.change,.pos-flow.timeline-defense .pos-chip.change.current-inning{width:auto;min-width:48px;height:34px;padding:0 8px;font-size:14px}.order-card.has-defense-changes.has-many-defense-chips .pos-flow.timeline-defense .pos-chip,.order-card.has-defense-changes.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.start,.order-card.has-defense-changes.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.change,.order-card.has-defense-changes.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.change.current-inning{min-width:44px;height:30px;font-size:13px;padding:0 7px}.pos-flow .pos-chip.change,.pos-flow .pos-chip.change.current-inning{height:27px;font-size:11px}.pos-chip.change{height:26px;min-width:28px;font-size:13px;padding:0 5px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select,.date-button{font-size:12px;padding-left:6px;padding-right:6px}.calendar-panel{gap:6px;padding:7px}.calendar-weekdays,.calendar-grid{gap:2px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
+    @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 8px;font-size:12px}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .card-head{padding:7px}.card-head h2{font-size:13px}.order-head-actions{gap:4px}.order-reset-btn{height:30px;min-width:88px;font-size:11px;padding:0 7px}.defense-grid-header{grid-template-columns:27px minmax(0,1fr);gap:6px;padding-top:5px}.defense-grid-head-main{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr);gap:6px}.defense-col-head{width:48px;font-size:9px}.order-card .row-list{gap:5px;padding-top:4px}.order-main{grid-template-columns:27px minmax(0,1fr);gap:6px;min-height:44px;padding:0}.player-main-group{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr);gap:6px}.player-main-group.single-defense{grid-template-columns:minmax(0,1fr) max-content}.order-card.has-defense-changes .player-main-group{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr)}.order-no{font-size:20px}.player-card{font-size:13px;padding-left:9px;padding-right:9px}.pos-flow{gap:2px;padding:4px 3px}.pos-flow.single-defense{min-width:58px;max-width:70px;padding:5px}.pos-flow.timeline-defense{gap:6px;padding:5px 6px}.pos-cell{min-height:28px}.pos-chip{height:30px;min-width:34px;font-size:13px;padding:0 7px}.pos-flow .pos-chip{height:27px;font-size:11px}.pos-flow .pos-chip.start{height:28px;font-size:12px}.pos-flow.single-defense .pos-chip,.pos-flow.single-defense .pos-chip.start{min-width:48px;height:32px;font-size:15px;padding:0 9px}.pos-flow.timeline-defense .pos-chip,.pos-flow.timeline-defense .pos-chip.start,.pos-flow.timeline-defense .pos-chip.change,.pos-flow.timeline-defense .pos-chip.change.current-inning{width:auto;min-width:48px;height:34px;padding:0 8px;font-size:14px}.order-card.has-compact-defense-chips .pos-flow.timeline-defense{gap:4px;padding:5px 5px}.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip,.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip.start,.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip.change,.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip.change.current-inning{min-width:38px;height:31px;font-size:13px;padding:0 5px}.order-card.has-many-defense-chips .pos-flow.timeline-defense{gap:2px 3px;padding:3px 4px}.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip,.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.start,.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.change,.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.change.current-inning{min-width:32px;height:26px;font-size:12px;padding:0 4px}.pos-flow .pos-chip.change,.pos-flow .pos-chip.change.current-inning{height:27px;font-size:11px}.pos-chip.change{height:26px;min-width:28px;font-size:13px;padding:0 5px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select,.date-button{font-size:12px;padding-left:6px;padding-right:6px}.calendar-panel{gap:6px;padding:7px}.calendar-weekdays,.calendar-grid{gap:2px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
   </style>
 </head>
 <body>
@@ -333,6 +336,7 @@
             <h2 id="orderTitle">スターティングオーダー</h2>
             <div class="order-head-actions">
               <span class="subhead" id="modeLabel">全員打ち</span>
+              <button type="button" class="order-reset-btn" id="orderClearAllChangesBtn" hidden disabled>交代クリア</button>
               <button type="button" class="order-reset-btn" id="orderResetDefenseBtn" hidden disabled>この回を戻す</button>
             </div>
           </div>
@@ -559,6 +563,8 @@
   let tabsTrackFrame = null;
   let tabsTrackPending = null;
   let suppressQuickTapUntil = 0;
+  let clearAllChangesArmed = false;
+  let clearAllChangesTimer = null;
   const SWAP_FADE_OUT_MS = 90;
   const SWAP_FADE_IN_MS = 120;
   const TAP_FEEDBACK_MS = 120;
@@ -1524,6 +1530,60 @@ function playerNumberIn(st, id){
     render();
   }
 
+  function hasRecordedOrderChanges(){
+    return changedDefenseInnings().length > 0;
+  }
+
+  function resetClearAllChangesConfirm(){
+    clearAllChangesArmed = false;
+    clearTimeout(clearAllChangesTimer);
+    const btn = $('orderClearAllChangesBtn');
+    if(btn) btn.textContent = '交代クリア';
+  }
+
+  function clearAllInningChanges(){
+    selectedSwapId = null;
+    selectedDefense = null;
+    clearTapFeedback();
+    clearSwapAnimationState();
+    if(!isInitialMode()){
+      resetClearAllChangesConfirm();
+      render();
+      return;
+    }
+    if(!hasRecordedOrderChanges()){
+      resetClearAllChangesConfirm();
+      render();
+      showToast('クリアする交代はありません');
+      return;
+    }
+    if(!clearAllChangesArmed){
+      clearAllChangesArmed = true;
+      const btn = $('orderClearAllChangesBtn');
+      if(btn) btn.textContent = 'もう一度でクリア';
+      clearTimeout(clearAllChangesTimer);
+      clearAllChangesTimer = setTimeout(() => {
+        clearAllChangesArmed = false;
+        const currentBtn = $('orderClearAllChangesBtn');
+        if(currentBtn && isInitialMode()) currentBtn.textContent = '交代クリア';
+      }, 2000);
+      showToast('もう一度でクリア');
+      return;
+    }
+    resetClearAllChangesConfirm();
+    state.defenseChanges = {};
+    if(state.battingMode === 'nine'){
+      const baseLine = (state.lineupByInning?.[1] || state.battingOrder.slice(0, lineupLimit())).slice(0, lineupLimit());
+      state.lineupByInning = { 1: baseLine };
+    }else{
+      state.lineupByInning = {};
+    }
+    ensureStructures();
+    saveState();
+    render();
+    showToast('交代をクリアしました');
+  }
+
   function render(){
     ensureStructures();
     applyLineupFont();
@@ -1579,6 +1639,13 @@ function playerNumberIn(st, id){
     const modeText = state.battingMode === 'all' ? '全員打ち' : '9人制';
     $('modeLabel').textContent = isInitialMode() ? `${modeText}｜初期` : `${modeText}｜${state.selectedInning}回守備`;
     $('orderTitle').textContent = isInitialMode() ? 'スターティングオーダー' : `${state.selectedInning}回の守備変更`;
+    if(!isInitialMode() && clearAllChangesArmed) resetClearAllChangesConfirm();
+    const clearAllBtn = $('orderClearAllChangesBtn');
+    const hasChanges = hasRecordedOrderChanges();
+    clearAllBtn.textContent = clearAllChangesArmed ? 'もう一度でクリア' : '交代クリア';
+    clearAllBtn.hidden = !isInitialMode();
+    clearAllBtn.disabled = !isInitialMode() || !hasChanges;
+    clearAllBtn.setAttribute('aria-label', hasChanges ? '2回以降の守備変更と選手交代をすべてクリア' : 'クリアする守備変更や選手交代はありません');
     const resetBtn = $('orderResetDefenseBtn');
     resetBtn.textContent = 'この回を戻す';
     resetBtn.hidden = isInitialMode();
@@ -1617,7 +1684,8 @@ function playerNumberIn(st, id){
     const maxFlowCount = pids.reduce((max, pid) => Math.max(max, defenseFlow(pid).filter(item => item.inning <= maxInnings()).length), 0);
     const orderCard = document.querySelector('.order-card');
     orderCard?.classList.toggle('has-defense-changes', hasDefenseChangeMode);
-    orderCard?.classList.toggle('has-many-defense-chips', hasDefenseChangeMode && maxFlowCount >= 4);
+    orderCard?.classList.toggle('has-compact-defense-chips', hasDefenseChangeMode && maxFlowCount >= 4);
+    orderCard?.classList.toggle('has-many-defense-chips', hasDefenseChangeMode && maxFlowCount >= 5);
     list.innerHTML = '';
     pids.forEach((pid, index) => {
       const player = playerById(pid);
@@ -2708,6 +2776,7 @@ function playerNumberIn(st, id){
     $('dhMode').addEventListener('change', e => setDhMode(e.target.value === 'on'));
     $('lineupFont').addEventListener('change', e => setLineupFont(e.target.value));
     $('resetDefenseBtn').addEventListener('click', resetDefense);
+    $('orderClearAllChangesBtn').addEventListener('click', clearAllInningChanges);
     $('orderResetDefenseBtn').addEventListener('click', resetCurrentDefense);
     $('copyMemoBtn').addEventListener('click', copyMemo);
     $('shareBtn').addEventListener('click', shareOrder);
