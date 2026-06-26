@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-26-swipe-calendar';
+    window.LINEUP_APP_VERSION = '2026-06-26-track-swipe';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -184,8 +184,13 @@
     .inning-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
     .inning-btn.initial{min-width:52px;background:#eef8ff;border-color:#b9d7ef}.inning-btn.initial.active{background:var(--blue-dark);border-color:var(--blue-dark);color:#fff}
     .tiny-note{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:11px;font-weight:850;margin:0 0 6px;line-height:1.35}
-    main{min-height:calc(100dvh - 126px - env(safe-area-inset-bottom));touch-action:pan-y}
-    .panel{display:none;min-height:calc(100dvh - 126px - env(safe-area-inset-bottom));touch-action:pan-y}.panel.active{display:block;transition:transform .2s cubic-bezier(.2,.8,.2,1)}.panel.is-page-swiping{transition:none;will-change:transform}
+    .tabs-viewport{min-height:calc(100dvh - 126px - env(safe-area-inset-bottom));overflow-x:hidden;overflow-y:visible;touch-action:pan-y}
+    .tabs-track{display:flex;width:100%;min-height:inherit;transform:translate3d(0,0,0);transition:transform .24s cubic-bezier(.22,.61,.36,1);will-change:transform;touch-action:pan-y}
+    .tabs-track.is-dragging{transition:none}
+    .panel{display:block;flex:0 0 100%;width:100%;min-height:calc(100dvh - 126px - env(safe-area-inset-bottom));touch-action:pan-y}
+    #orderPanel{order:0}#historyPanel{order:1}#playersPanel{order:2}
+    .panel:not(.active){height:0;overflow:hidden;pointer-events:none}
+    .tabs-track.is-dragging .panel{height:auto;overflow:visible;pointer-events:auto}
     .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
     .order-card{background:transparent;border:0;box-shadow:none;overflow:visible}
     .card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 9px;border-bottom:1px solid var(--line);background:#fbfdff}
@@ -304,7 +309,8 @@
 
     <div class="inning-scroll" id="inningButtons" aria-label="表示回"></div>
 
-    <main>
+    <main class="tabs-viewport" id="tabsViewport">
+      <div class="tabs-track" id="tabsTrack">
       <section class="panel active" id="orderPanel">
         <div class="card order-card">
           <div class="card-head order-head">
@@ -354,6 +360,7 @@
           <div class="history-list" id="historyList"></div>
         </div>
       </section>
+      </div>
     </main>
   </div>
 
@@ -457,13 +464,12 @@
   const FONT_OPTIONS = ['standard','biz-ud','noto','mplus','zen'];
   const TAB_ORDER = ['order','history','players'];
   const HISTORY_SWIPE_OPEN_PX = 92;
-  const HISTORY_SWIPE_THRESHOLD_PX = 78;
+  const HISTORY_SWIPE_THRESHOLD_PX = 88;
   const PAGE_SWIPE_THRESHOLD_PX = 34;
   const PAGE_SWIPE_FLICK_PX = 18;
   const PAGE_SWIPE_VELOCITY_PX_MS = 0.22;
-  const PAGE_SWIPE_FEEDBACK_MAX_PX = 44;
+  const PAGE_SWIPE_EDGE_MAX_PX = 34;
   const PAGE_SWIPE_LOCK_PX = 6;
-  const PAGE_SWIPE_FOLLOW_RATIO = 0.26;
   const PAGE_SWIPE_HORIZONTAL_RATIO = 1.05;
   const PAGE_SWIPE_VERTICAL_CANCEL_RATIO = 1.24;
   const MIGRATION_KEYS = ['lineupPlannerV9OrderTapShare','lineupPlannerV8InlineSwap','lineupPlannerV7InlineDefense','lineupPlannerV6TapCompact','lineupPlannerV5CompactIphone','lineupPlannerV4Iphone'];
@@ -2072,27 +2078,32 @@ function playerNumberIn(st, id){
     return !!target.closest?.('.bottom-nav,.settings-modal,.inning-scroll,.memo-actions,.date-button,.calendar-panel,.settings-sheet,.history-delete-action,.history-actions');
   }
 
-  function activePanel(){
-    return document.querySelector('.panel.active');
+  function currentTabIndex(){
+    return Math.max(0, TAB_ORDER.indexOf(currentTab));
+  }
+
+  function dampPageDragOffset(dx){
+    const index = currentTabIndex();
+    const atEdge = (dx > 0 && index === 0) || (dx < 0 && index === TAB_ORDER.length - 1);
+    if(!atEdge) return dx;
+    return clamp(dx * 0.32, -PAGE_SWIPE_EDGE_MAX_PX, PAGE_SWIPE_EDGE_MAX_PX);
+  }
+
+  function setTabsTrackPosition(dragOffset = 0, dragging = false){
+    const track = $('tabsTrack');
+    if(!track) return;
+    const index = currentTabIndex();
+    track.classList.toggle('is-dragging', dragging && !reducedMotion());
+    const offset = reducedMotion() ? 0 : dragOffset;
+    track.style.transform = `translate3d(calc(${-index * 100}% + ${offset}px),0,0)`;
   }
 
   function setPageSwipeFeedback(dx){
-    if(reducedMotion()) return;
-    const panel = activePanel();
-    if(!panel) return;
-    const currentIndex = TAB_ORDER.indexOf(currentTab);
-    const atEdge = (dx < 0 && currentIndex === TAB_ORDER.length - 1) || (dx > 0 && currentIndex === 0);
-    const ratio = atEdge ? PAGE_SWIPE_FOLLOW_RATIO * 0.36 : PAGE_SWIPE_FOLLOW_RATIO;
-    const offset = clamp(dx * ratio, -PAGE_SWIPE_FEEDBACK_MAX_PX, PAGE_SWIPE_FEEDBACK_MAX_PX);
-    panel.classList.add('is-page-swiping');
-    panel.style.transform = `translateX(${offset}px)`;
+    setTabsTrackPosition(dampPageDragOffset(dx), true);
   }
 
   function clearPageSwipeFeedback(){
-    const panel = activePanel();
-    if(!panel) return;
-    panel.classList.remove('is-page-swiping');
-    panel.style.transform = '';
+    setTabsTrackPosition(0, false);
   }
 
   function startPageSwipe(clientX, clientY, target, pointerId, timeStamp, source){
@@ -2101,6 +2112,8 @@ function playerNumberIn(st, id){
     pageSwipeState = {
       startX: clientX,
       startY: clientY,
+      lastX: clientX,
+      lastY: clientY,
       startTime: timeStamp || performance.now(),
       pointerId,
       source,
@@ -2117,6 +2130,8 @@ function playerNumberIn(st, id){
     const dy = clientY - swipe.startY;
     const absX = Math.abs(dx);
     const absY = Math.abs(dy);
+    swipe.lastX = clientX;
+    swipe.lastY = clientY;
     if(!swipe.active){
       if(absX < PAGE_SWIPE_LOCK_PX && absY < PAGE_SWIPE_LOCK_PX) return;
       if(absY > absX * PAGE_SWIPE_VERTICAL_CANCEL_RATIO){
@@ -2129,8 +2144,6 @@ function playerNumberIn(st, id){
     if(swipe.active){
       event.preventDefault();
       setPageSwipeFeedback(dx);
-      const action = pageSwipeAction(swipe, dx, dy, timeStamp, true);
-      if(action) applyPageSwipeAction(action);
     }
   }
 
@@ -2229,8 +2242,7 @@ function playerNumberIn(st, id){
     const swipe = pageSwipeState;
     if(!swipe || swipe.source !== 'touch') return;
     const touch = [...event.changedTouches].find(t => t.identifier === swipe.pointerId);
-    if(!touch) return;
-    finishPageSwipe(touch.clientX, touch.clientY, event.timeStamp, touch.identifier);
+    finishPageSwipe(touch?.clientX ?? swipe.lastX, touch?.clientY ?? swipe.lastY, event.timeStamp, swipe.pointerId);
   }
 
   function setupPageSwipe(){
@@ -2313,6 +2325,7 @@ function playerNumberIn(st, id){
     document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active'));
     $(`${currentTab}Panel`).classList.add('active');
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === currentTab));
+    setTabsTrackPosition(0, false);
     const isOrderTab = currentTab === 'order';
     $('inningButtons').hidden = !isOrderTab;
     if(currentTab === 'history') renderHistory();
