@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-26-share-defense-chip-padding';
+    window.LINEUP_APP_VERSION = '2026-06-27-bench-attendance-share-ui';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -279,7 +279,7 @@
     .mini-chip.danger{background:#fff1f0;border-color:#ffd0cd;color:var(--danger)}
     .bench-wrap,.memo-wrap{margin-top:8px;background:#fff;border:1px solid var(--line);border-radius:15px;overflow:hidden;box-shadow:0 4px 12px rgba(16,32,51,.05)}
     details summary{list-style:none;padding:9px 10px;font-weight:950;color:var(--blue-dark);display:flex;align-items:center;justify-content:space-between;gap:8px}details summary::-webkit-details-marker{display:none}
-    .bench-list{display:flex;flex-wrap:wrap;gap:6px;padding:0 10px 10px}.bench-chip{border:1px solid #bdd7ef;background:#fff;border-radius:12px;min-height:42px;padding:0 10px;display:inline-flex;align-items:center;gap:6px;font-weight:900;font-size:12px;transition:background-color .14s ease,border-color .14s ease,box-shadow .14s ease,transform .14s ease,opacity .14s ease;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+    .bench-list{display:flex;flex-wrap:wrap;gap:6px;padding:0 10px 10px}.bench-chip{border:1px solid #bdd7ef;background:#fff;border-radius:12px;min-height:42px;padding:0 10px;display:inline-flex;align-items:center;gap:6px;font-weight:900;font-size:12px;transition:background-color .14s ease,border-color .14s ease,box-shadow .14s ease,transform .14s ease,opacity .14s ease;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}.bench-chip.is-absent{background:#fbfdff;border-color:#e2eaf2;color:#8ea0b4;opacity:.58;box-shadow:none}.bench-chip.is-absent .dot{opacity:.35}.bench-chip.is-absent.selected,.bench-chip.is-absent.is-selected{box-shadow:0 0 0 2px rgba(148,163,184,.45);background:#f8fafc}
     .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(0,0,0,.10)}
     .empty-state{color:var(--muted);font-size:13px;font-weight:850;padding:0 10px 10px}
     .memo-body{padding:0 10px 10px}.memo-body textarea{width:100%;min-height:120px;resize:vertical;border:1px solid var(--line);border-radius:11px;padding:8px;font-size:12px;line-height:1.45;font-weight:850;background:#fbfdff;color:#102033;outline:none}.memo-actions{display:flex;gap:7px;margin-top:7px}.memo-actions button{flex:1;min-height:34px;border:1px solid var(--line);border-radius:11px;background:#fff;font-weight:950}.memo-actions .primary{background:var(--blue);border-color:var(--blue);color:#fff}
@@ -587,6 +587,7 @@
   const SWAP_FADE_OUT_MS = 90;
   const SWAP_FADE_IN_MS = 120;
   const TAP_FEEDBACK_MS = 120;
+  const LONG_PRESS_MS = 520;
   const POINTER_CLICK_GUARD_MS = 220;
   const $ = (id) => document.getElementById(id);
 
@@ -638,6 +639,8 @@
   function canSetPosition(pos, st = state){ return pos !== 'DH' || isDhEnabled(st); }
   function posShort(pos){ return POS_SHORT[pos || 'B'] || 'ベ'; }
   function maxInnings(st = state){ return Math.min(ABSOLUTE_MAX_INNINGS, Math.max(1, Number(st?.game?.innings || 6))); }
+  function isPlayerAbsentIn(st, playerId){ return st?.attendanceByPlayerId?.[playerId] === 'absent'; }
+  function isPlayerAbsent(playerId){ return isPlayerAbsentIn(state, playerId); }
   function isInitialMode(){ return Number(state?.selectedInning || 0) === 0; }
   function activeInning(){
     if(isInitialMode()) return 1;
@@ -657,7 +660,8 @@
       battingOrder: defaultPlayers.map(p => p.id),
       startPositions: clone(defaultStartPositions),
       defenseChanges: {},
-      lineupByInning: {}
+      lineupByInning: {},
+      attendanceByPlayerId: {}
     };
     ensureStructures(st);
     return st;
@@ -741,6 +745,10 @@
     st.battingOrder ||= st.players.map(p => p.id);
     st.startPositions ||= {};
     const ids = new Set(st.players.map(p => p.id));
+    st.attendanceByPlayerId ||= {};
+    Object.keys(st.attendanceByPlayerId).forEach(id => {
+      if(!ids.has(id) || st.attendanceByPlayerId[id] !== 'absent') delete st.attendanceByPlayerId[id];
+    });
     st.battingOrder = st.battingOrder.filter(id => ids.has(id));
     st.players.forEach((p, i) => {
       if(!st.battingOrder.includes(p.id)) st.battingOrder.push(p.id);
@@ -771,8 +779,13 @@
     st.selectedInning = Math.min(innings, Math.max(0, Number.isFinite(selectedInning) ? selectedInning : 0));
     st.defenseChanges ||= {};
     const ids = new Set(st.players.map(p => p.id));
+    st.attendanceByPlayerId ||= {};
+    Object.keys(st.attendanceByPlayerId).forEach(id => {
+      if(!ids.has(id) || st.attendanceByPlayerId[id] !== 'absent') delete st.attendanceByPlayerId[id];
+    });
+    const availableIds = new Set(st.players.filter(p => !isPlayerAbsentIn(st, p.id)).map(p => p.id));
     Object.keys(st.defenseChanges).forEach(pid => {
-      if(!ids.has(pid)){ delete st.defenseChanges[pid]; return; }
+      if(!ids.has(pid) || isPlayerAbsentIn(st, pid)){ delete st.defenseChanges[pid]; return; }
       Object.keys(st.defenseChanges[pid]).forEach(k => {
         const n = Number(k);
         const v = st.defenseChanges[pid][k];
@@ -783,7 +796,7 @@
     assignInitialDhIfNeeded(st);
     if(st.battingMode === 'nine'){
       const limit = lineupLimit(st);
-      if(!st.lineupByInning[1]) st.lineupByInning[1] = st.battingOrder.slice(0,limit);
+      if(!st.lineupByInning[1]) st.lineupByInning[1] = st.battingOrder.filter(id => availableIds.has(id)).slice(0,limit);
       Object.keys(st.lineupByInning).forEach(k => {
         const n = Number(k);
         if(!n || n < 1 || n > ABSOLUTE_MAX_INNINGS) delete st.lineupByInning[k];
@@ -795,8 +808,8 @@
         st.lineupByInning[i] ||= clone(prev);
         if(!Array.isArray(st.lineupByInning[i])) st.lineupByInning[i] = [];
         const line = [];
-        st.lineupByInning[i].forEach(id => { if(ids.has(id) && !line.includes(id) && line.length < limit) line.push(id); });
-        const addable = st.battingOrder.filter(id => ids.has(id) && !line.includes(id));
+        st.lineupByInning[i].forEach(id => { if(availableIds.has(id) && !line.includes(id) && line.length < limit) line.push(id); });
+        const addable = st.battingOrder.filter(id => availableIds.has(id) && !line.includes(id));
         while(line.length < limit && addable.length) line.push(addable.shift());
         st.lineupByInning[i] = line;
         prevLine = line;
@@ -809,6 +822,10 @@
 
   function cleanupRedundantChanges(st = state){
     st.players.forEach(p => {
+      if(isPlayerAbsentIn(st, p.id)){
+        delete st.defenseChanges[p.id];
+        return;
+      }
       const changes = st.defenseChanges[p.id];
       if(!changes) return;
       let current = st.startPositions[p.id] || 'B';
@@ -826,6 +843,27 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     $('saveNote').textContent = '端末保存';
     if(show) showToast('保存しました');
+  }
+
+  function setBenchAttendance(playerId, absent){
+    if(!playerById(playerId)) return;
+    state.attendanceByPlayerId ||= {};
+    if(absent){
+      state.attendanceByPlayerId[playerId] = 'absent';
+      delete state.defenseChanges[playerId];
+      if(selectedSwapId === playerId) selectedSwapId = null;
+      if(selectedDefense?.playerId === playerId) selectedDefense = null;
+    }else{
+      delete state.attendanceByPlayerId[playerId];
+    }
+    ensureStructures();
+    saveState();
+    render();
+    showToast(absent ? '欠席にしました' : '出席に戻しました');
+  }
+
+  function toggleBenchAttendance(playerId){
+    setBenchAttendance(playerId, !isPlayerAbsent(playerId));
   }
 
   function showToast(message){
@@ -1028,7 +1066,25 @@ function playerNumberIn(st, id){
   function bindQuickTap(element, handler, options = {}){
     let handledByPointer = false;
     let tapPointer = null;
+    let longTouch = null;
     let elementTapHandledUntil = 0;
+    let longPressTimer = null;
+    let longPressFiredAt = 0;
+    const clearLongPressTimer = () => {
+      if(longPressTimer){
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+    };
+    const fireLongPress = (event) => {
+      const now = Date.now();
+      if(now - longPressFiredAt < 600) return;
+      longPressFiredAt = now;
+      suppressQuickTapUntil = now + 520;
+      elementTapHandledUntil = now + POINTER_CLICK_GUARD_MS;
+      flashTapFeedback(feedbackTarget(event));
+      options.longPress?.(event);
+    };
     const shouldIgnore = (event) => shouldIgnoreNestedFormControlTap(event) || Boolean(options.ignore?.(event));
     const feedbackTarget = (event) => {
       if(typeof options.feedbackElement === 'function') return options.feedbackElement(event) || element;
@@ -1045,7 +1101,15 @@ function playerNumberIn(st, id){
       if(event.pointerType === 'mouse' && event.button !== 0) return;
       if(shouldIgnore(event)) return;
       event.stopPropagation();
-      tapPointer = { id:event.pointerId, startX:event.clientX, startY:event.clientY, cancelled:false };
+      tapPointer = { id:event.pointerId, startX:event.clientX, startY:event.clientY, cancelled:false, longPressed:false };
+      clearLongPressTimer();
+      if(typeof options.longPress === 'function'){
+        longPressTimer = setTimeout(() => {
+          if(!tapPointer || tapPointer.id !== event.pointerId || tapPointer.cancelled) return;
+          tapPointer.longPressed = true;
+          fireLongPress(event);
+        }, LONG_PRESS_MS);
+      }
     }, { passive:true });
     element.addEventListener('pointermove', event => {
       if(!tapPointer || tapPointer.id !== event.pointerId) return;
@@ -1053,7 +1117,10 @@ function playerNumberIn(st, id){
       const dy = event.clientY - tapPointer.startY;
       const absX = Math.abs(dx);
       const absY = Math.abs(dy);
-      if(absX >= PAGE_TAP_CANCEL_PX || absY >= PAGE_TAP_CANCEL_PX) tapPointer.cancelled = true;
+      if(absX >= PAGE_TAP_CANCEL_PX || absY >= PAGE_TAP_CANCEL_PX){
+        tapPointer.cancelled = true;
+        clearLongPressTimer();
+      }
       if(absX >= PAGE_TAP_CANCEL_PX && absX > absY * PAGE_SWIPE_HORIZONTAL_RATIO){
         suppressQuickTapUntil = Date.now() + 260;
       }
@@ -1065,10 +1132,11 @@ function playerNumberIn(st, id){
       event.preventDefault();
       const tap = tapPointer;
       tapPointer = null;
+      clearLongPressTimer();
       const dx = tap ? event.clientX - tap.startX : 0;
       const dy = tap ? event.clientY - tap.startY : 0;
       const moved = !tap || tap.cancelled || Math.abs(dx) >= PAGE_TAP_CANCEL_PX || Math.abs(dy) >= PAGE_TAP_CANCEL_PX;
-      if(moved || Date.now() < suppressQuickTapUntil){
+      if(tap?.longPressed || moved || Date.now() < suppressQuickTapUntil){
         event.stopPropagation();
         setTimeout(() => { handledByPointer = false; }, POINTER_CLICK_GUARD_MS);
         return;
@@ -1078,7 +1146,52 @@ function playerNumberIn(st, id){
       elementTapHandledUntil = Date.now() + POINTER_CLICK_GUARD_MS;
       setTimeout(() => { handledByPointer = false; }, POINTER_CLICK_GUARD_MS);
     });
-    element.addEventListener('pointercancel', () => { tapPointer = null; });
+    if(typeof options.longPress === 'function'){
+      element.addEventListener('touchstart', event => {
+        if(shouldIgnore(event)) return;
+        const touch = event.touches?.[0];
+        if(!touch) return;
+        longTouch = { id:touch.identifier, startX:touch.clientX, startY:touch.clientY, cancelled:false, longPressed:false };
+        clearLongPressTimer();
+        longPressTimer = setTimeout(() => {
+          if(!longTouch || longTouch.cancelled) return;
+          longTouch.longPressed = true;
+          fireLongPress(event);
+        }, LONG_PRESS_MS);
+      }, { passive:true });
+      element.addEventListener('touchmove', event => {
+        if(!longTouch) return;
+        const touch = Array.from(event.touches || []).find(t => t.identifier === longTouch.id) || event.touches?.[0];
+        if(!touch) return;
+        const dx = touch.clientX - longTouch.startX;
+        const dy = touch.clientY - longTouch.startY;
+        if(Math.abs(dx) >= PAGE_TAP_CANCEL_PX || Math.abs(dy) >= PAGE_TAP_CANCEL_PX){
+          longTouch.cancelled = true;
+          clearLongPressTimer();
+        }
+      }, { passive:true });
+      element.addEventListener('touchend', event => {
+        const pressed = longTouch?.longPressed;
+        longTouch = null;
+        clearLongPressTimer();
+        if(pressed){
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      }, { passive:false });
+      element.addEventListener('touchcancel', () => {
+        longTouch = null;
+        clearLongPressTimer();
+      }, { passive:true });
+    }
+    element.addEventListener('pointercancel', () => { tapPointer = null; clearLongPressTimer(); });
+    element.addEventListener('pointerleave', () => clearLongPressTimer());
+    element.addEventListener('contextmenu', event => {
+      if(typeof options.longPress === 'function'){
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    });
     element.addEventListener('click', event => {
       if(handledByPointer || Date.now() < suppressQuickTapUntil || Date.now() < elementTapHandledUntil){
         event.preventDefault();
@@ -1211,10 +1324,11 @@ function playerNumberIn(st, id){
 
   function playerAtPosition(pos, inning, exceptId=null){
     if(!isFieldPos(pos)) return null;
-    return state.players.find(p => p.id !== exceptId && effectivePosition(p.id, inning) === pos)?.id || null;
+    return state.players.find(p => p.id !== exceptId && !isPlayerAbsent(p.id) && effectivePosition(p.id, inning) === pos)?.id || null;
   }
 
   function setRawChange(playerId, inning, pos){
+    if(inning > 1 && isPlayerAbsent(playerId)) return;
     if(inning <= 1){ state.startPositions[playerId] = pos; return; }
     state.defenseChanges[playerId] ||= {};
     state.defenseChanges[playerId][inning] = pos;
@@ -1317,6 +1431,10 @@ function playerNumberIn(st, id){
   function handlePlayerTap(playerId){
     if(isSwapAnimating) return;
     if(!playerById(playerId)) return;
+    if(isPlayerAbsent(playerId)){
+      showToast('欠席選手は交代できません');
+      return;
+    }
     selectedDefense = null;
     if(isInitialMode()){
       handleInitialOrderTap(playerId);
@@ -1378,7 +1496,12 @@ function playerNumberIn(st, id){
 
   function handleSubstitutionTap(playerId){
     if(isSwapAnimating) return;
+    if(isPlayerAbsent(playerId)){
+      showToast('欠席選手は交代できません');
+      return;
+    }
     const inning = activeInning();
+    if(selectedSwapId && isPlayerAbsent(selectedSwapId)) selectedSwapId = null;
     if(!selectedSwapId){
       selectedSwapId = playerId;
       startTapFeedback({ playerIds: [playerId] });
@@ -1411,6 +1534,7 @@ function playerNumberIn(st, id){
   }
 
   function substituteNineMode(idA, idB, inning){
+    if(isPlayerAbsent(idA) || isPlayerAbsent(idB)) return false;
     const currentLine = getLineupAt(inning);
     const a = currentLine.indexOf(idA);
     const b = currentLine.indexOf(idB);
@@ -1432,6 +1556,7 @@ function playerNumberIn(st, id){
   }
 
   function substituteAllBattingDefenseOnly(idA, idB, inning){
+    if(isPlayerAbsent(idA) || isPlayerAbsent(idB)) return false;
     const posA = effectivePosition(idA, inning);
     const posB = effectivePosition(idB, inning);
     const aBench = posA === 'B';
@@ -1449,6 +1574,10 @@ function playerNumberIn(st, id){
   function handleDefenseTap(playerId){
     if(isSwapAnimating) return;
     if(!playerById(playerId)) return;
+    if(isPlayerAbsent(playerId)){
+      showToast('欠席選手は守備変更できません');
+      return;
+    }
     selectedSwapId = null;
     const inning = activeInning();
     if(!selectedDefense){
@@ -1820,9 +1949,13 @@ function playerNumberIn(st, id){
       const chip = document.createElement('button');
       chip.type = 'button';
       const hasTapFeedback = tapFeedbackIds.has(p.id);
-      chip.className = 'bench-chip' + (selectedSwapId === p.id ? ' selected is-selected' : '') + (hasTapFeedback ? ' tap-feedback' : '') + (swapFadeOutIds.has(p.id) ? ' swap-fade-out is-swapping' : '') + (swapFadeInIds.has(p.id) ? ' swap-fade-in is-swapping' : '');
+      const absent = isPlayerAbsent(p.id);
+      chip.className = 'bench-chip' + (absent ? ' is-absent' : '') + (selectedSwapId === p.id ? ' selected is-selected' : '') + (hasTapFeedback ? ' tap-feedback' : '') + (swapFadeOutIds.has(p.id) ? ' swap-fade-out is-swapping' : '') + (swapFadeInIds.has(p.id) ? ' swap-fade-in is-swapping' : '');
+      chip.setAttribute('aria-label', `${displayName(p.id)} ${absent ? '欠席' : '出席'}。長押しで切り替え`);
       chip.innerHTML = `<span class="dot" style="background:${escapeAttr(p.color)}"></span><span>${escapeHtml(displayName(p.id))}</span>`;
-      bindQuickTap(chip, () => handlePlayerTap(p.id));
+      bindQuickTap(chip, () => handlePlayerTap(p.id), {
+        longPress: () => toggleBenchAttendance(p.id)
+      });
       wrap.appendChild(chip);
     });
   }
@@ -1939,6 +2072,7 @@ function playerNumberIn(st, id){
         startPositions: clone(snapshot.startPositions),
         defenseChanges: clone(snapshot.defenseChanges),
         lineupByInning: clone(snapshot.lineupByInning),
+        attendanceByPlayerId: clone(snapshot.attendanceByPlayerId || {}),
         benchPlayers: benchPlayersForState(snapshot).map(p => p.id),
         memo: entry.memo || buildSaveMemoForState(snapshot),
         state: snapshot
@@ -2552,6 +2686,7 @@ function playerNumberIn(st, id){
     state.battingOrder = state.battingOrder.filter(pid => pid !== id);
     delete state.startPositions[id];
     delete state.defenseChanges[id];
+    delete state.attendanceByPlayerId?.[id];
     Object.keys(state.lineupByInning).forEach(k => state.lineupByInning[k] = state.lineupByInning[k].filter(pid => pid !== id));
     if(selectedSwapId === id) selectedSwapId = null;
     if(selectedDefense?.playerId === id) selectedDefense = null;
@@ -2624,6 +2759,39 @@ function playerNumberIn(st, id){
     return size;
   }
 
+  function wrappedCanvasChars(ctx, text, maxWidth){
+    const lines = [];
+    let current = '';
+    Array.from(String(text || '')).forEach(char => {
+      const next = current + char;
+      if(current && ctx.measureText(next).width > maxWidth){
+        lines.push(current);
+        current = char;
+      }else{
+        current = next;
+      }
+    });
+    if(current) lines.push(current);
+    return lines;
+  }
+
+  function fitWrappedCanvasChars(ctx, text, maxWidth, weight, startSize, minSize, key = currentFontKey(), maxLines = 2){
+    const safeText = String(text || '');
+    for(let size = startSize; size >= minSize; size--){
+      ctx.font = canvasFont(weight, size, key);
+      const lines = wrappedCanvasChars(ctx, safeText, maxWidth);
+      if(lines.length <= maxLines) return { size, lines };
+    }
+    ctx.font = canvasFont(weight, minSize, key);
+    const lines = wrappedCanvasChars(ctx, safeText, maxWidth);
+    if(lines.length > maxLines){
+      const keep = lines.slice(0, maxLines - 1);
+      keep.push(lines.slice(maxLines - 1).join(''));
+      return { size:minSize, lines:keep };
+    }
+    return { size:minSize, lines };
+  }
+
   function loadCanvasImage(src){
     return new Promise(resolve => {
       if(location.protocol === 'file:'){
@@ -2660,9 +2828,26 @@ function playerNumberIn(st, id){
     return [date, g.start || '', opponent].filter(Boolean).join('  ');
   }
 
+  function shareOpponentLine(st){
+    const opponent = String(st.game?.opponent || '').trim() || '未定';
+    return `vs ${opponent}`;
+  }
+
+  function shareDateInningsLine(st){
+    const g = st.game || {};
+    const date = formatGameDate(g.date) || '日付未入力';
+    const parts = [date, g.start || '', `${maxInnings(st)}回`].filter(Boolean);
+    return parts.join('　');
+  }
+
   function shareGamePlaceLine(st){
     const place = String(st.game?.place || '').trim();
     return place ? `@${place}` : '';
+  }
+
+  function shareHeaderPlaceLine(st){
+    const place = String(st.game?.place || '').trim();
+    return `@${place || '未定'}`;
   }
 
   function shareInningForState(st){
@@ -2688,6 +2873,14 @@ function playerNumberIn(st, id){
   function benchPlayersForStateAt(st, inning){
     const lineup = new Set(getLineupAtIn(st, inning));
     return (st.players || []).filter(p => st.battingMode === 'nine' ? !lineup.has(p.id) : effectivePositionIn(st, p.id, inning) === 'B');
+  }
+
+  function presentLineupAtIn(st, inning){
+    return getLineupAtIn(st, inning).filter(id => !isPlayerAbsentIn(st, id));
+  }
+
+  function presentBenchPlayersForStateAt(st, inning){
+    return benchPlayersForStateAt(st, inning).filter(p => !isPlayerAbsentIn(st, p.id));
   }
 
   function shareChangeLinesForState(st, inning){
@@ -2762,6 +2955,43 @@ function playerNumberIn(st, id){
     return { inning, pos:after || 'B', start:false };
   }
 
+  function changedDefenseInningsForShareState(st, visibleIds){
+    const innings = new Set();
+    const max = maxInnings(st);
+    const visible = new Set(visibleIds || []);
+    (st.players || []).forEach(player => {
+      if(isPlayerAbsentIn(st, player.id) || !visible.has(player.id)) return;
+      Object.keys(st.defenseChanges?.[player.id] || {}).forEach(key => {
+        const inning = Number(key);
+        if(Number.isFinite(inning) && inning >= 2 && inning <= max) innings.add(inning);
+      });
+    });
+    if(st.battingMode === 'nine'){
+      for(let inning=2; inning<=max; inning++){
+        const before = getLineupAtIn(st, inning - 1).filter(id => !isPlayerAbsentIn(st, id));
+        const after = getLineupAtIn(st, inning).filter(id => !isPlayerAbsentIn(st, id));
+        if(!sameLineupIn(before, after)){
+          before.concat(after).forEach(id => {
+            if(visible.has(id)) innings.add(inning);
+          });
+        }
+      }
+    }
+    return Array.from(innings).sort((a,b) => a - b);
+  }
+
+  function defenseColumnsForShareState(st, visibleIds){
+    return [
+      { key:'start', label:'初', inning:1 },
+      ...changedDefenseInningsForShareState(st, visibleIds).map(inning => ({ key:String(inning), label:String(inning), inning }))
+    ];
+  }
+
+  function defenseColumnItemInShare(st, playerId, column){
+    if(isPlayerAbsentIn(st, playerId)) return null;
+    return defenseColumnItemIn(st, playerId, column);
+  }
+
   function drawCanvasCard(ctx, x, y, w, h, radius = 20){
     drawRoundRect(ctx, x, y, w, h, radius);
     ctx.fillStyle = '#ffffff';
@@ -2801,9 +3031,9 @@ function playerNumberIn(st, id){
     await waitForLineupFonts();
     const mascotImage = await loadCanvasImage('assets/splash-order.png');
     const inning = shareInningForState(st);
-    const starters = getLineupAtIn(st, inning);
-    const bench = benchPlayersForStateAt(st, inning);
-    const columns = defenseColumnsForState(st);
+    const starters = presentLineupAtIn(st, inning);
+    const bench = presentBenchPlayersForStateAt(st, inning);
+    const columns = defenseColumnsForShareState(st, starters);
     const hasDefenseColumns = columns.length > 1;
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -2812,7 +3042,7 @@ function playerNumberIn(st, id){
     const cardW = width - margin * 2;
     const rowH = hasDefenseColumns ? 82 : 70;
     const headerY = 34;
-    const headerH = 176;
+    const headerH = 236;
     const orderPad = 24;
     const noW = 46;
     const playerW = hasDefenseColumns ? 370 : 650;
@@ -2847,21 +3077,29 @@ function playerNumberIn(st, id){
     ctx.arc(width - margin - 38, headerY + 38, 92, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
-    const mascotBoxW = 150;
-    const mascotBoxH = 130;
+    const mascotBoxW = 164;
+    const mascotBoxH = 158;
+    const mascotX = width - margin - mascotBoxW - 28;
+    const mascotY = headerY + 38;
     if(mascotImage){
-      drawContainedImage(ctx, mascotImage, width - margin - mascotBoxW - 22, headerY + 24, mascotBoxW, mascotBoxH);
+      drawContainedImage(ctx, mascotImage, mascotX, mascotY, mascotBoxW, mascotBoxH);
     }
     const titleX = margin + 34;
-    const titleMaxW = cardW - (mascotImage ? mascotBoxW + 92 : 68);
+    const titleMaxW = cardW - (mascotImage ? mascotBoxW + 108 : 68);
     ctx.fillStyle = '#ffffff';
-    ctx.font = canvasFont(900, 42, imageFontKey);
-    ctx.fillText(truncateCanvasText(ctx, shareGameMainLine(st), titleMaxW), titleX, headerY + 78);
-    const placeLine = shareGamePlaceLine(st);
-    if(placeLine){
-      ctx.font = canvasFont(800, 27, imageFontKey);
-      ctx.fillText(truncateCanvasText(ctx, placeLine, titleMaxW), titleX, headerY + 126);
-    }
+    ctx.font = canvasFont(900, 32, imageFontKey);
+    ctx.fillText('打順プランナー', titleX, headerY + 50);
+    const opponentFit = fitWrappedCanvasChars(ctx, shareOpponentLine(st), titleMaxW, 900, 40, 23, imageFontKey, 2);
+    ctx.font = canvasFont(900, opponentFit.size, imageFontKey);
+    let headerTextY = headerY + 98;
+    opponentFit.lines.forEach((line, idx) => {
+      ctx.fillText(line, titleX, headerTextY + idx * (opponentFit.size + 8));
+    });
+    headerTextY += opponentFit.lines.length * (opponentFit.size + 8) + 10;
+    ctx.font = canvasFont(800, 28, imageFontKey);
+    ctx.fillText(shareDateInningsLine(st), titleX, headerTextY);
+    ctx.font = canvasFont(800, 25, imageFontKey);
+    ctx.fillText(shareHeaderPlaceLine(st), titleX, headerTextY + 38);
 
     let y = headerY + headerH + 28;
     drawCanvasCard(ctx, margin, y, cardW, orderCardH, 28);
@@ -2934,7 +3172,7 @@ function playerNumberIn(st, id){
       ctx.stroke();
       if(hasDefenseColumns){
         columns.forEach((col, colIndex) => {
-          const item = defenseColumnItemIn(st, pid, col);
+          const item = defenseColumnItemInShare(st, pid, col);
           if(!item) return;
           const x = defenseContentX + colIndex * (chipW + colGap);
           const chipY = rowY + rowH / 2 - chipH / 2;
@@ -2942,7 +3180,7 @@ function playerNumberIn(st, id){
           drawCanvasDefenseChip(ctx, posShort(item.pos), x, chipY, chipW, chipH, item.start ? 'start' : 'change', active, imageFontKey);
         });
       }else{
-        const item = defenseColumnItemIn(st, pid, columns[0]);
+        const item = defenseColumnItemInShare(st, pid, columns[0]);
         drawCanvasDefenseChip(ctx, posShort(item.pos), defenseContentX, rowY + rowH / 2 - 21, 62, 42, 'start', false, imageFontKey);
       }
     });
