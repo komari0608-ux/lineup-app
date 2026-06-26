@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-26-fast-swipe';
+    window.LINEUP_APP_VERSION = '2026-06-26-card-swipe';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -215,12 +215,12 @@
     .player-main-group{
       min-width:0;display:grid;grid-template-columns:minmax(0,.9fr) minmax(158px,1fr);gap:7px;border-radius:15px;
       transition:background-color .14s ease,box-shadow .14s ease,transform .14s ease,opacity .14s ease;
-      touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
+      touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
     }
     .player-card,.defense-card{
       min-width:0;min-height:44px;border:1px solid #bdd7ef;border-radius:12px;background:#fff;color:var(--ink);box-shadow:0 2px 7px rgba(16,32,51,.045);
       transition:background-color .14s ease,border-color .14s ease,box-shadow .14s ease,transform .14s ease,opacity .14s ease;
-      touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
+      touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
     }
     .player-card{display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;padding:0 8px 0 10px;font-size:16px;font-weight:950}
     .player-main-group:active,.player-card:active,.defense-card:active,.bench-chip:active{opacity:.82;transform:translateZ(0) scale(.985)}
@@ -235,7 +235,7 @@
     .pos-chip,.add-pos-chip{
       flex:0 0 auto;min-width:36px;height:30px;border-radius:999px;border:1px solid #bdd7ef;background:#fff;color:#07192b;font-size:13px;font-weight:950;display:inline-flex;align-items:center;justify-content:center;gap:1px;padding:0 7px;
       transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease,color .16s ease,opacity .16s ease;
-      touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
+      touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
     }
     .pos-chip.start{min-width:38px;height:32px;background:#f5fbff;border-color:#9bc9f0;color:#043e76;font-size:14px}
     .pos-chip.change{min-width:28px;height:26px;background:#fff7ed;border-color:#fdba74;color:#7c2d12;font-size:13px;padding:0 5px}
@@ -475,6 +475,7 @@
   const PAGE_SWIPE_VELOCITY_PX_MS = 0.18;
   const PAGE_SWIPE_EDGE_MAX_PX = 28;
   const PAGE_SWIPE_LOCK_PX = 4;
+  const PAGE_TAP_CANCEL_PX = 10;
   const PAGE_SWIPE_HORIZONTAL_RATIO = 1.03;
   const PAGE_SWIPE_VERTICAL_CANCEL_RATIO = 1.35;
   const MIGRATION_KEYS = ['lineupPlannerV9OrderTapShare','lineupPlannerV8InlineSwap','lineupPlannerV7InlineDefense','lineupPlannerV6TapCompact','lineupPlannerV5CompactIphone','lineupPlannerV4Iphone'];
@@ -545,6 +546,7 @@
   let calendarMonth = null;
   let tabsTrackFrame = null;
   let tabsTrackPending = null;
+  let suppressQuickTapUntil = 0;
   const SWAP_FADE_OUT_MS = 90;
   const SWAP_FADE_IN_MS = 120;
   const TAP_FEEDBACK_MS = 120;
@@ -988,6 +990,8 @@ function playerNumberIn(st, id){
   }
   function bindQuickTap(element, handler, options = {}){
     let handledByPointer = false;
+    let tapPointer = null;
+    let elementTapHandledUntil = 0;
     const shouldIgnore = (event) => shouldIgnoreNestedFormControlTap(event) || Boolean(options.ignore?.(event));
     const feedbackTarget = (event) => {
       if(typeof options.feedbackElement === 'function') return options.feedbackElement(event) || element;
@@ -996,6 +1000,7 @@ function playerNumberIn(st, id){
     };
     const run = (event) => {
       event.stopPropagation();
+      if(Date.now() < suppressQuickTapUntil) return;
       if(shouldIgnore(event)) return;
       handler(event);
     };
@@ -1003,22 +1008,48 @@ function playerNumberIn(st, id){
       if(event.pointerType === 'mouse' && event.button !== 0) return;
       if(shouldIgnore(event)) return;
       event.stopPropagation();
-      flashTapFeedback(feedbackTarget(event));
+      tapPointer = { id:event.pointerId, startX:event.clientX, startY:event.clientY, cancelled:false };
+    }, { passive:true });
+    element.addEventListener('pointermove', event => {
+      if(!tapPointer || tapPointer.id !== event.pointerId) return;
+      const dx = event.clientX - tapPointer.startX;
+      const dy = event.clientY - tapPointer.startY;
+      const absX = Math.abs(dx);
+      const absY = Math.abs(dy);
+      if(absX >= PAGE_TAP_CANCEL_PX || absY >= PAGE_TAP_CANCEL_PX) tapPointer.cancelled = true;
+      if(absX >= PAGE_TAP_CANCEL_PX && absX > absY * PAGE_SWIPE_HORIZONTAL_RATIO){
+        suppressQuickTapUntil = Date.now() + 260;
+      }
     }, { passive:true });
     element.addEventListener('pointerup', event => {
       if(event.pointerType === 'mouse' && event.button !== 0) return;
+      if(Date.now() < elementTapHandledUntil) return;
       handledByPointer = true;
       event.preventDefault();
+      const tap = tapPointer;
+      tapPointer = null;
+      const dx = tap ? event.clientX - tap.startX : 0;
+      const dy = tap ? event.clientY - tap.startY : 0;
+      const moved = !tap || tap.cancelled || Math.abs(dx) >= PAGE_TAP_CANCEL_PX || Math.abs(dy) >= PAGE_TAP_CANCEL_PX;
+      if(moved || Date.now() < suppressQuickTapUntil){
+        event.stopPropagation();
+        setTimeout(() => { handledByPointer = false; }, POINTER_CLICK_GUARD_MS);
+        return;
+      }
+      flashTapFeedback(feedbackTarget(event));
       run(event);
+      elementTapHandledUntil = Date.now() + POINTER_CLICK_GUARD_MS;
       setTimeout(() => { handledByPointer = false; }, POINTER_CLICK_GUARD_MS);
     });
+    element.addEventListener('pointercancel', () => { tapPointer = null; });
     element.addEventListener('click', event => {
-      if(handledByPointer){
+      if(handledByPointer || Date.now() < suppressQuickTapUntil || Date.now() < elementTapHandledUntil){
         event.preventDefault();
         event.stopPropagation();
         return;
       }
       run(event);
+      elementTapHandledUntil = Date.now() + POINTER_CLICK_GUARD_MS;
     });
   }
   function reducedMotion(){
@@ -2101,7 +2132,7 @@ function playerNumberIn(st, id){
     if(!target) return true;
     if(target.closest?.('input, select, textarea, [contenteditable="true"], [contenteditable=""]')) return true;
     const button = target.closest?.('button');
-    if(button && !button.classList.contains('history-summary') && !button.classList.contains('player-card')) return true;
+    if(button && !button.closest('.history-summary,.player-card,.pos-chip,.bench-chip')) return true;
     return !!target.closest?.('.bottom-nav,.settings-modal,.inning-scroll,.memo-actions,.date-button,.calendar-panel,.settings-sheet,.history-delete-action,.history-actions');
   }
 
@@ -2187,8 +2218,11 @@ function playerNumberIn(st, id){
       }
       if(absX <= absY * PAGE_SWIPE_HORIZONTAL_RATIO) return;
       swipe.active = true;
+      suppressQuickTapUntil = Date.now() + 260;
+      clearTapFeedback();
     }
     if(swipe.active){
+      suppressQuickTapUntil = Date.now() + 260;
       event.preventDefault();
       setPageSwipeFeedback(dx);
     }
@@ -2235,6 +2269,7 @@ function playerNumberIn(st, id){
     if(!swipe || pointerId !== swipe.pointerId) return;
     const dx = clientX - swipe.startX;
     const dy = clientY - swipe.startY;
+    if(swipe.active) suppressQuickTapUntil = Date.now() + 260;
     const action = pageSwipeAction(swipe, dx, dy, timeStamp, false);
     if(action) applyPageSwipeAction(action);
     else clearPageSwipeFeedback();
