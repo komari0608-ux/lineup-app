@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-27-record-sort-click-fix';
+    window.LINEUP_APP_VERSION = '2026-06-27-share-plan-mascot-header';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -151,7 +151,7 @@
     .titlebar{display:flex;align-items:center;gap:5px;margin-bottom:3px}
     .title-text{min-width:0;flex:1;font-weight:950;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .save-chip{display:none;color:var(--muted);font-size:11px;font-weight:900;white-space:nowrap}
-    .save-btn,.share-btn,.settings-btn{border:0;border-radius:14px;width:44px;height:44px;padding:0;display:inline-flex;align-items:center;justify-content:center;flex:0 0 44px;font-weight:950;white-space:nowrap;touch-action:manipulation}.save-btn{background:var(--blue);color:#fff;box-shadow:0 4px 10px rgba(8,103,189,.16)}.share-btn{background:#ecfbf2;color:var(--green);border:1px solid #bfe0cc}.settings-btn{background:#fff;color:var(--blue-dark);border:1px solid var(--line)}.top-icon{width:21px;height:21px;display:block;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;fill:none}.save-btn .top-icon{width:22px;height:22px}.gear-icon{font-size:24px;line-height:1;display:block;transform:translateY(-1px)}
+    .save-btn,.share-btn,.settings-btn{border:0;border-radius:14px;width:44px;height:44px;padding:0;display:inline-flex;align-items:center;justify-content:center;flex:0 0 44px;font-weight:950;white-space:nowrap;touch-action:manipulation}.save-btn{background:var(--blue);color:#fff;box-shadow:0 4px 10px rgba(8,103,189,.16)}.share-btn{background:#ecfbf2;color:var(--green);border:1px solid #bfe0cc}.settings-btn{background:#fff;color:var(--blue-dark);border:1px solid var(--line)}.top-icon{width:21px;height:21px;display:block;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;fill:none}.save-btn .top-icon{width:22px;height:22px}.gear-icon{font-size:24px;line-height:1;display:block;transform:translateY(-1px)}.header-mascot{width:46px;height:46px;flex:0 0 46px;object-fit:contain;border-radius:13px;box-shadow:0 5px 12px rgba(8,103,189,.10);pointer-events:none;background:#f5fbff}
     .game-summary{min-height:18px;color:var(--blue-dark);font-size:12px;font-weight:900;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .gamebox{display:grid;gap:6px;background:#f6fbf8;border:1px solid #d3ebe1;border-radius:12px;padding:8px}
     .game-line{display:grid;gap:6px}
@@ -310,8 +310,9 @@
     @keyframes splashImageIn{0%{opacity:0;transform:translate3d(0,12px,0) scale(.94)}48%{opacity:1;transform:translate3d(0,0,0) scale(1)}72%{transform:translate3d(0,-3px,0) scale(1.01)}100%{opacity:1;transform:translate3d(0,0,0) scale(1)}}
     @keyframes splashTextIn{0%{opacity:0;transform:translate3d(0,6px,0)}100%{opacity:1;transform:translate3d(0,0,0)}}
     @media (prefers-reduced-motion: reduce){.startup-splash,.splash-image,.splash-fallback,.splash-title,.splash-sub,.player-main-group,.player-card,.defense-card,.pos-chip,.bench-chip,.inning-btn,.toast{transition:none!important;animation:none!important}.player-main-group.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback,.inning-btn.tap-feedback,.pos-chip.tap-feedback,.player-main-group.swap-fade-out,.player-main-group.swap-fade-in,.defense-card.swap-fade-out,.defense-card.swap-fade-in,.bench-chip.swap-fade-out,.bench-chip.swap-fade-in,.pos-chip.swap-fade-out,.pos-chip.swap-fade-in{animation:none!important}}
-    @media (max-width:560px){.title-text{flex:0 1 128px}.save-btn,.share-btn,.settings-btn{width:44px;height:44px;padding:0}.settings-btn{min-width:auto}}
-    @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{width:44px;height:44px;padding:0}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .card-head{padding:7px}.card-head h2{font-size:13px}.order-head-actions{gap:4px}.order-reset-btn{height:30px;min-width:88px;font-size:11px;padding:0 7px}.defense-grid-header{grid-template-columns:27px minmax(0,1fr);gap:6px;padding-top:5px}.defense-grid-head-main{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr);gap:6px}.defense-col-head{width:48px;font-size:9px}.order-card .row-list{gap:5px;padding-top:4px}.order-main{grid-template-columns:27px minmax(0,1fr);gap:6px;min-height:44px;padding:0}.player-main-group{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr);gap:6px}.player-main-group.single-defense{grid-template-columns:minmax(0,1fr) max-content}.order-card.has-defense-changes .player-main-group{grid-template-columns:minmax(0,1fr) 174px}.order-no{font-size:20px}.player-card{font-size:13px;padding-left:9px;padding-right:9px}.pos-flow{gap:2px;padding:4px 3px}.pos-flow.single-defense{min-width:58px;max-width:70px;padding:5px}.pos-flow.timeline-defense{gap:6px;padding:5px 6px}.pos-cell{min-height:28px}.pos-chip{height:30px;min-width:34px;font-size:13px;padding:0 7px}.pos-flow .pos-chip{height:27px;font-size:11px}.pos-flow .pos-chip.start{height:28px;font-size:12px}.pos-flow.single-defense .pos-chip,.pos-flow.single-defense .pos-chip.start{min-width:48px;height:32px;font-size:15px;padding:0 9px}.pos-flow.timeline-defense .pos-chip,.pos-flow.timeline-defense .pos-chip.start,.pos-flow.timeline-defense .pos-chip.change,.pos-flow.timeline-defense .pos-chip.change.current-inning{width:auto;min-width:48px;height:34px;padding:0 8px;font-size:14px}.order-card.has-compact-defense-chips .pos-flow.timeline-defense{gap:3px;padding:5px 4px}.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip,.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip.start,.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip.change,.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip.change.current-inning{width:34px;min-width:34px;height:31px;font-size:13px;padding:0}.order-card.has-ultra-defense-chips .pos-flow.timeline-defense{gap:1px;padding:4px 3px}.order-card.has-ultra-defense-chips .player-card{gap:4px;padding-left:7px;padding-right:5px;font-size:12px;letter-spacing:-.03em}.order-card.has-ultra-defense-chips .player-number-badge{min-width:36px;height:30px;padding:0 4px;font-size:14px}.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip,.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip.start,.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip.change,.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip.change.current-inning{width:26px;min-width:26px;height:29px;font-size:11px;padding:0}.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip.is-wide{width:28px;min-width:28px}.order-card.has-many-defense-chips .pos-flow.timeline-defense{gap:2px 3px;padding:3px 4px}.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip,.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.start,.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.change,.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.change.current-inning{width:28px;min-width:28px;height:26px;font-size:12px;padding:0}.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.is-wide{width:31px;min-width:31px}.pos-flow .pos-chip.change,.pos-flow .pos-chip.change.current-inning{height:27px;font-size:11px}.pos-chip.change{height:26px;min-width:28px;font-size:13px;padding:0 5px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select,.date-button{font-size:12px;padding-left:6px;padding-right:6px}.calendar-panel{gap:6px;padding:7px}.calendar-weekdays,.calendar-grid{gap:2px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
+    @media (max-width:560px){.title-text{flex:0 1 122px}.save-btn,.share-btn,.settings-btn{width:44px;height:44px;padding:0}.settings-btn{min-width:auto}.header-mascot{width:42px;height:42px;flex-basis:42px}}
+    @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{width:44px;height:44px;padding:0}.header-mascot{width:40px;height:40px;flex-basis:40px}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .card-head{padding:7px}.card-head h2{font-size:13px}.order-head-actions{gap:4px}.order-reset-btn{height:30px;min-width:88px;font-size:11px;padding:0 7px}.defense-grid-header{grid-template-columns:27px minmax(0,1fr);gap:6px;padding-top:5px}.defense-grid-head-main{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr);gap:6px}.defense-col-head{width:48px;font-size:9px}.order-card .row-list{gap:5px;padding-top:4px}.order-main{grid-template-columns:27px minmax(0,1fr);gap:6px;min-height:44px;padding:0}.player-main-group{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr);gap:6px}.player-main-group.single-defense{grid-template-columns:minmax(0,1fr) max-content}.order-card.has-defense-changes .player-main-group{grid-template-columns:minmax(0,1fr) 174px}.order-no{font-size:20px}.player-card{font-size:13px;padding-left:9px;padding-right:9px}.pos-flow{gap:2px;padding:4px 3px}.pos-flow.single-defense{min-width:58px;max-width:70px;padding:5px}.pos-flow.timeline-defense{gap:6px;padding:5px 6px}.pos-cell{min-height:28px}.pos-chip{height:30px;min-width:34px;font-size:13px;padding:0 7px}.pos-flow .pos-chip{height:27px;font-size:11px}.pos-flow .pos-chip.start{height:28px;font-size:12px}.pos-flow.single-defense .pos-chip,.pos-flow.single-defense .pos-chip.start{min-width:48px;height:32px;font-size:15px;padding:0 9px}.pos-flow.timeline-defense .pos-chip,.pos-flow.timeline-defense .pos-chip.start,.pos-flow.timeline-defense .pos-chip.change,.pos-flow.timeline-defense .pos-chip.change.current-inning{width:auto;min-width:48px;height:34px;padding:0 8px;font-size:14px}.order-card.has-compact-defense-chips .pos-flow.timeline-defense{gap:3px;padding:5px 4px}.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip,.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip.start,.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip.change,.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip.change.current-inning{width:34px;min-width:34px;height:31px;font-size:13px;padding:0}.order-card.has-ultra-defense-chips .pos-flow.timeline-defense{gap:1px;padding:4px 3px}.order-card.has-ultra-defense-chips .player-card{gap:4px;padding-left:7px;padding-right:5px;font-size:12px;letter-spacing:-.03em}.order-card.has-ultra-defense-chips .player-number-badge{min-width:36px;height:30px;padding:0 4px;font-size:14px}.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip,.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip.start,.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip.change,.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip.change.current-inning{width:26px;min-width:26px;height:29px;font-size:11px;padding:0}.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip.is-wide{width:28px;min-width:28px}.order-card.has-many-defense-chips .pos-flow.timeline-defense{gap:2px 3px;padding:3px 4px}.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip,.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.start,.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.change,.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.change.current-inning{width:28px;min-width:28px;height:26px;font-size:12px;padding:0}.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.is-wide{width:31px;min-width:31px}.pos-flow .pos-chip.change,.pos-flow .pos-chip.change.current-inning{height:27px;font-size:11px}.pos-chip.change{height:26px;min-width:28px;font-size:13px;padding:0 5px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select,.date-button{font-size:12px;padding-left:6px;padding-right:6px}.calendar-panel{gap:6px;padding:7px}.calendar-weekdays,.calendar-grid{gap:2px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
+    @media (max-width:350px){.header-mascot{display:none}.title-text{flex-basis:126px}}
     .order-card{--defense-chip-w:48px;--defense-chip-h:34px;--defense-chip-font:14px;--defense-chip-gap:6px}
     .order-card.has-compact-defense-chips{--defense-chip-w:34px;--defense-chip-h:31px;--defense-chip-font:13px;--defense-chip-gap:3px}
     .order-card.has-ultra-defense-chips{--defense-chip-w:26px;--defense-chip-h:29px;--defense-chip-font:11px;--defense-chip-gap:1px}
@@ -358,6 +359,7 @@
             <path d="M5 19h14"></path>
           </svg>
         </button>
+        <img class="header-mascot" src="assets/icons/apple-touch-icon.png" alt="" aria-hidden="true" decoding="async" loading="eager">
       </div>
       <div class="game-summary" id="gameSummary">試合情報未設定</div>
     </header>
@@ -3272,6 +3274,16 @@ function playerNumberIn(st, id){
     return defenseColumnItemIn(st, playerId, column);
   }
 
+  function shareDefenseFlowItemsForState(st, playerId, columns){
+    const items = [];
+    (columns || []).forEach(col => {
+      const item = defenseColumnItemInShare(st, playerId, col);
+      if(item) items.push(item);
+    });
+    if(items.length) return items;
+    return [{ inning:1, pos:st.startPositions?.[playerId] || 'B', start:true }];
+  }
+
   function drawCanvasCard(ctx, x, y, w, h, radius = 20){
     drawRoundRect(ctx, x, y, w, h, radius);
     ctx.fillStyle = '#ffffff';
@@ -3309,12 +3321,14 @@ function playerNumberIn(st, id){
     const st = normalizeState(clone(sourceState));
     const imageFontKey = currentFontKey(st);
     await waitForLineupFonts();
-    const mascotImage = await loadCanvasImage('assets/splash-order.png');
+    const mascotImage = await loadCanvasImage('assets/icons/apple-touch-icon.png');
     const inning = shareInningForState(st);
     const starters = presentLineupAtIn(st, inning);
     const bench = presentBenchPlayersForStateAt(st, inning);
     const columns = defenseColumnsForShareState(st, starters);
-    const hasDefenseColumns = columns.length > 1;
+    const defenseFlows = new Map(starters.map(pid => [pid, shareDefenseFlowItemsForState(st, pid, columns)]));
+    const maxFlowItems = Math.max(1, ...Array.from(defenseFlows.values()).map(items => items.length));
+    const hasDefenseColumns = maxFlowItems > 1;
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const width = 1080;
@@ -3331,9 +3345,10 @@ function playerNumberIn(st, id){
     const defenseInnerPadX = hasDefenseColumns ? 30 : 18;
     const defenseOuterPadX = hasDefenseColumns ? 18 : 18;
     const defenseContentW = Math.max(80, defenseW - defenseInnerPadX - defenseOuterPadX);
-    const colGap = columns.length >= 5 ? 4 : 8;
+    const flowGap = hasDefenseColumns ? (maxFlowItems >= 5 ? 4 : 7) : 0;
+    const arrowW = hasDefenseColumns ? (maxFlowItems >= 5 ? 18 : 22) : 0;
     const chipW = hasDefenseColumns
-      ? Math.max(30, Math.min(58, Math.floor((defenseContentW - colGap * (columns.length - 1)) / columns.length)))
+      ? Math.max(32, Math.min(58, Math.floor((defenseContentW - (maxFlowItems - 1) * (arrowW + flowGap * 2)) / maxFlowItems)))
       : 62;
     const chipH = hasDefenseColumns ? Math.max(30, Math.min(42, Math.floor(chipW * .78))) : 42;
     const headerRowH = hasDefenseColumns ? 28 : 0;
@@ -3389,19 +3404,13 @@ function playerNumberIn(st, id){
     const defenseX = playerX + playerW + innerGap;
     const defenseContentX = defenseX + defenseInnerPadX;
     if(hasDefenseColumns){
-      ctx.textAlign = 'center';
       ctx.font = canvasFont(900, 18, imageFontKey);
-      columns.forEach((col, colIndex) => {
-        const x = defenseContentX + colIndex * (chipW + colGap);
-        const active = col.key === (inning <= 1 ? 'start' : String(inning));
-        if(active){
-          drawRoundRect(ctx, x - 4, y + orderPad - 4, chipW + 8, 24, 9);
-          ctx.fillStyle = '#eaf6ff';
-          ctx.fill();
-        }
-        ctx.fillStyle = active ? '#043e76' : '#64748b';
-        ctx.fillText(col.label, x + chipW / 2, y + orderPad + 14);
-      });
+      ctx.fillStyle = '#64748b';
+      ctx.textAlign = 'center';
+      ctx.fillText('初', defenseContentX + chipW / 2, y + orderPad + 14);
+      const planX = defenseContentX + chipW + arrowW + flowGap * 2;
+      const planW = Math.max(chipW, defenseContentW - chipW - arrowW - flowGap * 2);
+      ctx.fillText('想定', planX + planW / 2, y + orderPad + 14);
       ctx.textAlign = 'left';
     }
     starters.forEach((pid, index) => {
@@ -3451,13 +3460,22 @@ function playerNumberIn(st, id){
       ctx.lineWidth = 3;
       ctx.stroke();
       if(hasDefenseColumns){
-        columns.forEach((col, colIndex) => {
-          const item = defenseColumnItemInShare(st, pid, col);
-          if(!item) return;
-          const x = defenseContentX + colIndex * (chipW + colGap);
+        const flowItems = defenseFlows.get(pid) || [{ inning:1, pos:st.startPositions?.[pid] || 'B', start:true }];
+        let x = defenseContentX;
+        flowItems.forEach((item, itemIndex) => {
           const chipY = rowY + rowH / 2 - chipH / 2;
-          const active = col.key === (inning <= 1 ? 'start' : String(inning));
-          drawCanvasDefenseChip(ctx, posShort(item.pos), x, chipY, chipW, chipH, item.start ? 'start' : 'change', active, imageFontKey);
+          drawCanvasDefenseChip(ctx, posShort(item.pos), x, chipY, chipW, chipH, item.start ? 'start' : 'change', false, imageFontKey);
+          x += chipW;
+          if(itemIndex < flowItems.length - 1){
+            ctx.fillStyle = '#2f6b93';
+            ctx.font = canvasFont(900, Math.max(16, Math.min(22, chipH * .58)), imageFontKey);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('▶', x + flowGap + arrowW / 2, rowY + rowH / 2 + 1);
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+            x += arrowW + flowGap * 2;
+          }
         });
       }else{
         const item = defenseColumnItemInShare(st, pid, columns[0]);
