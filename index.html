@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-27-icon-header-record-sort';
+    window.LINEUP_APP_VERSION = '2026-06-27-settings-gear-icon';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -151,7 +151,7 @@
     .titlebar{display:flex;align-items:center;gap:5px;margin-bottom:3px}
     .title-text{min-width:0;flex:1;font-weight:950;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .save-chip{display:none;color:var(--muted);font-size:11px;font-weight:900;white-space:nowrap}
-    .save-btn,.share-btn,.settings-btn{border:0;border-radius:14px;width:44px;height:44px;padding:0;display:inline-flex;align-items:center;justify-content:center;flex:0 0 44px;font-weight:950;white-space:nowrap;touch-action:manipulation}.save-btn{background:var(--blue);color:#fff;box-shadow:0 4px 10px rgba(8,103,189,.16)}.share-btn{background:#ecfbf2;color:var(--green);border:1px solid #bfe0cc}.settings-btn{background:#fff;color:var(--blue-dark);border:1px solid var(--line)}.top-icon{width:21px;height:21px;display:block;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;fill:none}.save-btn .top-icon{width:22px;height:22px}
+    .save-btn,.share-btn,.settings-btn{border:0;border-radius:14px;width:44px;height:44px;padding:0;display:inline-flex;align-items:center;justify-content:center;flex:0 0 44px;font-weight:950;white-space:nowrap;touch-action:manipulation}.save-btn{background:var(--blue);color:#fff;box-shadow:0 4px 10px rgba(8,103,189,.16)}.share-btn{background:#ecfbf2;color:var(--green);border:1px solid #bfe0cc}.settings-btn{background:#fff;color:var(--blue-dark);border:1px solid var(--line)}.top-icon{width:21px;height:21px;display:block;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;fill:none}.save-btn .top-icon{width:22px;height:22px}.gear-icon{font-size:24px;line-height:1;display:block;transform:translateY(-1px)}
     .game-summary{min-height:18px;color:var(--blue-dark);font-size:12px;font-weight:900;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .gamebox{display:grid;gap:6px;background:#f6fbf8;border:1px solid #d3ebe1;border-radius:12px;padding:8px}
     .game-line{display:grid;gap:6px}
@@ -340,17 +340,7 @@
         <div class="title-text" id="titleText">打順プランナー</div>
         <span class="save-chip" id="saveNote">端末保存</span>
         <button class="settings-btn" type="button" id="settingsBtn" aria-label="設定" title="設定">
-          <svg class="top-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <circle cx="12" cy="12" r="3.2"></circle>
-            <path d="M12 2.8v2.3"></path>
-            <path d="M12 18.9v2.3"></path>
-            <path d="M4.8 4.8 6.4 6.4"></path>
-            <path d="m17.6 17.6 1.6 1.6"></path>
-            <path d="M2.8 12h2.3"></path>
-            <path d="M18.9 12h2.3"></path>
-            <path d="m4.8 19.2 1.6-1.6"></path>
-            <path d="m17.6 6.4 1.6-1.6"></path>
-          </svg>
+          <span class="gear-icon" aria-hidden="true">⚙</span>
         </button>
         <button class="share-btn" type="button" id="shareBtn" aria-label="共有" title="共有">
           <svg class="top-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
