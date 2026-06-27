@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-27-share-plan-mascot-header';
+    window.LINEUP_APP_VERSION = '2026-06-27-share-plan-columns';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -3262,26 +3262,42 @@ function playerNumberIn(st, id){
     return Array.from(innings).sort((a,b) => a - b);
   }
 
+  function shareVisiblePlayerIdsForState(st){
+    const ids = [];
+    const known = new Set((st.players || []).map(p => p.id));
+    const add = id => {
+      if(!id || !known.has(id) || isPlayerAbsentIn(st, id) || ids.includes(id)) return;
+      ids.push(id);
+    };
+    getLineupAtIn(st, 1).forEach(add);
+    changedDefenseInningsForState(st).forEach(inning => {
+      getLineupAtIn(st, inning - 1).forEach(add);
+      getLineupAtIn(st, inning).forEach(add);
+    });
+    (st.players || []).forEach(player => {
+      if(isPlayerAbsentIn(st, player.id)) return;
+      if(Object.keys(st.defenseChanges?.[player.id] || {}).length) add(player.id);
+    });
+    return ids;
+  }
+
+  function sharePlanColumnLabel(index, total){
+    if(total <= 1) return '想定';
+    const marks = ['①','②','③','④','⑤','⑥','⑦','⑧','⑨'];
+    return `想定${marks[index] || String(index + 1)}`;
+  }
+
   function defenseColumnsForShareState(st, visibleIds){
+    const innings = changedDefenseInningsForShareState(st, visibleIds);
     return [
       { key:'start', label:'初', inning:1 },
-      ...changedDefenseInningsForShareState(st, visibleIds).map(inning => ({ key:String(inning), label:String(inning), inning }))
+      ...innings.map((inning, index) => ({ key:String(inning), label:sharePlanColumnLabel(index, innings.length), inning }))
     ];
   }
 
   function defenseColumnItemInShare(st, playerId, column){
     if(isPlayerAbsentIn(st, playerId)) return null;
     return defenseColumnItemIn(st, playerId, column);
-  }
-
-  function shareDefenseFlowItemsForState(st, playerId, columns){
-    const items = [];
-    (columns || []).forEach(col => {
-      const item = defenseColumnItemInShare(st, playerId, col);
-      if(item) items.push(item);
-    });
-    if(items.length) return items;
-    return [{ inning:1, pos:st.startPositions?.[playerId] || 'B', start:true }];
   }
 
   function drawCanvasCard(ctx, x, y, w, h, radius = 20){
@@ -3323,12 +3339,10 @@ function playerNumberIn(st, id){
     await waitForLineupFonts();
     const mascotImage = await loadCanvasImage('assets/icons/apple-touch-icon.png');
     const inning = shareInningForState(st);
-    const starters = presentLineupAtIn(st, inning);
+    const starters = shareVisiblePlayerIdsForState(st);
     const bench = presentBenchPlayersForStateAt(st, inning);
     const columns = defenseColumnsForShareState(st, starters);
-    const defenseFlows = new Map(starters.map(pid => [pid, shareDefenseFlowItemsForState(st, pid, columns)]));
-    const maxFlowItems = Math.max(1, ...Array.from(defenseFlows.values()).map(items => items.length));
-    const hasDefenseColumns = maxFlowItems > 1;
+    const hasDefenseColumns = columns.length > 1;
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const width = 1080;
@@ -3345,10 +3359,9 @@ function playerNumberIn(st, id){
     const defenseInnerPadX = hasDefenseColumns ? 30 : 18;
     const defenseOuterPadX = hasDefenseColumns ? 18 : 18;
     const defenseContentW = Math.max(80, defenseW - defenseInnerPadX - defenseOuterPadX);
-    const flowGap = hasDefenseColumns ? (maxFlowItems >= 5 ? 4 : 7) : 0;
-    const arrowW = hasDefenseColumns ? (maxFlowItems >= 5 ? 18 : 22) : 0;
+    const colGap = columns.length >= 5 ? 4 : 8;
     const chipW = hasDefenseColumns
-      ? Math.max(32, Math.min(58, Math.floor((defenseContentW - (maxFlowItems - 1) * (arrowW + flowGap * 2)) / maxFlowItems)))
+      ? Math.max(30, Math.min(58, Math.floor((defenseContentW - colGap * (columns.length - 1)) / columns.length)))
       : 62;
     const chipH = hasDefenseColumns ? Math.max(30, Math.min(42, Math.floor(chipW * .78))) : 42;
     const headerRowH = hasDefenseColumns ? 28 : 0;
@@ -3379,22 +3392,20 @@ function playerNumberIn(st, id){
     if(mascotImage){
       drawContainedImage(ctx, mascotImage, mascotX, mascotY, mascotBoxW, mascotBoxH);
     }
-    const titleX = margin + 34;
-    const titleMaxW = cardW - (mascotImage ? mascotBoxW + 108 : 68);
+    const headerTextX = margin + 34;
+    const headerTextMaxW = cardW - (mascotImage ? mascotBoxW + 108 : 68);
     ctx.fillStyle = '#ffffff';
-    ctx.font = canvasFont(900, 32, imageFontKey);
-    ctx.fillText('打順プランナー', titleX, headerY + 50);
-    const opponentFit = fitWrappedCanvasChars(ctx, shareOpponentLine(st), titleMaxW, 900, 40, 23, imageFontKey, 2);
+    const opponentFit = fitWrappedCanvasChars(ctx, shareOpponentLine(st), headerTextMaxW, 900, 50, 28, imageFontKey, 2);
     ctx.font = canvasFont(900, opponentFit.size, imageFontKey);
-    let headerTextY = headerY + 98;
+    let headerTextY = headerY + 66;
     opponentFit.lines.forEach((line, idx) => {
-      ctx.fillText(line, titleX, headerTextY + idx * (opponentFit.size + 8));
+      ctx.fillText(line, headerTextX, headerTextY + idx * (opponentFit.size + 8));
     });
     headerTextY += opponentFit.lines.length * (opponentFit.size + 8) + 10;
-    ctx.font = canvasFont(800, 28, imageFontKey);
-    ctx.fillText(shareDateInningsLine(st), titleX, headerTextY);
-    ctx.font = canvasFont(800, 25, imageFontKey);
-    ctx.fillText(shareHeaderPlaceLine(st), titleX, headerTextY + 38);
+    ctx.font = canvasFont(800, 32, imageFontKey);
+    ctx.fillText(shareDateInningsLine(st), headerTextX, headerTextY);
+    ctx.font = canvasFont(800, 27, imageFontKey);
+    ctx.fillText(shareHeaderPlaceLine(st), headerTextX, headerTextY + 40);
 
     let y = headerY + headerH + 28;
     drawCanvasCard(ctx, margin, y, cardW, orderCardH, 28);
@@ -3404,13 +3415,14 @@ function playerNumberIn(st, id){
     const defenseX = playerX + playerW + innerGap;
     const defenseContentX = defenseX + defenseInnerPadX;
     if(hasDefenseColumns){
-      ctx.font = canvasFont(900, 18, imageFontKey);
-      ctx.fillStyle = '#64748b';
       ctx.textAlign = 'center';
-      ctx.fillText('初', defenseContentX + chipW / 2, y + orderPad + 14);
-      const planX = defenseContentX + chipW + arrowW + flowGap * 2;
-      const planW = Math.max(chipW, defenseContentW - chipW - arrowW - flowGap * 2);
-      ctx.fillText('想定', planX + planW / 2, y + orderPad + 14);
+      columns.forEach((col, colIndex) => {
+        const x = defenseContentX + colIndex * (chipW + colGap);
+        const labelSize = fitCanvasFontSize(ctx, col.label, chipW + 10, 900, columns.length >= 4 ? 16 : 18, 12, imageFontKey);
+        ctx.font = canvasFont(900, labelSize, imageFontKey);
+        ctx.fillStyle = col.key === 'start' ? '#043e76' : '#64748b';
+        ctx.fillText(col.label, x + chipW / 2, y + orderPad + 14);
+      });
       ctx.textAlign = 'left';
     }
     starters.forEach((pid, index) => {
@@ -3460,22 +3472,12 @@ function playerNumberIn(st, id){
       ctx.lineWidth = 3;
       ctx.stroke();
       if(hasDefenseColumns){
-        const flowItems = defenseFlows.get(pid) || [{ inning:1, pos:st.startPositions?.[pid] || 'B', start:true }];
-        let x = defenseContentX;
-        flowItems.forEach((item, itemIndex) => {
+        columns.forEach((col, colIndex) => {
+          const item = defenseColumnItemInShare(st, pid, col);
+          if(!item) return;
+          const x = defenseContentX + colIndex * (chipW + colGap);
           const chipY = rowY + rowH / 2 - chipH / 2;
           drawCanvasDefenseChip(ctx, posShort(item.pos), x, chipY, chipW, chipH, item.start ? 'start' : 'change', false, imageFontKey);
-          x += chipW;
-          if(itemIndex < flowItems.length - 1){
-            ctx.fillStyle = '#2f6b93';
-            ctx.font = canvasFont(900, Math.max(16, Math.min(22, chipH * .58)), imageFontKey);
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('▶', x + flowGap + arrowW / 2, rowY + rowH / 2 + 1);
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'alphabetic';
-            x += arrowW + flowGap * 2;
-          }
         });
       }else{
         const item = defenseColumnItemInShare(st, pid, columns[0]);
