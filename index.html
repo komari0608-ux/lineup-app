@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-27-settings-gear-icon';
+    window.LINEUP_APP_VERSION = '2026-06-27-record-sort-click-fix';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -3610,7 +3610,7 @@ function playerNumberIn(st, id){
       try{ localStorage.setItem(RECORD_SORT_KEY, mode); }catch(err){}
       swipedHistoryId = null;
       renderHistory();
-    });
+    }, { capture:true });
     $('historyList').addEventListener('click', handleHistoryAction, { capture:true });
     setupHistorySwipe();
     setupPageSwipe();
