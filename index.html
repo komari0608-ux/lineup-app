@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-27-save-overwrite-choice';
+    window.LINEUP_APP_VERSION = '2026-06-27-icon-header-record-sort';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -151,7 +151,7 @@
     .titlebar{display:flex;align-items:center;gap:5px;margin-bottom:3px}
     .title-text{min-width:0;flex:1;font-weight:950;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .save-chip{display:none;color:var(--muted);font-size:11px;font-weight:900;white-space:nowrap}
-    .save-btn,.share-btn,.settings-btn{border:0;border-radius:11px;height:31px;padding:0 9px;font-weight:950;white-space:nowrap}.save-btn{background:var(--blue);color:#fff}.share-btn{background:#ecfbf2;color:var(--green);border:1px solid #bfe0cc}.settings-btn{background:#fff;color:var(--blue-dark);border:1px solid var(--line);min-width:36px}
+    .save-btn,.share-btn,.settings-btn{border:0;border-radius:14px;width:44px;height:44px;padding:0;display:inline-flex;align-items:center;justify-content:center;flex:0 0 44px;font-weight:950;white-space:nowrap;touch-action:manipulation}.save-btn{background:var(--blue);color:#fff;box-shadow:0 4px 10px rgba(8,103,189,.16)}.share-btn{background:#ecfbf2;color:var(--green);border:1px solid #bfe0cc}.settings-btn{background:#fff;color:var(--blue-dark);border:1px solid var(--line)}.top-icon{width:21px;height:21px;display:block;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;fill:none}.save-btn .top-icon{width:22px;height:22px}
     .game-summary{min-height:18px;color:var(--blue-dark);font-size:12px;font-weight:900;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .gamebox{display:grid;gap:6px;background:#f6fbf8;border:1px solid #d3ebe1;border-radius:12px;padding:8px}
     .game-line{display:grid;gap:6px}
@@ -283,7 +283,7 @@
     .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 0 2px #fff,0 0 0 3px rgba(0,0,0,.10)}
     .empty-state{color:var(--muted);font-size:13px;font-weight:850;padding:0 10px 10px}
     .memo-body{padding:0 10px 10px}.memo-body textarea{width:100%;min-height:120px;resize:vertical;border:1px solid var(--line);border-radius:11px;padding:8px;font-size:12px;line-height:1.45;font-weight:850;background:#fbfdff;color:#102033;outline:none}.memo-actions{display:flex;gap:7px;margin-top:7px}.memo-actions button{flex:1;min-height:34px;border:1px solid var(--line);border-radius:11px;background:#fff;font-weight:950}.memo-actions .primary{background:var(--blue);border-color:var(--blue);color:#fff}
-    .history-list{display:grid;align-content:start;gap:8px;min-height:calc(100dvh - 184px - env(safe-area-inset-bottom));padding:9px 9px calc(96px + env(safe-area-inset-bottom));background:#f7fbff}.history-item{position:relative;background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:0 4px 10px rgba(16,32,51,.045);overflow:hidden}.history-card-surface{position:relative;z-index:1;background:#fff;transition:transform .18s ease;touch-action:pan-y}.history-item.is-swiping .history-card-surface{transition:none}.history-item.is-delete-open .history-card-surface{transform:translateX(-92px)}.history-delete-action{position:absolute;inset:0 0 0 auto;width:92px;z-index:0;display:flex;align-items:stretch;justify-content:center;background:#fff1f0}.history-delete-action button{width:100%;border:0;background:#d92d20;color:#fff;font-size:13px;font-weight:950;touch-action:manipulation}.history-summary{width:100%;min-height:54px;border:0;background:#fff;display:grid;grid-template-columns:minmax(0,1fr) 20px;align-items:center;gap:8px;padding:10px 11px;text-align:left;color:var(--blue-dark);font-size:14px;font-weight:950;line-height:1.25;touch-action:pan-y}.history-summary-main{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.history-chevron{font-size:13px;color:#5f7f9b;text-align:right;transition:transform .16s ease}.history-item.is-open .history-chevron{transform:rotate(180deg)}.history-expanded{padding:0 9px 10px}.history-title{font-size:14px;font-weight:950;color:var(--blue-dark);line-height:1.3}.history-meta,.history-saved,.history-change-count{margin-top:3px;color:var(--muted);font-size:11px;font-weight:850;line-height:1.35}.history-starters{margin-top:8px;display:grid;gap:3px;font-size:12px;font-weight:900;color:#102033}.history-starter-row,.history-detail-row{display:grid;grid-template-columns:24px minmax(0,1fr) 38px 34px;gap:5px;align-items:center}.history-player-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.history-number-badge{justify-self:end;min-width:28px;min-height:22px;padding:0 6px;border:1px solid #9bc9f0;border-radius:9px;background:#f5fbff;color:#043e76;font-size:11px;font-weight:950;display:inline-flex;align-items:center;justify-content:center}.history-pos{justify-self:end;color:#043e76;font-weight:950}.history-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:9px}.history-actions button{min-height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--blue-dark);font-size:12px;font-weight:950;padding:0 4px;touch-action:manipulation}.history-actions button.primary{background:var(--blue);border-color:var(--blue);color:#fff}.history-detail{margin-top:9px;padding-top:8px;border-top:1px solid #edf2f7;display:grid;gap:8px}.history-detail h3{margin:0 0 4px;font-size:12px;color:var(--blue-dark)}.history-detail-list{display:grid;gap:4px}.history-detail-text{font-size:12px;line-height:1.5;color:#102033;font-weight:850;white-space:pre-wrap}.history-empty{padding:18px 10px;color:var(--muted);font-weight:900;text-align:center}
+    .history-tools{display:grid;gap:7px;padding:8px 9px 7px;background:#f7fbff;border-top:1px solid rgba(210,226,238,.62)}.history-search{width:100%;height:42px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);font-size:16px;font-weight:850;padding:0 11px;outline:none}.history-search:focus{border-color:#3b94dd;box-shadow:0 0 0 3px rgba(8,103,189,.12)}.history-sort{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.history-sort button{min-height:36px;border:1px solid #cfe0ed;border-radius:999px;background:#fff;color:var(--blue-dark);font-size:12px;font-weight:950;padding:0 4px;touch-action:manipulation}.history-sort button.is-active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 4px 10px rgba(8,103,189,.15)}.history-list{display:grid;align-content:start;gap:8px;min-height:calc(100dvh - 248px - env(safe-area-inset-bottom));padding:9px 9px calc(96px + env(safe-area-inset-bottom));background:#f7fbff}.history-item{position:relative;background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:0 4px 10px rgba(16,32,51,.045);overflow:hidden}.history-card-surface{position:relative;z-index:1;background:#fff;transition:transform .18s ease;touch-action:pan-y}.history-item.is-swiping .history-card-surface{transition:none}.history-item.is-delete-open .history-card-surface{transform:translateX(-92px)}.history-delete-action{position:absolute;inset:0 0 0 auto;width:92px;z-index:0;display:flex;align-items:stretch;justify-content:center;background:#fff1f0}.history-delete-action button{width:100%;border:0;background:#d92d20;color:#fff;font-size:13px;font-weight:950;touch-action:manipulation}.history-summary{width:100%;min-height:54px;border:0;background:#fff;display:grid;grid-template-columns:minmax(0,1fr) 20px;align-items:center;gap:8px;padding:10px 11px;text-align:left;color:var(--blue-dark);font-size:14px;font-weight:950;line-height:1.25;touch-action:pan-y}.history-summary-main{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.history-chevron{font-size:13px;color:#5f7f9b;text-align:right;transition:transform .16s ease}.history-item.is-open .history-chevron{transform:rotate(180deg)}.history-expanded{padding:0 9px 10px}.history-title{font-size:14px;font-weight:950;color:var(--blue-dark);line-height:1.3}.history-meta,.history-saved,.history-change-count{margin-top:3px;color:var(--muted);font-size:11px;font-weight:850;line-height:1.35}.history-starters{margin-top:8px;display:grid;gap:3px;font-size:12px;font-weight:900;color:#102033}.history-starter-row,.history-detail-row{display:grid;grid-template-columns:24px minmax(0,1fr) 38px 34px;gap:5px;align-items:center}.history-player-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.history-number-badge{justify-self:end;min-width:28px;min-height:22px;padding:0 6px;border:1px solid #9bc9f0;border-radius:9px;background:#f5fbff;color:#043e76;font-size:11px;font-weight:950;display:inline-flex;align-items:center;justify-content:center}.history-pos{justify-self:end;color:#043e76;font-weight:950}.history-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:9px}.history-actions button{min-height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--blue-dark);font-size:12px;font-weight:950;padding:0 4px;touch-action:manipulation}.history-actions button.primary{background:var(--blue);border-color:var(--blue);color:#fff}.history-detail{margin-top:9px;padding-top:8px;border-top:1px solid #edf2f7;display:grid;gap:8px}.history-detail h3{margin:0 0 4px;font-size:12px;color:var(--blue-dark)}.history-detail-list{display:grid;gap:4px}.history-detail-text{font-size:12px;line-height:1.5;color:#102033;font-weight:850;white-space:pre-wrap}.history-empty{padding:18px 10px;color:var(--muted);font-weight:900;text-align:center}
     .player-panel,.display-mode-row,.player-row,.player-names,.add-row{touch-action:pan-y}
     .player-panel{padding:9px}.display-mode-row{display:grid;grid-template-columns:66px minmax(0,1fr);align-items:center;gap:7px;margin-bottom:8px;color:var(--muted);font-size:12px;font-weight:950}.display-mode-row select{height:32px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:0 8px;font-weight:900}
     .player-row{position:relative;display:grid;grid-template-columns:24px minmax(0,1fr) 52px 34px;align-items:center;gap:6px;min-height:48px;padding:6px 6px;border:1px solid #edf2f7;border-radius:11px;background:#fff;margin-bottom:6px;box-shadow:0 2px 7px rgba(16,32,51,.025)}.player-row::before,.player-row::after{content:"";position:absolute;left:0;right:0;height:9px;z-index:3;touch-action:pan-y}.player-row::before{top:0}.player-row::after{bottom:0}.player-row:last-child{margin-bottom:0}.color-input{width:24px;height:24px;padding:0;border:0;background:transparent}.player-names{display:grid;grid-template-columns:1fr 1fr;gap:5px;min-width:0}.player-row input[type="text"],.player-row input[type="number"]{min-width:0;height:31px;border:1px solid var(--line);border-radius:9px;padding:0 7px;font-size:12px;font-weight:850}.icon-del{height:31px;border:0;border-radius:9px;background:#fff1f0;color:var(--danger);font-weight:950}.add-row{position:relative;display:grid;grid-template-columns:1fr 1fr 58px;gap:6px;padding:17px 6px 0}.add-row::before{content:"";position:absolute;left:0;right:0;top:0;height:17px;z-index:3;touch-action:pan-y}.add-row input{min-width:0;height:34px;border:1px solid var(--line);border-radius:10px;padding:0 9px;font-size:12px;font-weight:850}.add-row button{border:0;border-radius:10px;background:var(--green);color:#fff;font-weight:950}
@@ -310,8 +310,8 @@
     @keyframes splashImageIn{0%{opacity:0;transform:translate3d(0,12px,0) scale(.94)}48%{opacity:1;transform:translate3d(0,0,0) scale(1)}72%{transform:translate3d(0,-3px,0) scale(1.01)}100%{opacity:1;transform:translate3d(0,0,0) scale(1)}}
     @keyframes splashTextIn{0%{opacity:0;transform:translate3d(0,6px,0)}100%{opacity:1;transform:translate3d(0,0,0)}}
     @media (prefers-reduced-motion: reduce){.startup-splash,.splash-image,.splash-fallback,.splash-title,.splash-sub,.player-main-group,.player-card,.defense-card,.pos-chip,.bench-chip,.inning-btn,.toast{transition:none!important;animation:none!important}.player-main-group.tap-feedback,.defense-card.tap-feedback,.bench-chip.tap-feedback,.inning-btn.tap-feedback,.pos-chip.tap-feedback,.player-main-group.swap-fade-out,.player-main-group.swap-fade-in,.defense-card.swap-fade-out,.defense-card.swap-fade-in,.bench-chip.swap-fade-out,.bench-chip.swap-fade-in,.pos-chip.swap-fade-out,.pos-chip.swap-fade-in{animation:none!important}}
-    @media (max-width:560px){.title-text{flex:0 1 128px}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 7px;font-size:12px}.settings-btn{min-width:auto}}
-    @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{height:30px;padding:0 8px;font-size:12px}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .card-head{padding:7px}.card-head h2{font-size:13px}.order-head-actions{gap:4px}.order-reset-btn{height:30px;min-width:88px;font-size:11px;padding:0 7px}.defense-grid-header{grid-template-columns:27px minmax(0,1fr);gap:6px;padding-top:5px}.defense-grid-head-main{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr);gap:6px}.defense-col-head{width:48px;font-size:9px}.order-card .row-list{gap:5px;padding-top:4px}.order-main{grid-template-columns:27px minmax(0,1fr);gap:6px;min-height:44px;padding:0}.player-main-group{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr);gap:6px}.player-main-group.single-defense{grid-template-columns:minmax(0,1fr) max-content}.order-card.has-defense-changes .player-main-group{grid-template-columns:minmax(0,1fr) 174px}.order-no{font-size:20px}.player-card{font-size:13px;padding-left:9px;padding-right:9px}.pos-flow{gap:2px;padding:4px 3px}.pos-flow.single-defense{min-width:58px;max-width:70px;padding:5px}.pos-flow.timeline-defense{gap:6px;padding:5px 6px}.pos-cell{min-height:28px}.pos-chip{height:30px;min-width:34px;font-size:13px;padding:0 7px}.pos-flow .pos-chip{height:27px;font-size:11px}.pos-flow .pos-chip.start{height:28px;font-size:12px}.pos-flow.single-defense .pos-chip,.pos-flow.single-defense .pos-chip.start{min-width:48px;height:32px;font-size:15px;padding:0 9px}.pos-flow.timeline-defense .pos-chip,.pos-flow.timeline-defense .pos-chip.start,.pos-flow.timeline-defense .pos-chip.change,.pos-flow.timeline-defense .pos-chip.change.current-inning{width:auto;min-width:48px;height:34px;padding:0 8px;font-size:14px}.order-card.has-compact-defense-chips .pos-flow.timeline-defense{gap:3px;padding:5px 4px}.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip,.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip.start,.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip.change,.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip.change.current-inning{width:34px;min-width:34px;height:31px;font-size:13px;padding:0}.order-card.has-ultra-defense-chips .pos-flow.timeline-defense{gap:1px;padding:4px 3px}.order-card.has-ultra-defense-chips .player-card{gap:4px;padding-left:7px;padding-right:5px;font-size:12px;letter-spacing:-.03em}.order-card.has-ultra-defense-chips .player-number-badge{min-width:36px;height:30px;padding:0 4px;font-size:14px}.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip,.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip.start,.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip.change,.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip.change.current-inning{width:26px;min-width:26px;height:29px;font-size:11px;padding:0}.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip.is-wide{width:28px;min-width:28px}.order-card.has-many-defense-chips .pos-flow.timeline-defense{gap:2px 3px;padding:3px 4px}.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip,.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.start,.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.change,.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.change.current-inning{width:28px;min-width:28px;height:26px;font-size:12px;padding:0}.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.is-wide{width:31px;min-width:31px}.pos-flow .pos-chip.change,.pos-flow .pos-chip.change.current-inning{height:27px;font-size:11px}.pos-chip.change{height:26px;min-width:28px;font-size:13px;padding:0 5px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select,.date-button{font-size:12px;padding-left:6px;padding-right:6px}.calendar-panel{gap:6px;padding:7px}.calendar-weekdays,.calendar-grid{gap:2px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
+    @media (max-width:560px){.title-text{flex:0 1 128px}.save-btn,.share-btn,.settings-btn{width:44px;height:44px;padding:0}.settings-btn{min-width:auto}}
+    @media (max-width:390px){.app{padding-left:8px;padding-right:8px}.titlebar{gap:4px}.save-chip{display:none}.save-btn,.share-btn,.settings-btn{width:44px;height:44px;padding:0}.toolbar select,.toolbar button{font-size:12px;padding-left:5px;padding-right:5px}.order-card .card-head{padding:7px}.card-head h2{font-size:13px}.order-head-actions{gap:4px}.order-reset-btn{height:30px;min-width:88px;font-size:11px;padding:0 7px}.defense-grid-header{grid-template-columns:27px minmax(0,1fr);gap:6px;padding-top:5px}.defense-grid-head-main{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr);gap:6px}.defense-col-head{width:48px;font-size:9px}.order-card .row-list{gap:5px;padding-top:4px}.order-main{grid-template-columns:27px minmax(0,1fr);gap:6px;min-height:44px;padding:0}.player-main-group{grid-template-columns:minmax(0,.82fr) minmax(164px,1fr);gap:6px}.player-main-group.single-defense{grid-template-columns:minmax(0,1fr) max-content}.order-card.has-defense-changes .player-main-group{grid-template-columns:minmax(0,1fr) 174px}.order-no{font-size:20px}.player-card{font-size:13px;padding-left:9px;padding-right:9px}.pos-flow{gap:2px;padding:4px 3px}.pos-flow.single-defense{min-width:58px;max-width:70px;padding:5px}.pos-flow.timeline-defense{gap:6px;padding:5px 6px}.pos-cell{min-height:28px}.pos-chip{height:30px;min-width:34px;font-size:13px;padding:0 7px}.pos-flow .pos-chip{height:27px;font-size:11px}.pos-flow .pos-chip.start{height:28px;font-size:12px}.pos-flow.single-defense .pos-chip,.pos-flow.single-defense .pos-chip.start{min-width:48px;height:32px;font-size:15px;padding:0 9px}.pos-flow.timeline-defense .pos-chip,.pos-flow.timeline-defense .pos-chip.start,.pos-flow.timeline-defense .pos-chip.change,.pos-flow.timeline-defense .pos-chip.change.current-inning{width:auto;min-width:48px;height:34px;padding:0 8px;font-size:14px}.order-card.has-compact-defense-chips .pos-flow.timeline-defense{gap:3px;padding:5px 4px}.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip,.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip.start,.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip.change,.order-card.has-compact-defense-chips .pos-flow.timeline-defense .pos-chip.change.current-inning{width:34px;min-width:34px;height:31px;font-size:13px;padding:0}.order-card.has-ultra-defense-chips .pos-flow.timeline-defense{gap:1px;padding:4px 3px}.order-card.has-ultra-defense-chips .player-card{gap:4px;padding-left:7px;padding-right:5px;font-size:12px;letter-spacing:-.03em}.order-card.has-ultra-defense-chips .player-number-badge{min-width:36px;height:30px;padding:0 4px;font-size:14px}.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip,.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip.start,.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip.change,.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip.change.current-inning{width:26px;min-width:26px;height:29px;font-size:11px;padding:0}.order-card.has-ultra-defense-chips .pos-flow.timeline-defense .pos-chip.is-wide{width:28px;min-width:28px}.order-card.has-many-defense-chips .pos-flow.timeline-defense{gap:2px 3px;padding:3px 4px}.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip,.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.start,.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.change,.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.change.current-inning{width:28px;min-width:28px;height:26px;font-size:12px;padding:0}.order-card.has-many-defense-chips .pos-flow.timeline-defense .pos-chip.is-wide{width:31px;min-width:31px}.pos-flow .pos-chip.change,.pos-flow .pos-chip.change.current-inning{height:27px;font-size:11px}.pos-chip.change{height:26px;min-width:28px;font-size:13px;padding:0 5px}.inline-editor{padding-left:36px}.game-line-main{grid-template-columns:minmax(0,1fr) minmax(88px,.68fr)}.game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.game-line-rule{grid-template-columns:minmax(0,1fr) minmax(64px,.56fr) minmax(70px,.64fr)}.game-line input,.game-line select,.date-button{font-size:12px;padding-left:6px;padding-right:6px}.calendar-panel{gap:6px;padding:7px}.calendar-weekdays,.calendar-grid{gap:2px}.player-names{grid-template-columns:1fr}.player-row{grid-template-columns:24px minmax(0,1fr) 48px 32px}.setting-field{grid-template-columns:56px minmax(0,1fr)}}
     .order-card{--defense-chip-w:48px;--defense-chip-h:34px;--defense-chip-font:14px;--defense-chip-gap:6px}
     .order-card.has-compact-defense-chips{--defense-chip-w:34px;--defense-chip-h:31px;--defense-chip-font:13px;--defense-chip-gap:3px}
     .order-card.has-ultra-defense-chips{--defense-chip-w:26px;--defense-chip-h:29px;--defense-chip-font:11px;--defense-chip-gap:1px}
@@ -339,9 +339,35 @@
       <div class="titlebar">
         <div class="title-text" id="titleText">打順プランナー</div>
         <span class="save-chip" id="saveNote">端末保存</span>
-        <button class="settings-btn" type="button" id="settingsBtn" aria-label="設定">設定</button>
-        <button class="share-btn" type="button" id="shareBtn">共有</button>
-        <button class="save-btn" type="button" id="saveBtn">保存</button>
+        <button class="settings-btn" type="button" id="settingsBtn" aria-label="設定" title="設定">
+          <svg class="top-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle cx="12" cy="12" r="3.2"></circle>
+            <path d="M12 2.8v2.3"></path>
+            <path d="M12 18.9v2.3"></path>
+            <path d="M4.8 4.8 6.4 6.4"></path>
+            <path d="m17.6 17.6 1.6 1.6"></path>
+            <path d="M2.8 12h2.3"></path>
+            <path d="M18.9 12h2.3"></path>
+            <path d="m4.8 19.2 1.6-1.6"></path>
+            <path d="m17.6 6.4 1.6-1.6"></path>
+          </svg>
+        </button>
+        <button class="share-btn" type="button" id="shareBtn" aria-label="共有" title="共有">
+          <svg class="top-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <path d="M8.7 10.7 15.3 6.3"></path>
+            <path d="M8.7 13.3 15.3 17.7"></path>
+          </svg>
+        </button>
+        <button class="save-btn" type="button" id="saveBtn" aria-label="保存" title="保存">
+          <svg class="top-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 3v10"></path>
+            <path d="m7 8 5 5 5-5"></path>
+            <path d="M5 19h14"></path>
+          </svg>
+        </button>
       </div>
       <div class="game-summary" id="gameSummary">試合情報未設定</div>
     </header>
@@ -396,6 +422,14 @@
           <div class="card-head">
             <h2>保存記録</h2>
             <span class="subhead" id="historyCount">0件</span>
+          </div>
+          <div class="history-tools">
+            <input class="history-search" id="historySearch" type="search" aria-label="保存記録を検索" placeholder="記録検索" autocomplete="off">
+            <div class="history-sort" id="historySort" role="group" aria-label="記録の並び替え">
+              <button type="button" data-history-sort="updated">更新順</button>
+              <button type="button" data-history-sort="dateAsc">日付昇順</button>
+              <button type="button" data-history-sort="dateDesc">日付降順</button>
+            </div>
           </div>
           <div class="history-list" id="historyList"></div>
         </div>
@@ -515,6 +549,8 @@
   const MAX_SAVED_ORDERS = 50;
   const STARTUP_SPLASH_KEY = 'lineupSplashSeen';
   const FONT_KEY = 'lineupPlannerFontFamily';
+  const RECORD_SORT_KEY = 'lineupPlannerRecordSortMode';
+  const RECORD_SORT_MODES = ['updated','dateAsc','dateDesc'];
   const FONT_OPTIONS = ['standard','biz-ud','biz-udp','noto','mplus','zen'];
   const TAB_ORDER = ['order','history','players'];
   const HISTORY_SWIPE_OPEN_PX = 92;
@@ -577,6 +613,8 @@
   let currentTab = 'order';
   let expandedHistoryId = null;
   let swipedHistoryId = null;
+  let historySearchQuery = '';
+  let recordSortMode = readStoredRecordSortMode();
   let historySwipeState = null;
   let pageSwipeState = null;
   let pendingSaveChoice = null;
@@ -616,6 +654,14 @@
   function readStoredLineupFont(){
     try{ return validFontKey(localStorage.getItem(FONT_KEY) || 'standard'); }
     catch(e){ return 'standard'; }
+  }
+  function readStoredRecordSortMode(){
+    try{
+      const value = localStorage.getItem(RECORD_SORT_KEY) || 'updated';
+      return RECORD_SORT_MODES.includes(value) ? value : 'updated';
+    }catch(e){
+      return 'updated';
+    }
   }
   function currentFontKey(st = state){ return validFontKey(st?.settings?.fontFamily || readStoredLineupFont()); }
   function fontFamilyForKey(key = currentFontKey()){
@@ -2269,6 +2315,96 @@ function playerNumberIn(st, id){
     return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   }
 
+  function savedOrderUpdatedMs(entry){
+    const d = new Date(entry?.updatedAt || entry?.savedAt || entry?.createdAt || 0);
+    const time = d.getTime();
+    return Number.isFinite(time) ? time : 0;
+  }
+
+  function gameDateForSort(entry){
+    return String(entry?.state?.game?.date || entry?.game?.date || '').trim();
+  }
+
+  function gameStartMinutesForSort(entry){
+    const raw = String(entry?.state?.game?.start || entry?.game?.start || '').trim();
+    const match = raw.match(/^(\d{1,2}):(\d{2})/);
+    if(!match) return null;
+    const hour = Number(match[1]);
+    const minute = Number(match[2]);
+    if(!Number.isFinite(hour) || !Number.isFinite(minute)) return null;
+    return hour * 60 + minute;
+  }
+
+  function opponentForSort(entry){
+    return String(entry?.state?.game?.opponent || entry?.game?.opponent || '').trim();
+  }
+
+  function compareGameDateEntries(a, b, direction){
+    const dateA = gameDateForSort(a.entry);
+    const dateB = gameDateForSort(b.entry);
+    const missingA = !dateA;
+    const missingB = !dateB;
+    if(missingA !== missingB) return missingA ? 1 : -1;
+    if(dateA !== dateB) return direction === 'asc' ? dateA.localeCompare(dateB) : dateB.localeCompare(dateA);
+    const timeA = gameStartMinutesForSort(a.entry);
+    const timeB = gameStartMinutesForSort(b.entry);
+    const missingTimeA = timeA === null;
+    const missingTimeB = timeB === null;
+    if(missingTimeA !== missingTimeB) return missingTimeA ? 1 : -1;
+    if(timeA !== timeB) return direction === 'asc' ? timeA - timeB : timeB - timeA;
+    const opponentCompare = opponentForSort(a.entry).localeCompare(opponentForSort(b.entry), 'ja');
+    if(opponentCompare) return opponentCompare;
+    return savedOrderUpdatedMs(b.entry) - savedOrderUpdatedMs(a.entry) || a.index - b.index;
+  }
+
+  function sortSavedOrdersForDisplay(entries){
+    const keyed = entries.map((entry, index) => ({ entry, index }));
+    keyed.sort((a, b) => {
+      if(recordSortMode === 'dateAsc') return compareGameDateEntries(a, b, 'asc');
+      if(recordSortMode === 'dateDesc') return compareGameDateEntries(a, b, 'desc');
+      return savedOrderUpdatedMs(b.entry) - savedOrderUpdatedMs(a.entry) || a.index - b.index;
+    });
+    return keyed.map(item => item.entry);
+  }
+
+  function historySearchText(entry){
+    const st = entry?.state || {};
+    const g = st.game || entry?.game || {};
+    const playerText = (st.players || entry?.players || []).map(p => [
+      p.nick,
+      p.name,
+      p.number
+    ].filter(Boolean).join(' ')).join(' ');
+    return [
+      compactDate(g.date),
+      formatGameDate(g.date),
+      g.date,
+      g.start,
+      g.opponent,
+      g.place,
+      modeLabelForState(st),
+      historyClosedTitle(st),
+      gameTitleForState(st),
+      playerText
+    ].filter(Boolean).join(' ');
+  }
+
+  function filterSavedOrdersForDisplay(entries){
+    const query = historySearchQuery.trim().toLowerCase();
+    if(!query) return entries;
+    return entries.filter(entry => historySearchText(entry).toLowerCase().includes(query));
+  }
+
+  function renderHistoryControls(){
+    const search = $('historySearch');
+    if(search && document.activeElement !== search) search.value = historySearchQuery;
+    document.querySelectorAll('[data-history-sort]').forEach(button => {
+      const active = button.dataset.historySort === recordSortMode;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+
   function modeLabelForState(st){
     return st.battingMode === 'nine' ? '9人制' : '全員打ち';
   }
@@ -2302,11 +2438,16 @@ function playerNumberIn(st, id){
   function renderHistory(){
     const wrap = $('historyList');
     if(!wrap) return;
-    const entries = loadSavedOrders();
-    $('historyCount').textContent = `${entries.length}件`;
+    renderHistoryControls();
+    const allEntries = loadSavedOrders();
+    const entries = sortSavedOrdersForDisplay(filterSavedOrdersForDisplay(allEntries));
+    const isSearching = historySearchQuery.trim().length > 0;
+    $('historyCount').textContent = isSearching ? `検索結果 ${entries.length}件` : `${entries.length}件`;
+    if(expandedHistoryId && !entries.some(entry => entry.id === expandedHistoryId)) expandedHistoryId = null;
+    if(swipedHistoryId && !entries.some(entry => entry.id === swipedHistoryId)) swipedHistoryId = null;
     wrap.innerHTML = '';
     if(!entries.length){
-      wrap.innerHTML = '<div class="history-empty">保存した記録はまだありません。</div>';
+      wrap.innerHTML = `<div class="history-empty">${isSearching ? '該当する記録はありません。' : '保存した記録はまだありません。'}</div>`;
       return;
     }
     entries.forEach(entry => {
@@ -3464,6 +3605,22 @@ function playerNumberIn(st, id){
     $('copyMemoBtn').addEventListener('click', copyMemo);
     $('shareBtn').addEventListener('click', shareOrder);
     $('shareMemoBtn').addEventListener('click', shareOrder);
+    $('historySearch').addEventListener('input', e => {
+      historySearchQuery = e.target.value || '';
+      expandedHistoryId = null;
+      swipedHistoryId = null;
+      renderHistory();
+    });
+    $('historySort').addEventListener('click', e => {
+      const button = e.target.closest('[data-history-sort]');
+      if(!button) return;
+      const mode = button.dataset.historySort;
+      if(!RECORD_SORT_MODES.includes(mode)) return;
+      recordSortMode = mode;
+      try{ localStorage.setItem(RECORD_SORT_KEY, mode); }catch(err){}
+      swipedHistoryId = null;
+      renderHistory();
+    });
     $('historyList').addEventListener('click', handleHistoryAction, { capture:true });
     setupHistorySwipe();
     setupPageSwipe();
