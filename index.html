@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-28-wide-mascot-ui';
+    window.LINEUP_APP_VERSION = '2026-06-28-share-header-time-limit';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -3103,11 +3103,20 @@ function playerNumberIn(st, id){
     return `lineup-${date}.png`;
   }
 
+  function shareGameDurationLabel(st){
+    const g = st.game || {};
+    if(!String(g.format || '').includes('時間')) return '';
+    const raw = String(g.limit ?? '').trim().replace(/[ 　]/g, '');
+    if(!raw || raw === '0') return '';
+    const minutes = raw.replace(/分制?$/, '');
+    return minutes ? `${minutes}分制` : '';
+  }
+
   function shareGameMainLine(st){
     const g = st.game || {};
     const date = formatGameDate(g.date) || '日付未入力';
     const opponent = `vs ${g.opponent || '未入力'}`;
-    return [date, g.start || '', opponent].filter(Boolean).join('  ');
+    return [date, g.start || '', shareGameDurationLabel(st), opponent].filter(Boolean).join('  ');
   }
 
   function shareOpponentLine(st){
@@ -3118,7 +3127,7 @@ function playerNumberIn(st, id){
   function shareDateInningsLine(st){
     const g = st.game || {};
     const date = formatGameDate(g.date) || '日付未入力';
-    const parts = [date, g.start || '', `${maxInnings(st)}回`].filter(Boolean);
+    const parts = [date, g.start || '', shareGameDurationLabel(st)].filter(Boolean);
     return parts.join('　');
   }
 
@@ -3395,9 +3404,11 @@ function playerNumberIn(st, id){
     const headerTextX = margin + 34;
     const headerTextMaxW = cardW - (mascotImage ? mascotBoxW + 108 : 68);
     ctx.fillStyle = '#ffffff';
-    const opponentFit = fitWrappedCanvasChars(ctx, shareOpponentLine(st), headerTextMaxW, 900, 50, 28, imageFontKey, 2);
+    ctx.font = canvasFont(900, 30, imageFontKey);
+    ctx.fillText('打順プランナー', headerTextX, headerY + 46);
+    const opponentFit = fitWrappedCanvasChars(ctx, shareOpponentLine(st), headerTextMaxW, 900, 40, 24, imageFontKey, 2);
     ctx.font = canvasFont(900, opponentFit.size, imageFontKey);
-    let headerTextY = headerY + 66;
+    let headerTextY = headerY + 88;
     opponentFit.lines.forEach((line, idx) => {
       ctx.fillText(line, headerTextX, headerTextY + idx * (opponentFit.size + 8));
     });
