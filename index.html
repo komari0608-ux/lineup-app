@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-07-04-initial-bench-position-transfer';
+    window.LINEUP_APP_VERSION = '2026-07-04-live-player-name-sync';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -1877,6 +1877,13 @@ function playerNumberIn(st, id){
     bindFormControlTapGuards();
   }
 
+  function refreshOrderViewsAfterPlayerEdit(){
+    renderOrder();
+    renderBench();
+    renderMemo();
+    bindFormControlTapGuards();
+  }
+
   function compactDate(dateStr){
     if(!dateStr) return '';
     const d = new Date(`${dateStr}T00:00:00`);
@@ -2978,10 +2985,10 @@ function playerNumberIn(st, id){
       const full = row.querySelector('.full-input');
       const number = row.querySelector('.number-input');
       const del = row.querySelector('button');
-      color.addEventListener('input', () => { p.color = color.value; saveState(); });
-      nick.addEventListener('input', () => { p.nickname = nick.value; saveState(); });
-      full.addEventListener('input', () => { p.fullName = full.value; saveState(); });
-      number.addEventListener('input', () => { p.number = number.value.replace(/\D/g, ''); number.value = p.number; saveState(); });
+      color.addEventListener('input', () => { p.color = color.value; saveState(); refreshOrderViewsAfterPlayerEdit(); });
+      nick.addEventListener('input', () => { p.nickname = nick.value; saveState(); refreshOrderViewsAfterPlayerEdit(); });
+      full.addEventListener('input', () => { p.fullName = full.value; saveState(); refreshOrderViewsAfterPlayerEdit(); });
+      number.addEventListener('input', () => { p.number = number.value.replace(/\D/g, ''); number.value = p.number; saveState(); refreshOrderViewsAfterPlayerEdit(); });
       del.addEventListener('click', () => deletePlayer(p.id));
       panel.appendChild(row);
     });
