@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-06-28-share-header-time-limit';
+    window.LINEUP_APP_VERSION = '2026-07-04-initial-bench-position-transfer';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -690,6 +690,37 @@
   function isDhEnabled(st = state){ return st?.settings?.dhEnabled === true; }
   function lineupLimit(st = state){ return st?.battingMode === 'nine' ? (isDhEnabled(st) ? 10 : 9) : Number.POSITIVE_INFINITY; }
   function canSetPosition(pos, st = state){ return pos !== 'DH' || isDhEnabled(st); }
+  function initialStarterPositionOptions(st = state){
+    const options = FIELD_POSITIONS.map(p => p.code);
+    if(isDhEnabled(st)) options.push('DH');
+    return options;
+  }
+  function firstOpenInitialPosition(st = state, used = new Set()){
+    const options = initialStarterPositionOptions(st);
+    return options.find(pos => !used.has(pos)) || options[0] || '1';
+  }
+  function ensureInitialStarterPositions(st = state){
+    if(st.battingMode !== 'nine') return;
+    st.startPositions ||= {};
+    const options = new Set(initialStarterPositionOptions(st));
+    const limit = lineupLimit(st);
+    const initialLine = (st.lineupByInning?.[1] || (st.battingOrder || []).slice(0, limit)).slice(0, limit);
+    const used = new Set();
+    const needsPosition = [];
+    initialLine.forEach(id => {
+      const pos = st.startPositions[id] || 'B';
+      if(pos !== 'B' && options.has(pos) && !used.has(pos)){
+        used.add(pos);
+      }else{
+        needsPosition.push(id);
+      }
+    });
+    needsPosition.forEach(id => {
+      const pos = firstOpenInitialPosition(st, used);
+      st.startPositions[id] = pos;
+      used.add(pos);
+    });
+  }
   function posShort(pos){ return POS_SHORT[pos || 'B'] || 'ベ'; }
   function maxInnings(st = state){ return Math.min(ABSOLUTE_MAX_INNINGS, Math.max(1, Number(st?.game?.innings || 6))); }
   function isPlayerAbsentIn(st, playerId){ return st?.attendanceByPlayerId?.[playerId] === 'absent'; }
@@ -874,6 +905,7 @@
     } else {
       st.lineupByInning = {};
     }
+    ensureInitialStarterPositions(st);
     cleanupRedundantChanges(st);
   }
 
@@ -1526,11 +1558,36 @@ function playerNumberIn(st, id){
     });
   }
 
+  function transferInitialBenchSlotPosition(idA, idB, initialLine){
+    if(state.battingMode !== 'nine') return;
+    const inLineA = initialLine.includes(idA);
+    const inLineB = initialLine.includes(idB);
+    if(inLineA === inLineB) return;
+    const outId = inLineA ? idA : idB;
+    const inId = inLineA ? idB : idA;
+    const used = new Set();
+    initialLine.forEach(id => {
+      if(id === outId || id === inId) return;
+      const pos = state.startPositions[id] || 'B';
+      if(pos !== 'B' && canSetPosition(pos)) used.add(pos);
+    });
+    const slotPosition = state.startPositions[outId] || 'B';
+    const inheritedPosition = slotPosition !== 'B' && canSetPosition(slotPosition)
+      ? slotPosition
+      : firstOpenInitialPosition(state, used);
+    state.startPositions[inId] = inheritedPosition;
+    state.startPositions[outId] = 'B';
+  }
+
   function swapInitialOrder(idA, idB){
     if(idA === idB) return false;
     const a = state.battingOrder.indexOf(idA);
     const b = state.battingOrder.indexOf(idB);
     if(a < 0 || b < 0) return false;
+    const initialLineBefore = state.battingMode === 'nine'
+      ? (state.lineupByInning?.[1] || state.battingOrder.slice(0,lineupLimit())).slice(0,lineupLimit())
+      : [];
+    transferInitialBenchSlotPosition(idA, idB, initialLineBefore);
     [state.battingOrder[a], state.battingOrder[b]] = [state.battingOrder[b], state.battingOrder[a]];
     if(state.battingMode === 'nine'){
       const oldFirst = (state.lineupByInning[1] || []).slice();
@@ -1544,9 +1601,13 @@ function playerNumberIn(st, id){
           const ia = line.indexOf(idA);
           const ib = line.indexOf(idB);
           if(ia >= 0 && ib >= 0) [line[ia], line[ib]] = [line[ib], line[ia]];
+          else if(ia >= 0) line[ia] = idB;
+          else if(ib >= 0) line[ib] = idA;
           state.lineupByInning[i] = line.slice(0,lineupLimit());
         }
       }
+      ensureInitialStarterPositions(state);
+      cleanupRedundantChanges();
     }
     return true;
   }
