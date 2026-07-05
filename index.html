@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-07-05-app-theme-mode';
+    window.LINEUP_APP_VERSION = '2026-07-05-clear-button-contrast';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -74,6 +74,17 @@
       --border:#d8e5f0;
       --danger-soft:#fff1f0;
       --focus-ring:rgba(8,103,189,.12);
+      --clear-action-bg:#fff7ed;
+      --clear-action-border:#fdba74;
+      --clear-action-text:#7c2d12;
+      --clear-action-shadow:0 3px 9px rgba(173,90,0,.12);
+      --clear-action-disabled-bg:#f8fafc;
+      --clear-action-disabled-border:#d8e5f0;
+      --clear-action-disabled-text:#64748b;
+      --clear-action-confirm-bg:#fff1f0;
+      --clear-action-confirm-border:#fda29b;
+      --clear-action-confirm-text:#b42318;
+      --clear-action-confirm-shadow:0 3px 10px rgba(180,35,24,.14);
       --radius:15px;
       --font-ui:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
       --font-app:var(--font-ui);
@@ -102,6 +113,17 @@
       --border:rgba(170,205,255,.22);
       --danger-soft:rgba(255,107,107,.14);
       --focus-ring:rgba(74,168,255,.20);
+      --clear-action-bg:#3a2614;
+      --clear-action-border:#ffb86b;
+      --clear-action-text:#ffe6c8;
+      --clear-action-shadow:0 0 0 1px rgba(255,184,107,.18),0 5px 14px rgba(255,159,67,.14);
+      --clear-action-disabled-bg:rgba(120,140,165,.16);
+      --clear-action-disabled-border:rgba(170,190,215,.32);
+      --clear-action-disabled-text:rgba(220,232,245,.70);
+      --clear-action-confirm-bg:rgba(255,107,107,.18);
+      --clear-action-confirm-border:rgba(255,138,128,.90);
+      --clear-action-confirm-text:#ffd6d6;
+      --clear-action-confirm-shadow:0 0 0 1px rgba(255,138,128,.18),0 5px 14px rgba(255,107,107,.16);
     }
     *{box-sizing:border-box}
     html{-webkit-text-size-adjust:100%;background:var(--bg);touch-action:manipulation;overscroll-behavior:none}
@@ -248,6 +270,10 @@
     .order-card .card-head{border:1px solid var(--line);border-radius:13px;background:#fbfdff;box-shadow:0 3px 8px rgba(16,32,51,.05)}
     .card-head h2{margin:0;font-size:14px;line-height:1.1;letter-spacing:.01em}.subhead{color:var(--muted);font-size:11px;font-weight:850;white-space:nowrap}
     .order-head h2{min-width:0}.order-head-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:0;flex:0 0 auto}.order-reset-btn{height:31px;min-width:92px;border:1px solid #bdd7ef;border-radius:10px;background:#fff;color:var(--blue-dark);font-size:12px;font-weight:950;padding:0 8px;white-space:nowrap;box-shadow:0 2px 7px rgba(16,32,51,.045);touch-action:manipulation}.order-reset-btn:active{opacity:.82;transform:translateZ(0) scale(.98)}.order-reset-btn:disabled{opacity:.45;box-shadow:none;pointer-events:none}
+    #orderClearAllChangesBtn.order-reset-btn{background:var(--clear-action-bg);border:1.5px solid var(--clear-action-border);color:var(--clear-action-text);box-shadow:var(--clear-action-shadow)}
+    #orderClearAllChangesBtn.order-reset-btn.is-confirm{background:var(--clear-action-confirm-bg);border-color:var(--clear-action-confirm-border);color:var(--clear-action-confirm-text);box-shadow:var(--clear-action-confirm-shadow)}
+    #orderClearAllChangesBtn.order-reset-btn:disabled{opacity:1;background:var(--clear-action-disabled-bg);border-color:var(--clear-action-disabled-border);color:var(--clear-action-disabled-text);box-shadow:none}
+    #orderClearAllChangesBtn.order-reset-btn:not(:disabled):active{opacity:.88;transform:translateZ(0) scale(.98)}
     .row-list{background:#fff}
     .defense-grid-header{display:grid;grid-template-columns:30px minmax(0,1fr);align-items:center;gap:7px;padding:6px 2px 0}.defense-grid-header.is-empty{display:none}.defense-grid-head-main{min-width:0;display:grid;grid-template-columns:minmax(0,.9fr) minmax(158px,1fr);align-items:center;gap:7px}.defense-grid-player-spacer{min-width:0}.defense-grid-cols{padding:0 6px;box-sizing:border-box}.defense-cols{min-width:0;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:6px}.defense-col-head{width:48px;height:18px;border-radius:7px;color:#64748b;font-size:10px;font-weight:950;line-height:18px;text-align:center}.defense-col-head.is-active{background:#eaf6ff;color:var(--blue-dark)}
     .order-card .row-list{display:grid;gap:6px;background:transparent;padding:5px 2px 0}
@@ -2095,7 +2121,10 @@ function playerNumberIn(st, id){
     if(!isInitialMode() && clearAllChangesArmed) resetClearAllChangesConfirm();
     const clearAllBtn = $('orderClearAllChangesBtn');
     const hasChanges = hasRecordedOrderChanges();
-    clearAllBtn.textContent = clearAllChangesArmed ? 'もう一度でクリア' : '交代クリア';
+    clearAllBtn.textContent = hasChanges ? (clearAllChangesArmed ? 'もう一度でクリア' : '交代クリア') : '交代なし';
+    clearAllBtn.classList.toggle('is-confirm', hasChanges && clearAllChangesArmed);
+    clearAllBtn.classList.toggle('is-actionable', hasChanges && !clearAllChangesArmed);
+    clearAllBtn.classList.toggle('is-empty', !hasChanges);
     clearAllBtn.hidden = !isInitialMode();
     clearAllBtn.disabled = !isInitialMode() || !hasChanges;
     clearAllBtn.setAttribute('aria-label', hasChanges ? '2回以降の守備変更と選手交代をすべてクリア' : 'クリアする守備変更や選手交代はありません');
