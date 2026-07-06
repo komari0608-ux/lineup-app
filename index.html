@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-07-05-clear-button-contrast';
+    window.LINEUP_APP_VERSION = '2026-07-06-inherit-initial-swap-plans';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -1749,13 +1749,20 @@ function playerNumberIn(st, id){
     });
   }
 
-  function transferInitialBenchSlotPosition(idA, idB, initialLine){
-    if(state.battingMode !== 'nine') return;
+  function initialBenchSwapPair(idA, idB, initialLine){
+    if(state.battingMode !== 'nine') return null;
     const inLineA = initialLine.includes(idA);
     const inLineB = initialLine.includes(idB);
-    if(inLineA === inLineB) return;
+    if(inLineA === inLineB) return null;
     const outId = inLineA ? idA : idB;
     const inId = inLineA ? idB : idA;
+    return { outId, inId };
+  }
+
+  function transferInitialBenchSlotPosition(idA, idB, initialLine){
+    const pair = initialBenchSwapPair(idA, idB, initialLine);
+    if(!pair) return null;
+    const { outId, inId } = pair;
     const used = new Set();
     initialLine.forEach(id => {
       if(id === outId || id === inId) return;
@@ -1768,6 +1775,17 @@ function playerNumberIn(st, id){
       : firstOpenInitialPosition(state, used);
     state.startPositions[inId] = inheritedPosition;
     state.startPositions[outId] = 'B';
+    return pair;
+  }
+
+  function swapFutureDefensePlansForInitialReplacement(outId, inId){
+    state.defenseChanges ||= {};
+    const outgoingChanges = clone(state.defenseChanges[outId] || {});
+    const incomingChanges = clone(state.defenseChanges[inId] || {});
+    if(Object.keys(incomingChanges).length) state.defenseChanges[outId] = incomingChanges;
+    else delete state.defenseChanges[outId];
+    if(Object.keys(outgoingChanges).length) state.defenseChanges[inId] = outgoingChanges;
+    else delete state.defenseChanges[inId];
   }
 
   function swapInitialOrder(idA, idB){
@@ -1778,7 +1796,10 @@ function playerNumberIn(st, id){
     const initialLineBefore = state.battingMode === 'nine'
       ? (state.lineupByInning?.[1] || state.battingOrder.slice(0,lineupLimit())).slice(0,lineupLimit())
       : [];
-    transferInitialBenchSlotPosition(idA, idB, initialLineBefore);
+    const initialBenchSwap = transferInitialBenchSlotPosition(idA, idB, initialLineBefore);
+    if(initialBenchSwap){
+      swapFutureDefensePlansForInitialReplacement(initialBenchSwap.outId, initialBenchSwap.inId);
+    }
     [state.battingOrder[a], state.battingOrder[b]] = [state.battingOrder[b], state.battingOrder[a]];
     if(state.battingMode === 'nine'){
       const oldFirst = (state.lineupByInning[1] || []).slice();
