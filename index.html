@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-07-22-balanced-mobile-share';
+    window.LINEUP_APP_VERSION = '2026-07-22-centered-mobile-share';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -3643,11 +3643,10 @@ function playerNumberIn(st, id){
     const height = 1950;
     const margin = 34;
     const cardW = width - margin * 2;
-    const headerY = 40;
+    const minVerticalPad = 40;
     const headerH = 220;
     const orderGap = 24;
     const benchGap = 18;
-    const bottomPad = 40;
     const orderPad = 22;
     const noW = 38;
     const innerGap = 10;
@@ -3664,9 +3663,11 @@ function playerNumberIn(st, id){
     const benchLines = bench.length ? wrappedItems(ctx, bench.map(p => shareDisplayNameIn(st, p.id)), cardW - 64) : ['なし'];
     const benchCardH = 76 + Math.max(benchLines.length, 1) * 42;
     const rowCount = Math.max(starters.length, 1);
-    const fixedHeight = headerY + headerH + orderGap + orderPad * 2 + headerRowH + benchGap + benchCardH + bottomPad;
+    const fixedHeight = minVerticalPad * 2 + headerH + orderGap + orderPad * 2 + headerRowH + benchGap + benchCardH;
     const rowH = Math.max(44, Math.min(108, Math.floor((height - fixedHeight) / rowCount)));
     const orderCardH = orderPad + headerRowH + rowCount * rowH + orderPad;
+    const contentHeight = headerH + orderGap + orderCardH + benchGap + benchCardH;
+    const headerY = Math.max(minVerticalPad, Math.floor((height - contentHeight) / 2));
     const rowInsetY = rowH >= 76 ? 8 : 5;
     const rowCardH = rowH - rowInsetY * 2;
     const rowRadius = Math.min(20, Math.max(12, rowCardH / 3));
