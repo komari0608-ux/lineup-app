@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-07-22-share-image-9x19-5';
+    window.LINEUP_APP_VERSION = '2026-07-22-balanced-mobile-share';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -3631,6 +3631,7 @@ function playerNumberIn(st, id){
     const st = normalizeState(clone(sourceState));
     const imageFontKey = currentFontKey(st);
     await waitForLineupFonts();
+    const mascotImage = await loadCanvasImage('assets/icons/lineup-mascot-transparent-original.png');
     const inning = shareInningForState(st);
     const starters = shareVisiblePlayerIdsForState(st);
     const bench = presentBenchPlayersForStateAt(st, inning);
@@ -3643,28 +3644,28 @@ function playerNumberIn(st, id){
     const margin = 34;
     const cardW = width - margin * 2;
     const headerY = 40;
-    const headerH = 250;
-    const orderGap = 28;
-    const benchGap = 22;
+    const headerH = 220;
+    const orderGap = 24;
+    const benchGap = 18;
     const bottomPad = 40;
     const orderPad = 22;
     const noW = 38;
     const innerGap = 10;
-    const colGap = columns.length >= 5 ? 3 : 5;
-    const chipW = !hasDefenseColumns ? 54 : columns.length <= 2 ? 46 : columns.length <= 4 ? 40 : 34;
-    const chipH = !hasDefenseColumns ? 46 : columns.length <= 4 ? 42 : 36;
-    const defenseInnerPadX = hasDefenseColumns ? 12 : 14;
-    const defenseOuterPadX = hasDefenseColumns ? 12 : 14;
+    const colGap = columns.length >= 5 ? 4 : columns.length >= 3 ? 8 : 10;
+    const chipW = !hasDefenseColumns ? 64 : columns.length <= 2 ? 64 : columns.length <= 4 ? 58 : 42;
+    const chipH = !hasDefenseColumns ? 50 : columns.length <= 4 ? 50 : 44;
+    const defenseInnerPadX = 14;
+    const defenseOuterPadX = 14;
     const defenseContentW = columns.length * chipW + Math.max(0, columns.length - 1) * colGap;
     const defenseW = defenseInnerPadX + defenseContentW + defenseOuterPadX;
     const playerW = cardW - orderPad * 2 - noW - innerGap * 2 - defenseW;
-    const headerRowH = hasDefenseColumns ? 34 : 0;
+    const headerRowH = hasDefenseColumns ? (columns.length > 2 ? 50 : 40) : 0;
     ctx.font = canvasFont(700, 27, imageFontKey);
     const benchLines = bench.length ? wrappedItems(ctx, bench.map(p => shareDisplayNameIn(st, p.id)), cardW - 64) : ['なし'];
     const benchCardH = 76 + Math.max(benchLines.length, 1) * 42;
     const rowCount = Math.max(starters.length, 1);
     const fixedHeight = headerY + headerH + orderGap + orderPad * 2 + headerRowH + benchGap + benchCardH + bottomPad;
-    const rowH = Math.max(44, Math.min(154, Math.floor((height - fixedHeight) / rowCount)));
+    const rowH = Math.max(44, Math.min(108, Math.floor((height - fixedHeight) / rowCount)));
     const orderCardH = orderPad + headerRowH + rowCount * rowH + orderPad;
     const rowInsetY = rowH >= 76 ? 8 : 5;
     const rowCardH = rowH - rowInsetY * 2;
@@ -3689,21 +3690,28 @@ function playerNumberIn(st, id){
     ctx.fill();
     ctx.globalAlpha = 1;
     const headerTextX = margin + 28;
-    const headerTextMaxW = cardW - 56;
+    const mascotBoxW = 210;
+    const mascotBoxH = 175;
+    const mascotX = width - margin - mascotBoxW - 10;
+    const mascotY = headerY + 22;
+    if(mascotImage){
+      drawContainedImage(ctx, mascotImage, mascotX, mascotY, mascotBoxW, mascotBoxH);
+    }
+    const headerTextMaxW = mascotImage ? mascotX - headerTextX - 20 : cardW - 56;
     ctx.fillStyle = '#ffffff';
-    ctx.font = canvasFont(900, 30, imageFontKey);
-    ctx.fillText('打順プランナー', headerTextX, headerY + 46);
-    const opponentFit = fitWrappedCanvasChars(ctx, shareOpponentLine(st), headerTextMaxW, 900, 42, 25, imageFontKey, 2);
+    ctx.font = canvasFont(900, 28, imageFontKey);
+    ctx.fillText('打順プランナー', headerTextX, headerY + 40);
+    const opponentFit = fitWrappedCanvasChars(ctx, shareOpponentLine(st), headerTextMaxW, 900, 34, 22, imageFontKey, 2);
     ctx.font = canvasFont(900, opponentFit.size, imageFontKey);
-    let headerTextY = headerY + 100;
+    let headerTextY = headerY + 82;
     opponentFit.lines.forEach((line, idx) => {
       ctx.fillText(line, headerTextX, headerTextY + idx * (opponentFit.size + 6));
     });
     headerTextY += opponentFit.lines.length * (opponentFit.size + 6) + 7;
-    ctx.font = canvasFont(800, 31, imageFontKey);
+    ctx.font = canvasFont(800, 26, imageFontKey);
     ctx.fillText(shareDateInningsLine(st), headerTextX, headerTextY);
-    ctx.font = canvasFont(800, 27, imageFontKey);
-    ctx.fillText(shareHeaderPlaceLine(st), headerTextX, headerTextY + 42);
+    ctx.font = canvasFont(800, 24, imageFontKey);
+    ctx.fillText(shareHeaderPlaceLine(st), headerTextX, headerTextY + 34);
 
     let y = headerY + headerH + orderGap;
     drawCanvasCard(ctx, margin, y, cardW, orderCardH, 24);
@@ -3716,10 +3724,19 @@ function playerNumberIn(st, id){
       ctx.textAlign = 'center';
       columns.forEach((col, colIndex) => {
         const x = defenseContentX + colIndex * (chipW + colGap);
-        const labelSize = fitCanvasFontSize(ctx, col.label, chipW + 8, 900, columns.length >= 5 ? 13 : 16, 10, imageFontKey);
-        ctx.font = canvasFont(900, labelSize, imageFontKey);
         ctx.fillStyle = col.key === 'start' ? '#043e76' : '#64748b';
-        ctx.fillText(col.label, x + chipW / 2, y + orderPad + 16);
+        if(col.key === 'start'){
+          ctx.font = canvasFont(900, 19, imageFontKey);
+          ctx.fillText(col.label, x + chipW / 2, y + orderPad + headerRowH / 2 + 6);
+        }else if(columns.length > 2){
+          ctx.font = canvasFont(900, 16, imageFontKey);
+          ctx.fillText('想定', x + chipW / 2, y + orderPad + 17);
+          ctx.font = canvasFont(900, 18, imageFontKey);
+          ctx.fillText(col.label.replace('想定', ''), x + chipW / 2, y + orderPad + 38);
+        }else{
+          ctx.font = canvasFont(900, 18, imageFontKey);
+          ctx.fillText(col.label, x + chipW / 2, y + orderPad + 26);
+        }
       });
       ctx.textAlign = 'left';
     }
