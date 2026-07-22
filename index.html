@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-07-06-inherit-initial-swap-plans';
+    window.LINEUP_APP_VERSION = '2026-07-22-mobile-share-image';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -3631,7 +3631,6 @@ function playerNumberIn(st, id){
     const st = normalizeState(clone(sourceState));
     const imageFontKey = currentFontKey(st);
     await waitForLineupFonts();
-    const mascotImage = await loadCanvasImage('assets/icons/lineup-mascot-transparent-original.png');
     const inning = shareInningForState(st);
     const starters = shareVisiblePlayerIdsForState(st);
     const bench = presentBenchPlayersForStateAt(st, inning);
@@ -3639,72 +3638,65 @@ function playerNumberIn(st, id){
     const hasDefenseColumns = columns.length > 1;
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    const width = 1080;
-    const margin = 46;
+    const width = 900;
+    const minHeight = 1125;
+    const margin = 34;
     const cardW = width - margin * 2;
-    const rowH = hasDefenseColumns ? 82 : 70;
-    const headerY = 34;
-    const headerH = 236;
-    const orderPad = 24;
-    const noW = 46;
-    const playerW = hasDefenseColumns ? 370 : 650;
-    const innerGap = 14;
-    const defenseW = cardW - orderPad * 2 - noW - playerW - innerGap * 2;
-    const defenseInnerPadX = hasDefenseColumns ? 30 : 18;
-    const defenseOuterPadX = hasDefenseColumns ? 18 : 18;
-    const defenseContentW = Math.max(80, defenseW - defenseInnerPadX - defenseOuterPadX);
-    const colGap = columns.length >= 5 ? 4 : 8;
-    const chipW = hasDefenseColumns
-      ? Math.max(30, Math.min(58, Math.floor((defenseContentW - colGap * (columns.length - 1)) / columns.length)))
-      : 62;
-    const chipH = hasDefenseColumns ? Math.max(30, Math.min(42, Math.floor(chipW * .78))) : 42;
-    const headerRowH = hasDefenseColumns ? 28 : 0;
+    const rowH = 68;
+    const headerY = 28;
+    const headerH = 184;
+    const orderPad = 20;
+    const noW = 38;
+    const innerGap = 10;
+    const colGap = columns.length >= 5 ? 3 : 5;
+    const chipW = !hasDefenseColumns ? 52 : columns.length <= 2 ? 44 : columns.length <= 4 ? 38 : 32;
+    const chipH = !hasDefenseColumns ? 38 : columns.length <= 4 ? 34 : 30;
+    const defenseInnerPadX = hasDefenseColumns ? 12 : 14;
+    const defenseOuterPadX = hasDefenseColumns ? 12 : 14;
+    const defenseContentW = columns.length * chipW + Math.max(0, columns.length - 1) * colGap;
+    const defenseW = defenseInnerPadX + defenseContentW + defenseOuterPadX;
+    const playerW = cardW - orderPad * 2 - noW - innerGap * 2 - defenseW;
+    const headerRowH = hasDefenseColumns ? 26 : 0;
     const orderCardH = orderPad + headerRowH + Math.max(starters.length, 1) * rowH + orderPad;
-    ctx.font = canvasFont(700, 28, imageFontKey);
+    ctx.font = canvasFont(700, 24, imageFontKey);
     const benchLines = bench.length ? wrappedItems(ctx, bench.map(p => shareDisplayNameIn(st, p.id)), cardW - 64) : ['なし'];
-    const benchCardH = 74 + Math.max(benchLines.length, 1) * 38;
-    const height = headerY + headerH + 28 + orderCardH + 22 + benchCardH + 46;
+    const benchCardH = 64 + Math.max(benchLines.length, 1) * 34;
+    const contentHeight = headerY + headerH + 22 + orderCardH + 18 + benchCardH + 34;
+    const height = Math.max(minHeight, contentHeight);
     canvas.width = width;
     canvas.height = height;
 
     ctx.fillStyle = '#eaf8f3';
     ctx.fillRect(0, 0, width, height);
 
-    drawRoundRect(ctx, margin, headerY, cardW, headerH, 34);
+    drawRoundRect(ctx, margin, headerY, cardW, headerH, 28);
     ctx.fillStyle = '#0b6fc6';
     ctx.fill();
     ctx.globalAlpha = 0.14;
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
-    ctx.arc(width - margin - 38, headerY + 38, 92, 0, Math.PI * 2);
+    ctx.arc(width - margin - 34, headerY + 34, 78, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
-    const mascotBoxW = 390;
-    const mascotBoxH = 210;
-    const mascotX = width - margin - mascotBoxW - 8;
-    const mascotY = headerY + 14;
-    if(mascotImage){
-      drawContainedImage(ctx, mascotImage, mascotX, mascotY, mascotBoxW, mascotBoxH);
-    }
-    const headerTextX = margin + 34;
-    const headerTextMaxW = cardW - (mascotImage ? mascotBoxW + 108 : 68);
+    const headerTextX = margin + 28;
+    const headerTextMaxW = cardW - 56;
     ctx.fillStyle = '#ffffff';
-    ctx.font = canvasFont(900, 30, imageFontKey);
-    ctx.fillText('打順プランナー', headerTextX, headerY + 46);
-    const opponentFit = fitWrappedCanvasChars(ctx, shareOpponentLine(st), headerTextMaxW, 900, 40, 24, imageFontKey, 2);
+    ctx.font = canvasFont(900, 26, imageFontKey);
+    ctx.fillText('打順プランナー', headerTextX, headerY + 38);
+    const opponentFit = fitWrappedCanvasChars(ctx, shareOpponentLine(st), headerTextMaxW, 900, 36, 23, imageFontKey, 2);
     ctx.font = canvasFont(900, opponentFit.size, imageFontKey);
-    let headerTextY = headerY + 88;
+    let headerTextY = headerY + 78;
     opponentFit.lines.forEach((line, idx) => {
-      ctx.fillText(line, headerTextX, headerTextY + idx * (opponentFit.size + 8));
+      ctx.fillText(line, headerTextX, headerTextY + idx * (opponentFit.size + 6));
     });
-    headerTextY += opponentFit.lines.length * (opponentFit.size + 8) + 10;
-    ctx.font = canvasFont(800, 32, imageFontKey);
-    ctx.fillText(shareDateInningsLine(st), headerTextX, headerTextY);
+    headerTextY += opponentFit.lines.length * (opponentFit.size + 6) + 7;
     ctx.font = canvasFont(800, 27, imageFontKey);
-    ctx.fillText(shareHeaderPlaceLine(st), headerTextX, headerTextY + 40);
+    ctx.fillText(shareDateInningsLine(st), headerTextX, headerTextY);
+    ctx.font = canvasFont(800, 23, imageFontKey);
+    ctx.fillText(shareHeaderPlaceLine(st), headerTextX, headerTextY + 33);
 
-    let y = headerY + headerH + 28;
-    drawCanvasCard(ctx, margin, y, cardW, orderCardH, 28);
+    let y = headerY + headerH + 22;
+    drawCanvasCard(ctx, margin, y, cardW, orderCardH, 24);
     let rowStartY = y + orderPad + headerRowH;
     const noX = margin + orderPad;
     const playerX = noX + noW + innerGap;
@@ -3714,19 +3706,19 @@ function playerNumberIn(st, id){
       ctx.textAlign = 'center';
       columns.forEach((col, colIndex) => {
         const x = defenseContentX + colIndex * (chipW + colGap);
-        const labelSize = fitCanvasFontSize(ctx, col.label, chipW + 10, 900, columns.length >= 4 ? 16 : 18, 12, imageFontKey);
+        const labelSize = fitCanvasFontSize(ctx, col.label, chipW + 8, 900, columns.length >= 5 ? 12 : 15, 9, imageFontKey);
         ctx.font = canvasFont(900, labelSize, imageFontKey);
         ctx.fillStyle = col.key === 'start' ? '#043e76' : '#64748b';
-        ctx.fillText(col.label, x + chipW / 2, y + orderPad + 14);
+        ctx.fillText(col.label, x + chipW / 2, y + orderPad + 13);
       });
       ctx.textAlign = 'left';
     }
     starters.forEach((pid, index) => {
       const rowY = rowStartY + index * rowH;
       ctx.fillStyle = '#0867bd';
-      ctx.font = canvasFont(900, 33, imageFontKey);
+      ctx.font = canvasFont(900, 28, imageFontKey);
       ctx.textAlign = 'center';
-      ctx.fillText(String(index + 1), noX + noW / 2, rowY + rowH / 2 + 11);
+      ctx.fillText(String(index + 1), noX + noW / 2, rowY + rowH / 2 + 10);
       ctx.textAlign = 'left';
       drawRoundRect(ctx, playerX, rowY + 6, playerW, rowH - 12, 18);
       ctx.fillStyle = '#ffffff';
@@ -3744,7 +3736,7 @@ function playerNumberIn(st, id){
       const nameX = playerX + 26;
       const numberW = number ? 74 : 0;
       const nameMaxW = playerW - 48 - numberW - (number ? 16 : 0);
-      const nameSize = fitCanvasFontSize(ctx, name, nameMaxW, 900, 31, 20, imageFontKey);
+      const nameSize = fitCanvasFontSize(ctx, name, nameMaxW, 900, 28, 18, imageFontKey);
       ctx.font = canvasFont(900, nameSize, imageFontKey);
       ctx.fillText(truncateCanvasText(ctx, name, nameMaxW), nameX, rowY + rowH / 2 + 10);
       if(number){
@@ -3756,7 +3748,7 @@ function playerNumberIn(st, id){
         ctx.lineWidth = 3;
         ctx.stroke();
         ctx.fillStyle = '#043e76';
-        ctx.font = canvasFont(900, 28, imageFontKey);
+        ctx.font = canvasFont(900, 25, imageFontKey);
         ctx.textAlign = 'center';
         ctx.fillText(number, numberX + numberW / 2, rowY + rowH / 2 + 10);
         ctx.textAlign = 'left';
@@ -3777,19 +3769,19 @@ function playerNumberIn(st, id){
         });
       }else{
         const item = defenseColumnItemInShare(st, pid, columns[0]);
-        drawCanvasDefenseChip(ctx, posShort(item.pos), defenseContentX, rowY + rowH / 2 - 21, 62, 42, 'start', false, imageFontKey);
+        drawCanvasDefenseChip(ctx, posShort(item.pos), defenseContentX, rowY + rowH / 2 - chipH / 2, chipW, chipH, 'start', false, imageFontKey);
       }
     });
-    y += orderCardH + 22;
+    y += orderCardH + 18;
 
-    drawCanvasCard(ctx, margin, y, cardW, benchCardH, 24);
+    drawCanvasCard(ctx, margin, y, cardW, benchCardH, 22);
     ctx.fillStyle = '#0b355c';
-    ctx.font = canvasFont(900, 30, imageFontKey);
+    ctx.font = canvasFont(900, 26, imageFontKey);
     const benchTitle = bench.length ? `ベンチ（${bench.length}人）` : 'ベンチ';
-    ctx.fillText(benchTitle, margin + 32, y + 42);
+    ctx.fillText(benchTitle, margin + 28, y + 36);
     ctx.fillStyle = '#102033';
-    ctx.font = canvasFont(800, 27, imageFontKey);
-    benchLines.forEach((line, idx) => ctx.fillText(line, margin + 32, y + 82 + idx * 38));
+    ctx.font = canvasFont(800, 24, imageFontKey);
+    benchLines.forEach((line, idx) => ctx.fillText(line, margin + 28, y + 70 + idx * 34));
 
     return new Promise((resolve, reject) => {
       canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('画像生成に失敗しました')), 'image/png', 0.92);
