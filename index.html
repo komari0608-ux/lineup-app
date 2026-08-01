@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-07-22-centered-mobile-share';
+    window.LINEUP_APP_VERSION = '2026-08-01-ud-shin-go-font';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -23,7 +23,7 @@
       document.documentElement.classList.toggle('splash-pending', showSplash);
       try{
         const fontKey = localStorage.getItem('lineupPlannerFontFamily') || 'standard';
-        const allowed = new Set(['standard','biz-ud','biz-udp','noto','mplus','zen']);
+        const allowed = new Set(['standard','ud-shingo','biz-ud','biz-udp','noto','mplus','zen']);
         document.documentElement.classList.add(`font-${allowed.has(fontKey) ? fontKey : 'standard'}`);
       }catch(e){
         document.documentElement.classList.add('font-standard');
@@ -51,6 +51,9 @@
   <link href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@400;700&family=BIZ+UDPGothic:wght@400;700&family=M+PLUS+1p:wght@500;700;800&family=Noto+Sans+JP:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet" />
   <link rel="preload" as="image" href="assets/splash-order.png" />
   <style>
+    @font-face{font-family:"Lineup UD Shin Go";src:local("A-OTF UD Shin Go Pr6N R"),local("A-OTF UD新ゴ Pr6N R"),local("UD Shin Go R"),local("UD新ゴ R");font-style:normal;font-weight:400;font-display:swap}
+    @font-face{font-family:"Lineup UD Shin Go";src:local("A-OTF UD Shin Go Pr6N B"),local("A-OTF UD新ゴ Pr6N B"),local("UD Shin Go B"),local("UD新ゴ B");font-style:normal;font-weight:700;font-display:swap}
+    @font-face{font-family:"Lineup UD Shin Go";src:local("A-OTF UD Shin Go Pr6N H"),local("A-OTF UD新ゴ Pr6N H"),local("UD Shin Go H"),local("UD新ゴ H");font-style:normal;font-weight:900;font-display:swap}
     :root{
       color-scheme:light;
       --bg:#edf6f2;
@@ -128,6 +131,7 @@
     *{box-sizing:border-box}
     html{-webkit-text-size-adjust:100%;background:var(--bg);touch-action:manipulation;overscroll-behavior:none}
     html.font-standard{--font-app:var(--font-ui)}
+    html.font-ud-shingo{--font-app:"Lineup UD Shin Go","a-otf-ud-shin-go-pr6n","A-OTF UD Shin Go Pr6N","A-OTF UD新ゴ Pr6N","UD Shin Go","UD新ゴ","BIZ UDGothic",var(--font-ui)}
     html.font-biz-ud{--font-app:"BIZ UDGothic","BIZ UDPGothic",var(--font-ui)}
     html.font-biz-udp{--font-app:"BIZ UDPGothic","BIZ UDGothic",var(--font-ui)}
     html.font-noto{--font-app:"Noto Sans JP",var(--font-ui)}
@@ -150,6 +154,7 @@
     input,select,textarea{user-select:text;-webkit-user-select:text}
     button{cursor:pointer;-webkit-tap-highlight-color:transparent}
     .order-card,.order-card .card-head,.order-no,.player-main-group,.player-card,.defense-card,.pos-chip,.add-pos-chip,.player-number-badge,.bench-chip,.memo-body textarea,.history-item{font-family:var(--font-lineup)}
+    html.font-ud-shingo .player-name-text,html.font-ud-shingo .pos-chip,html.font-ud-shingo .player-number-badge,
     html.font-biz-ud .player-name-text,html.font-biz-ud .pos-chip,html.font-biz-ud .player-number-badge,
     html.font-biz-udp .player-name-text,html.font-biz-udp .pos-chip,html.font-biz-udp .player-number-badge{font-weight:700}
     html.font-noto .player-name-text,html.font-noto .pos-chip,html.font-noto .player-number-badge,
@@ -637,6 +642,7 @@
           <span>表示フォント</span>
           <select id="lineupFont" aria-label="表示フォント">
             <option value="standard">標準</option>
+            <option value="ud-shingo">UD新ゴ</option>
             <option value="biz-ud">BIZ UDゴシック</option>
             <option value="biz-udp">BIZ UDPゴシック</option>
             <option value="noto">Noto Sans JP</option>
@@ -694,7 +700,7 @@
   const THEME_KEY = 'lineupPlannerTheme';
   const RECORD_SORT_KEY = 'lineupPlannerRecordSortMode';
   const RECORD_SORT_MODES = ['updated','dateAsc','dateDesc'];
-  const FONT_OPTIONS = ['standard','biz-ud','biz-udp','noto','mplus','zen'];
+  const FONT_OPTIONS = ['standard','ud-shingo','biz-ud','biz-udp','noto','mplus','zen'];
   const THEME_OPTIONS = ['auto','light','dark'];
   const TAB_ORDER = ['order','history','players'];
   const HISTORY_SWIPE_OPEN_PX = 92;
@@ -846,6 +852,7 @@
     else if(media.addListener) media.addListener(syncAutoTheme);
   }
   function fontFamilyForKey(key = currentFontKey()){
+    if(key === 'ud-shingo') return '"Lineup UD Shin Go","a-otf-ud-shin-go-pr6n","A-OTF UD Shin Go Pr6N","A-OTF UD新ゴ Pr6N","UD Shin Go","UD新ゴ","BIZ UDGothic",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
     if(key === 'biz-ud') return '"BIZ UDGothic","BIZ UDPGothic",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
     if(key === 'biz-udp') return '"BIZ UDPGothic","BIZ UDGothic",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
     if(key === 'noto') return '"Noto Sans JP",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
@@ -862,7 +869,7 @@
   }
   function applyLineupFont(){
     const key = currentFontKey();
-    document.documentElement.classList.remove('font-standard','font-biz-ud','font-biz-udp','font-noto','font-mplus','font-zen');
+    document.documentElement.classList.remove('font-standard','font-ud-shingo','font-biz-ud','font-biz-udp','font-noto','font-mplus','font-zen');
     document.documentElement.classList.add(`font-${key}`);
   }
   function setLineupFont(value){
