@@ -29,6 +29,9 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Verify lineup and sync behavior
+        run: node --test tests/lineup.test.mjs
+
       - run: npm install -g firebase-tools
 
       - run: firebase deploy --only hosting --project lineup-app-b4f4e --non-interactive

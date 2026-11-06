@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ja" class="splash-pending">
 <head>
   <meta charset="utf-8" />
@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-08-01-ud-shin-go-font';
+    window.LINEUP_APP_VERSION = '2026-11-06-cloud-coach-desktop';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -471,6 +471,60 @@
     html[data-theme="dark"] .splash-inner{color:#dbeeff}
     html[data-theme="dark"] .splash-sub{color:#8cf0be}
     html[data-theme="dark"] .splash-fallback{background:#102039;border-color:rgba(74,168,255,.35);color:#ff9b9b}
+    .workspace-grid{min-width:0}
+    .coach-preview{display:none}
+    .coach-preview .card-head{padding:14px 16px}
+    .coach-preview button,.sync-actions button{min-height:42px;border:1px solid var(--border);border-radius:10px;padding:8px 12px;background:var(--surface);color:var(--ink);font-weight:700}
+    .coach-actions{padding:14px 16px;border-top:1px solid var(--border)}
+    .coach-actions button{width:100%;background:var(--blue);color:var(--panel)}
+    #coachPreviewBody{padding:0 16px 14px}
+    .coach-game{font-size:13px;color:var(--muted);line-height:1.6}
+    .coach-slot{display:grid;grid-template-columns:25px minmax(0,1fr);gap:7px;padding:8px 0;border-bottom:1px solid var(--border)}
+    .coach-order{color:var(--blue);font-size:20px;padding-top:20px}
+    .coach-person{display:grid;gap:5px;background:var(--soft);padding:10px 12px;border-radius:10px;overflow-wrap:anywhere}
+    .coach-person+.coach-person{margin-top:5px}
+    .coach-person.is-substitute{background:var(--clear-action-bg);border-left:3px solid var(--clear-action-border)}
+    .coach-range{font-size:11px;color:var(--muted)}
+    .coach-person strong{font-size:15px}
+    .coach-positions{font-size:12px;color:var(--muted);line-height:1.5}
+    .coach-change-title{font-size:14px;margin:20px 0 12px}
+    .coach-change{font-size:12px;line-height:1.8;margin:12px 0;overflow-wrap:anywhere}
+    .coach-change>b{color:var(--warn)}
+    .coach-change ul{margin:5px 0 0;padding-left:18px}
+    .coach-empty,.sync-note{font-size:12px;line-height:1.65;color:var(--muted);overflow-wrap:anywhere}
+    .sync-status{font-size:13px;font-weight:700;line-height:1.6;color:var(--blue-dark)}
+    .sync-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .sync-actions button{font-size:12px;flex:1 1 auto}
+    .sync-actions button:disabled{opacity:.5;cursor:wait}
+    .sync-conflict{padding:12px;background:var(--clear-action-bg);border:1px solid var(--clear-action-border);border-radius:12px;font-size:12px;line-height:1.7;margin-top:12px}
+    .sync-conflict[hidden],.sync-actions [hidden]{display:none!important}
+    .sync-backup-actions{padding-top:10px;border-top:1px solid var(--border);margin-top:16px}
+    .save-chip.cloud-attention{display:inline;color:var(--warn);cursor:pointer;font-size:10px;max-width:64px;white-space:normal}
+    @media (min-width:1000px){
+      html,body{overscroll-behavior:auto}
+      .app{max-width:1240px;padding:18px 24px 110px}
+      .top{padding:10px 0 12px}
+      .titlebar{gap:12px}
+      .title-text{font-size:22px}
+      .save-chip{display:inline;font-size:12px;max-width:none}
+      .game-summary{font-size:14px;margin-top:4px}
+      .workspace-grid{display:grid;grid-template-columns:minmax(500px,1.25fr) minmax(350px,1fr);gap:26px;align-items:start}
+      .tabs-viewport{min-height:0}
+      .panel{min-height:0}
+      .coach-preview{display:block;position:sticky;top:112px;max-height:calc(100dvh - 210px);overflow:auto}
+      .inning-scroll{padding:14px 0;gap:9px}
+      .inning-btn{min-width:48px;height:38px;font-size:14px}
+      .order-card .row-list{gap:9px}
+      .player-card,.defense-card{min-height:54px}
+      .player-card{font-size:18px}
+      .bottom-nav{left:50%;right:auto;transform:translateX(-50%);width:520px;bottom:18px;border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow)}
+      .bottom-nav-inner{max-width:none;padding-bottom:0}
+      .settings-modal{align-items:center}
+      .settings-sheet{max-width:740px;max-height:90dvh}
+      .player-names{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+      .player-row input{height:44px}
+    }
+
   </style>
 </head>
 <body>
@@ -513,6 +567,7 @@
 
     <div class="inning-scroll" id="inningButtons" aria-label="表示回"></div>
 
+    <div class="workspace-grid">
     <main class="tabs-viewport" id="tabsViewport">
       <div class="tabs-track" id="tabsTrack">
       <section class="panel active" id="orderPanel">
@@ -575,6 +630,12 @@
       </section>
       </div>
     </main>
+    <aside class="coach-preview card" aria-label="コーチ向け共有プレビュー">
+      <div class="card-head"><h2>コーチ向け共有プレビュー</h2><button type="button" id="coachCopyBtn">文をコピー</button></div>
+      <div id="coachPreviewBody"></div>
+      <div class="coach-actions"><button type="button" id="coachShareBtn" class="primary">画像を保存・共有</button></div>
+    </aside>
+    </div>
   </div>
 
   <div class="settings-modal" id="settingsModal" hidden>
@@ -660,6 +721,34 @@
         </label>
       </section>
 
+      <section class="settings-section" aria-label="スマホ・PCのデータ共有">
+        <h3>スマホ・PCのデータ共有</h3>
+        <p class="sync-note">同じGoogleアカウントでログインすると、選手・編集中のオーダー・保存記録を共有できます。</p>
+        <p id="cloudStatus" class="sync-status" role="status">この端末に保存しています。</p>
+        <p id="cloudAccount" class="sync-note"></p>
+        <p class="sync-note">ログアウト後も、この端末に保存したデータは残ります。</p>
+        <div class="sync-actions">
+          <button type="button" id="cloudLoginBtn">Googleでログイン</button>
+          <button type="button" id="cloudRetryBtn" hidden>同期を再試行</button>
+          <button type="button" id="cloudLogoutBtn" hidden>ログアウト</button>
+        </div>
+        <div id="cloudConflict" class="sync-conflict" hidden>
+          <p>この端末と共有先の内容が異なります。使う内容を選んでください。切り替え前の内容は端末にバックアップします。</p>
+          <p id="cloudConflictSummary" class="sync-note"></p>
+          <div class="sync-actions"><button type="button" id="cloudUseRemoteBtn">共有先の内容を使う</button><button type="button" id="cloudUseLocalBtn">この端末の内容を共有する</button></div>
+        </div>
+        <div class="sync-actions sync-backup-actions">
+          <button type="button" id="workspaceExportBtn">バックアップ保存</button>
+          <button type="button" id="workspaceImportBtn">バックアップ読込</button>
+          <button type="button" id="workspaceRecoveryBtn" hidden>切替前のデータを保存</button>
+        </div>
+        <input id="workspaceImportFile" type="file" accept=".json,application/json" hidden>
+        <div id="workspaceImportConfirm" class="sync-conflict" hidden>
+          <select id="workspaceRecoverySelect" aria-label="復元する切替前データ" hidden></select>
+          <p id="workspaceImportSummary"></p>
+          <div class="sync-actions"><button type="button" id="workspaceImportApplyBtn">この内容を読み込む</button><button type="button" id="workspaceImportCancelBtn">キャンセル</button></div>
+        </div>
+      </section>
       <div class="settings-actions">
         <button type="button" id="settingsDoneBtn" class="primary">閉じる</button>
       </div>
@@ -759,6 +848,12 @@
   ];
   const defaultStartPositions = { p1:'5', p2:'6', p3:'8', p4:'2', p5:'1', p6:'3', p7:'4', p8:'7', p9:'9', p10:'B' };
 
+  const workspaceHadExisting = !!localStorage.getItem(STORAGE_KEY) || MIGRATION_KEYS.some(key => !!localStorage.getItem(key));
+  let workspaceBridge = null;
+  let workspaceCloudPromise = null;
+  let workspaceHydrating = false;
+  let workspaceSharingStarted = false;
+  let workspaceLastContent = '';
   let state = loadState();
   let currentTab = 'order';
   let expandedHistoryId = null;
@@ -1128,7 +1223,8 @@
     try{ localStorage.setItem(FONT_KEY, currentFontKey()); }catch(e){}
     try{ localStorage.setItem(THEME_KEY, currentThemeKey()); }catch(e){}
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    $('saveNote').textContent = '端末保存';
+    if(!workspaceBridge) $('saveNote').textContent = '端末保存';
+    workspaceChanged();
     if(show) showToast('保存しました');
   }
 
@@ -2367,32 +2463,7 @@ function playerNumberIn(st, id){
   }
 
   function buildSaveMemoForState(st){
-    const g = st.game || {};
-    const lines = [];
-    const dateLine = [formatGameDate(g.date), g.opponent ? `vs ${g.opponent}` : ''].filter(Boolean).join(' ');
-    const placeLine = [g.place ? `@${g.place}` : '', g.start ? `${g.start} 試合開始` : '', g.format || '', g.limit ? `${g.limit}分` : '', g.innings ? `${g.innings}回` : ''].filter(Boolean).join(' ');
-    lines.push('【スターティングメンバー】');
-    if(dateLine) lines.push(dateLine);
-    if(placeLine) lines.push(placeLine);
-    lines.push('');
-    getLineupAtIn(st, 1).forEach((pid, idx) => {
-      const number = playerNumberIn(st, pid);
-      const numberText = number ? ` #${number}` : '';
-      lines.push(`${idx + 1}　${displayNameIn(st, pid)}${numberText}　${posShort(st.startPositions?.[pid] || 'B')}`);
-    });
-    const lineupChanges = lineupChangeLinesForState(st);
-    const defenseLines = defenseChangeLinesForState(st);
-    if(defenseLines.length){
-      lines.push('');
-      lines.push('【守備変更】');
-      defenseLines.forEach(line => lines.push(line));
-    }
-    if(lineupChanges.length){
-      lines.push('');
-      lines.push('【選手交代】');
-      lineupChanges.forEach(line => lines.push(line));
-    }
-    return lines.join('\n');
+    return buildSimpleShareTextForState(st);
   }
 
   function renderMemo(){
@@ -2400,6 +2471,7 @@ function playerNumberIn(st, id){
     const subCount = lineupChangeLines().length;
     $('memoChangeCount').textContent = `変更${defenseCount + subCount}件`;
     $('saveMemo').value = buildSaveMemo();
+    renderCoachPreview();
   }
 
   function normalizeSaveKeyPart(value){
@@ -2483,6 +2555,7 @@ function playerNumberIn(st, id){
       .sort((a,b) => String(b.updatedAt || b.savedAt).localeCompare(String(a.updatedAt || a.savedAt)))
       .slice(0, MAX_SAVED_ORDERS);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(safe));
+    workspaceChanged();
     return safe;
   }
 
@@ -3626,201 +3699,185 @@ function playerNumberIn(st, id){
     ctx.textBaseline = 'alphabetic';
   }
 
+  // Keep substitutes under their batting slot, including multiple substitutions and re-entry.
+  function buildCoachPlan(st){
+    const end = maxInnings(st);
+    const initial = presentLineupAtIn(st, 1);
+    const slots = initial.map((id, index) => {
+      const segments = [];
+      for(let inning = 1; inning <= end; inning++){
+        const pid = st.battingMode === 'nine' ? getLineupAtIn(st, inning)[index] : id;
+        if(!pid || isPlayerAbsentIn(st, pid)) continue;
+        const previous = segments[segments.length - 1];
+        if(previous?.id === pid && previous.end === inning - 1) previous.end = inning;
+        else segments.push({ id:pid, start:inning, end:inning });
+      }
+      segments.forEach(segment => {
+        segment.positions = [{ inning:segment.start, pos:effectivePositionIn(st, segment.id, segment.start) }];
+        for(let inning = segment.start + 1; inning <= segment.end; inning++){
+          const pos = effectivePositionIn(st, segment.id, inning);
+          if(pos !== segment.positions[segment.positions.length - 1].pos) segment.positions.push({ inning, pos });
+        }
+      });
+      return { order:index + 1, segments };
+    });
+    const changes = [];
+    for(let inning = 2; inning <= end; inning++){
+      const before = presentLineupAtIn(st, inning - 1);
+      const after = presentLineupAtIn(st, inning);
+      const lines = [];
+      if(st.battingMode === 'nine'){
+        after.forEach((id, index) => {
+          if(before[index] && before[index] !== id){
+            lines.push(`${index + 1}番 ${shareDisplayNameIn(st, before[index])} → ${shareDisplayNameIn(st, id)}（${shareChangePosLabel(effectivePositionIn(st, id, inning))}）`);
+          }
+        });
+      }
+      after.forEach(id => {
+        if(st.battingMode === 'nine' && !before.includes(id)) return;
+        const from = effectivePositionIn(st, id, inning - 1);
+        const to = effectivePositionIn(st, id, inning);
+        if(from !== to) lines.push(`${shareDisplayNameIn(st, id)}：${shareChangePosLabel(from)} → ${shareChangePosLabel(to)}`);
+      });
+      if(lines.length) changes.push({ inning, lines });
+    }
+    const used = new Set(slots.flatMap(slot => slot.segments.map(segment => segment.id)));
+    const unused = (st.players || []).filter(p => !isPlayerAbsentIn(st, p.id) && !used.has(p.id));
+    return { slots, changes, unused, end };
+  }
+
+  function coachSegmentLabel(segment, end){
+    const start = segment.start === 1 ? '先発' : `${segment.start}回から`;
+    return segment.end < end ? `${start}・${segment.end}回まで` : start;
+  }
+
+  function coachPositionText(segment){
+    return segment.positions.map((item, i) => i === 0 ? shareChangePosLabel(item.pos) : `${item.inning}回:${shareChangePosLabel(item.pos)}`).join(' → ');
+  }
+
   function buildSimpleShareTextForState(sourceState){
     const st = normalizeState(clone(sourceState));
-    const lines = [shareGameMainLine(st)];
-    const placeLine = shareGamePlaceLine(st);
-    if(placeLine) lines.push(placeLine);
+    const plan = buildCoachPlan(st);
+    const lines = [shareGameMainLine(st), shareGamePlaceLine(st), `【打順・出場予定｜${st.battingMode === 'nine' ? '9人制' : '全員打ち'}】`].filter(Boolean);
+    plan.slots.forEach(slot => {
+      slot.segments.forEach((segment, i) => {
+        lines.push(`${i === 0 ? `${slot.order}番` : '  →'} ${shareDisplayNameIn(st, segment.id)}［${coachSegmentLabel(segment, plan.end)}］ ${coachPositionText(segment)}`);
+      });
+    });
+    lines.push('', '【回ごとの交代・守備変更】');
+    if(!plan.changes.length) lines.push('変更予定なし');
+    plan.changes.forEach(change => {
+      lines.push(`${change.inning}回から`);
+      change.lines.forEach(line => lines.push(`・${line}`));
+    });
+    if(st.battingMode === 'nine' && plan.unused.length){
+      lines.push('', '【控え・出場予定なし】', plan.unused.map(p => shareDisplayNameIn(st, p.id)).join('、'));
+    }
+    if(st.battingMode === 'all') lines.push('', '※全員打ち：ベンチの選手も打順に入っています。');
     return lines.join('\n');
+  }
+
+  function renderCoachPreview(){
+    const target = $('coachPreviewBody');
+    if(!target) return;
+    const plan = buildCoachPlan(state);
+    target.innerHTML = `<p class="coach-game">${escapeHtml(shareGameMainLine(state))}</p>` +
+      plan.slots.map(slot => `<div class="coach-slot"><b class="coach-order">${slot.order}</b><div>${slot.segments.map((segment, i) =>
+        `<div class="coach-person${i ? ' is-substitute' : ''}"><span class="coach-range">${escapeHtml(coachSegmentLabel(segment, plan.end))}</span><strong>${i ? '→ ' : ''}${escapeHtml(shareDisplayNameIn(state, segment.id))}</strong><span class="coach-positions">${escapeHtml(coachPositionText(segment))}</span></div>`
+      ).join('')}</div></div>`).join('') +
+      `<h3 class="coach-change-title">回ごとの交代・守備変更</h3>` +
+      (plan.changes.length ? plan.changes.map(change => `<div class="coach-change"><b>${change.inning}回から</b><ul>${change.lines.map(line => `<li>${escapeHtml(line)}</li>`).join('')}</ul></div>`).join('') : '<p class="coach-empty">変更予定なし</p>') +
+      (state.battingMode === 'nine' && plan.unused.length ? `<p class="coach-empty">控え・出場予定なし：${escapeHtml(plan.unused.map(p => shareDisplayNameIn(state, p.id)).join('、'))}</p>` : '') +
+      (state.battingMode === 'all' ? '<p class="coach-empty">全員打ち：ベンチの選手も打順に入っています。</p>' : '');
   }
 
   async function createOrderImageBlob(sourceState){
     const st = normalizeState(clone(sourceState));
-    const imageFontKey = currentFontKey(st);
+    const plan = buildCoachPlan(st);
+    const key = currentFontKey(st);
     await waitForLineupFonts();
-    const mascotImage = await loadCanvasImage('assets/icons/lineup-mascot-transparent-original.png');
-    const inning = shareInningForState(st);
-    const starters = shareVisiblePlayerIdsForState(st);
-    const bench = presentBenchPlayersForStateAt(st, inning);
-    const columns = defenseColumnsForShareState(st, starters);
-    const hasDefenseColumns = columns.length > 1;
+    const mascot = await loadCanvasImage('assets/icons/lineup-mascot-transparent-original.png');
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    const width = 900;
-    const height = 1950;
-    const margin = 34;
-    const cardW = width - margin * 2;
-    const minVerticalPad = 40;
-    const headerH = 220;
-    const orderGap = 24;
-    const benchGap = 18;
-    const orderPad = 22;
-    const noW = 38;
-    const innerGap = 10;
-    const colGap = columns.length >= 5 ? 4 : columns.length >= 3 ? 8 : 10;
-    const chipW = !hasDefenseColumns ? 64 : columns.length <= 2 ? 64 : columns.length <= 4 ? 58 : 42;
-    const chipH = !hasDefenseColumns ? 50 : columns.length <= 4 ? 50 : 44;
-    const defenseInnerPadX = 14;
-    const defenseOuterPadX = 14;
-    const defenseContentW = columns.length * chipW + Math.max(0, columns.length - 1) * colGap;
-    const defenseW = defenseInnerPadX + defenseContentW + defenseOuterPadX;
-    const playerW = cardW - orderPad * 2 - noW - innerGap * 2 - defenseW;
-    const headerRowH = hasDefenseColumns ? (columns.length > 2 ? 50 : 40) : 0;
-    ctx.font = canvasFont(700, 27, imageFontKey);
-    const benchLines = bench.length ? wrappedItems(ctx, bench.map(p => shareDisplayNameIn(st, p.id)), cardW - 64) : ['なし'];
-    const benchCardH = 76 + Math.max(benchLines.length, 1) * 42;
-    const rowCount = Math.max(starters.length, 1);
-    const fixedHeight = minVerticalPad * 2 + headerH + orderGap + orderPad * 2 + headerRowH + benchGap + benchCardH;
-    const rowH = Math.max(44, Math.min(108, Math.floor((height - fixedHeight) / rowCount)));
-    const orderCardH = orderPad + headerRowH + rowCount * rowH + orderPad;
-    const contentHeight = headerH + orderGap + orderCardH + benchGap + benchCardH;
-    const headerY = Math.max(minVerticalPad, Math.floor((height - contentHeight) / 2));
-    const rowInsetY = rowH >= 76 ? 8 : 5;
-    const rowCardH = rowH - rowInsetY * 2;
-    const rowRadius = Math.min(20, Math.max(12, rowCardH / 3));
-    const orderNumberSize = Math.max(22, Math.min(34, Math.floor(rowH * .3)));
-    const maxNameSize = Math.max(21, Math.min(34, Math.floor(rowH * .27)));
-    const numberBadgeH = Math.max(34, Math.min(48, rowCardH - 16));
-    const numberSize = Math.max(21, Math.min(28, Math.floor(numberBadgeH * .58)));
-    canvas.width = width;
-    canvas.height = height;
-
-    ctx.fillStyle = '#eaf8f3';
-    ctx.fillRect(0, 0, width, height);
-
-    drawRoundRect(ctx, margin, headerY, cardW, headerH, 30);
-    ctx.fillStyle = '#0b6fc6';
-    ctx.fill();
-    ctx.globalAlpha = 0.14;
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(width - margin - 38, headerY + 38, 84, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-    const headerTextX = margin + 28;
-    const mascotBoxW = 210;
-    const mascotBoxH = 175;
-    const mascotX = width - margin - mascotBoxW - 10;
-    const mascotY = headerY + 22;
-    if(mascotImage){
-      drawContainedImage(ctx, mascotImage, mascotX, mascotY, mascotBoxW, mascotBoxH);
-    }
-    const headerTextMaxW = mascotImage ? mascotX - headerTextX - 20 : cardW - 56;
-    ctx.fillStyle = '#ffffff';
-    ctx.font = canvasFont(900, 28, imageFontKey);
-    ctx.fillText('打順プランナー', headerTextX, headerY + 40);
-    const opponentFit = fitWrappedCanvasChars(ctx, shareOpponentLine(st), headerTextMaxW, 900, 34, 22, imageFontKey, 2);
-    ctx.font = canvasFont(900, opponentFit.size, imageFontKey);
-    let headerTextY = headerY + 82;
-    opponentFit.lines.forEach((line, idx) => {
-      ctx.fillText(line, headerTextX, headerTextY + idx * (opponentFit.size + 6));
-    });
-    headerTextY += opponentFit.lines.length * (opponentFit.size + 6) + 7;
-    ctx.font = canvasFont(800, 26, imageFontKey);
-    ctx.fillText(shareDateInningsLine(st), headerTextX, headerTextY);
-    ctx.font = canvasFont(800, 24, imageFontKey);
-    ctx.fillText(shareHeaderPlaceLine(st), headerTextX, headerTextY + 34);
-
-    let y = headerY + headerH + orderGap;
-    drawCanvasCard(ctx, margin, y, cardW, orderCardH, 24);
-    let rowStartY = y + orderPad + headerRowH;
-    const noX = margin + orderPad;
-    const playerX = noX + noW + innerGap;
-    const defenseX = playerX + playerW + innerGap;
-    const defenseContentX = defenseX + defenseInnerPadX;
-    if(hasDefenseColumns){
-      ctx.textAlign = 'center';
-      columns.forEach((col, colIndex) => {
-        const x = defenseContentX + colIndex * (chipW + colGap);
-        ctx.fillStyle = col.key === 'start' ? '#043e76' : '#64748b';
-        if(col.key === 'start'){
-          ctx.font = canvasFont(900, 19, imageFontKey);
-          ctx.fillText(col.label, x + chipW / 2, y + orderPad + headerRowH / 2 + 6);
-        }else if(columns.length > 2){
-          ctx.font = canvasFont(900, 16, imageFontKey);
-          ctx.fillText('想定', x + chipW / 2, y + orderPad + 17);
-          ctx.font = canvasFont(900, 18, imageFontKey);
-          ctx.fillText(col.label.replace('想定', ''), x + chipW / 2, y + orderPad + 38);
-        }else{
-          ctx.font = canvasFont(900, 18, imageFontKey);
-          ctx.fillText(col.label, x + chipW / 2, y + orderPad + 26);
-        }
+    const width = 900, margin = 34, cardW = width - margin * 2;
+    const wrap = (text, size, maxWidth, weight = 700) => {
+      ctx.font = canvasFont(weight, size, key);
+      return wrappedCanvasChars(ctx, text, maxWidth);
+    };
+    const slotRows = plan.slots.map(slot => ({ ...slot, segments:slot.segments.map((segment, index) => {
+      const names = wrap(`${index ? '→ ' : ''}${shareDisplayNameIn(st, segment.id)}`, 30, cardW - 140, 900);
+      const positions = wrap(coachPositionText(segment), 25, cardW - 140);
+      return { ...segment, names, positions, height:40 + names.length * 38 + positions.length * 32 + 14 };
+    }) }));
+    slotRows.forEach(slot => slot.height = slot.segments.reduce((n, segment) => n + segment.height, 0) + 12);
+    const changes = plan.changes.map(change => ({ inning:change.inning, lines:change.lines.flatMap(line => wrap(`・${line}`, 27, cardW - 60)) }));
+    const changeH = 78 + (changes.length ? changes.reduce((n, change) => n + 52 + change.lines.length * 37 + 16, 0) : 44);
+    const footer = st.battingMode === 'all' ? '全員打ち：ベンチの選手も打順に入っています。' :
+      `控え・出場予定なし：${plan.unused.length ? plan.unused.map(p => shareDisplayNameIn(st, p.id)).join('、') : 'なし'}`;
+    const footerLines = wrap(footer, 25, cardW - 52);
+    const opponentLines = wrap(shareOpponentLine(st), 34, cardW - (mascot ? 228 : 56), 900);
+    const placeLines = wrap(shareHeaderPlaceLine(st), 25, cardW - 56);
+    const headerH = 112 + opponentLines.length * 43 + placeLines.length * 34;
+    const orderH = 72 + slotRows.reduce((n, slot) => n + slot.height + 10, 0) + 10;
+    const height = margin * 2 + headerH + 22 + orderH + 22 + changeH + 18 + footerLines.length * 34 + 28;
+    // Keep large rosters within mobile canvas limits without dropping any players.
+    const scale = Math.min(1, 15000 / height, Math.sqrt(14000000 / (width * height)));
+    canvas.width = Math.floor(width * scale);
+    canvas.height = Math.ceil(height * scale);
+    ctx.scale(scale, scale);
+    ctx.fillStyle = '#eaf8f3'; ctx.fillRect(0, 0, width, height);
+    let y = margin;
+    drawRoundRect(ctx, margin, y, cardW, headerH, 26);
+    ctx.fillStyle = '#0867bd'; ctx.fill();
+    if(mascot) drawContainedImage(ctx, mascot, width - margin - 198, y + 14, 180, 128);
+    ctx.fillStyle = '#ffffff'; ctx.font = canvasFont(800, 24, key);
+    ctx.fillText('打順・出場予定', margin + 28, y + 38);
+    let ty = y + 84;
+    ctx.font = canvasFont(900, 34, key);
+    opponentLines.forEach(line => { ctx.fillText(line, margin + 28, ty); ty += 43; });
+    ctx.font = canvasFont(800, 25, key);
+    ctx.fillText(shareDateInningsLine(st), margin + 28, ty); ty += 35;
+    placeLines.forEach(line => { ctx.fillText(line, margin + 28, ty); ty += 34; });
+    y += headerH + 22;
+    drawCanvasCard(ctx, margin, y, cardW, orderH, 22);
+    ctx.fillStyle = '#043e76'; ctx.font = canvasFont(900, 28, key);
+    ctx.fillText(`打順ごとの出場予定 ｜ ${st.battingMode === 'nine' ? '9人制' : '全員打ち'}`, margin + 26, y + 44);
+    y += 70;
+    slotRows.forEach(slot => {
+      ctx.fillStyle = '#0867bd'; ctx.font = canvasFont(900, 32, key);
+      ctx.fillText(String(slot.order), margin + 26, y + 56);
+      slot.segments.forEach((segment, index) => {
+        const x = margin + 76;
+        drawRoundRect(ctx, x, y, cardW - 98, segment.height, 14);
+        ctx.fillStyle = index ? '#fff5e7' : '#f1f7fc'; ctx.fill();
+        ctx.fillStyle = index ? '#9a4d00' : '#42617f'; ctx.font = canvasFont(800, 22, key);
+        ctx.fillText(coachSegmentLabel(segment, plan.end), x + 18, y + 29);
+        let textY = y + 67;
+        ctx.fillStyle = '#102033'; ctx.font = canvasFont(900, 30, key);
+        segment.names.forEach(line => { ctx.fillText(line, x + 18, textY); textY += 38; });
+        ctx.fillStyle = '#42617f'; ctx.font = canvasFont(700, 25, key);
+        segment.positions.forEach(line => { ctx.fillText(line, x + 18, textY - 2); textY += 32; });
+        y += segment.height;
       });
-      ctx.textAlign = 'left';
-    }
-    starters.forEach((pid, index) => {
-      const rowY = rowStartY + index * rowH;
-      ctx.fillStyle = '#0867bd';
-      ctx.font = canvasFont(900, orderNumberSize, imageFontKey);
-      ctx.textAlign = 'center';
-      ctx.fillText(String(index + 1), noX + noW / 2, rowY + rowH / 2 + orderNumberSize * .34);
-      ctx.textAlign = 'left';
-      drawRoundRect(ctx, playerX, rowY + rowInsetY, playerW, rowCardH, rowRadius);
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-      ctx.strokeStyle = '#bdd7ef';
-      ctx.lineWidth = 3;
-      ctx.stroke();
-      const player = (st.players || []).find(p => p.id === pid);
-      ctx.fillStyle = player?.color || '#94a3b8';
-      drawRoundRect(ctx, playerX, rowY + rowInsetY, 8, rowCardH, rowRadius);
-      ctx.fill();
-      ctx.fillStyle = '#102033';
-      const name = displayNameIn(st, pid);
-      const number = shareShowsNumber(st) ? playerNumberIn(st, pid) : '';
-      const nameX = playerX + 26;
-      const numberW = number ? 74 : 0;
-      const nameMaxW = playerW - 48 - numberW - (number ? 16 : 0);
-      const nameSize = fitCanvasFontSize(ctx, name, nameMaxW, 900, maxNameSize, 18, imageFontKey);
-      ctx.font = canvasFont(900, nameSize, imageFontKey);
-      ctx.fillText(truncateCanvasText(ctx, name, nameMaxW), nameX, rowY + rowH / 2 + nameSize * .34);
-      if(number){
-        const numberX = playerX + playerW - numberW - 20;
-        drawRoundRect(ctx, numberX, rowY + rowH / 2 - numberBadgeH / 2, numberW, numberBadgeH, 14);
-        ctx.fillStyle = '#f5fbff';
-        ctx.fill();
-        ctx.strokeStyle = '#9bc9f0';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-        ctx.fillStyle = '#043e76';
-        ctx.font = canvasFont(900, numberSize, imageFontKey);
-        ctx.textAlign = 'center';
-        ctx.fillText(number, numberX + numberW / 2, rowY + rowH / 2 + numberSize * .34);
-        ctx.textAlign = 'left';
-      }
-      drawRoundRect(ctx, defenseX, rowY + rowInsetY, defenseW, rowCardH, rowRadius);
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-      ctx.strokeStyle = '#9bc9f0';
-      ctx.lineWidth = 3;
-      ctx.stroke();
-      if(hasDefenseColumns){
-        columns.forEach((col, colIndex) => {
-          const item = defenseColumnItemInShare(st, pid, col);
-          if(!item) return;
-          const x = defenseContentX + colIndex * (chipW + colGap);
-          const chipY = rowY + rowH / 2 - chipH / 2;
-          drawCanvasDefenseChip(ctx, posShort(item.pos), x, chipY, chipW, chipH, item.start ? 'start' : 'change', false, imageFontKey);
-        });
-      }else{
-        const item = defenseColumnItemInShare(st, pid, columns[0]);
-        drawCanvasDefenseChip(ctx, posShort(item.pos), defenseContentX, rowY + rowH / 2 - chipH / 2, chipW, chipH, 'start', false, imageFontKey);
-      }
+      y += 22;
     });
-    y += orderCardH + benchGap;
-
-    drawCanvasCard(ctx, margin, y, cardW, benchCardH, 22);
-    ctx.fillStyle = '#0b355c';
-    ctx.font = canvasFont(900, 29, imageFontKey);
-    const benchTitle = bench.length ? `ベンチ（${bench.length}人）` : 'ベンチ';
-    ctx.fillText(benchTitle, margin + 28, y + 42);
-    ctx.fillStyle = '#102033';
-    ctx.font = canvasFont(800, 27, imageFontKey);
-    benchLines.forEach((line, idx) => ctx.fillText(line, margin + 28, y + 82 + idx * 42));
-
-    return new Promise((resolve, reject) => {
-      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('画像生成に失敗しました')), 'image/png', 0.92);
+    y += 34;
+    drawCanvasCard(ctx, margin, y, cardW, changeH, 22);
+    ctx.fillStyle = '#043e76'; ctx.font = canvasFont(900, 28, key);
+    ctx.fillText('回ごとの交代・守備変更', margin + 26, y + 44);
+    let cy = y + 84;
+    if(!changes.length){ ctx.font = canvasFont(700, 27, key); ctx.fillText('変更予定なし', margin + 28, cy); }
+    changes.forEach(change => {
+      ctx.fillStyle = '#9a4d00'; ctx.font = canvasFont(900, 28, key);
+      ctx.fillText(`${change.inning}回から`, margin + 28, cy); cy += 44;
+      ctx.fillStyle = '#102033'; ctx.font = canvasFont(700, 27, key);
+      change.lines.forEach(line => { ctx.fillText(line, margin + 28, cy); cy += 37; });
+      cy += 24;
     });
+    y += changeH + 42;
+    ctx.fillStyle = '#42617f'; ctx.font = canvasFont(700, 25, key);
+    footerLines.forEach(line => { ctx.fillText(line, margin + 24, y); y += 34; });
+    return new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('画像生成に失敗しました')), 'image/png'));
   }
 
   function downloadBlob(blob, filename){
@@ -3913,6 +3970,194 @@ function playerNumberIn(st, id){
   function escapeHtml(value){ return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function escapeAttr(value){ return escapeHtml(value); }
 
+  function workspacePayload(){
+    const snapshot = clone(state);
+    snapshot.selectedInning = 0;
+    return { schema:1, state:snapshot, history:loadSavedOrders().map(entry => ({
+      id:entry.id, createdAt:entry.createdAt, updatedAt:entry.updatedAt,
+      savedOrderKey:entry.savedOrderKey, state:{ ...entry.state, selectedInning:0 }
+    })) };
+  }
+
+  function workspaceChanged(){
+    if(!workspaceSharingStarted || workspaceHydrating) return;
+    const current = JSON.stringify(workspacePayload());
+    if(current === workspaceLastContent) return;
+    workspaceLastContent = current;
+    try{
+      localStorage.setItem('lineupWorkspaceHasEdits', '1');
+      workspaceBridge?.changed();
+    }catch(error){ setCloudStatus({ status:'error', detail:error.message }); }
+  }
+
+  function applyWorkspacePayload(payload){
+    const nextState = normalizeState(clone(payload.state));
+    nextState.selectedInning = Math.min(maxInnings(nextState), state.selectedInning || 0);
+    const nextHistory = payload.history.map(normalizeSavedOrder).filter(Boolean);
+    // Verify serializability before changing either storage key.
+    const stateText = JSON.stringify(nextState), historyText = JSON.stringify(nextHistory);
+    const oldState = localStorage.getItem(STORAGE_KEY), oldHistory = localStorage.getItem(HISTORY_KEY);
+    try{
+      localStorage.setItem(STORAGE_KEY, stateText);
+      localStorage.setItem(HISTORY_KEY, historyText);
+    }catch(error){
+      if(oldState !== null) localStorage.setItem(STORAGE_KEY, oldState);
+      if(oldHistory !== null) localStorage.setItem(HISTORY_KEY, oldHistory);
+      throw new Error('端末の空き容量が不足しています。内容の切り替えを中止しました。');
+    }
+    workspaceHydrating = true;
+    try{
+      state = nextState;
+      selectedSwapId = null; selectedDefense = null; expandedHistoryId = null;
+      clearSwapAnimationState();
+      render(); renderHistory(); saveState();
+      workspaceLastContent = JSON.stringify(workspacePayload());
+    }finally{ workspaceHydrating = false; }
+  }
+
+  function saveWorkspaceRecovery(payload, label){
+    let existing = [];
+    try{ existing = JSON.parse(localStorage.getItem('lineupWorkspaceRecovery') || '[]'); }catch(e){}
+    if(!Array.isArray(existing)) existing = [];
+    const entries = [{ label, savedAt:new Date().toISOString(), payload }, ...existing].slice(0,3);
+    try{ localStorage.setItem('lineupWorkspaceRecovery', JSON.stringify(entries)); }
+    catch(e){ throw new Error('切替前のバックアップを保存できません。先にバックアップ保存を行い、端末の空き容量を確認してください。'); }
+    $('workspaceRecoveryBtn').hidden = false;
+  }
+
+  function setCloudStatus(info){
+    const messages = {
+      local:'この端末に保存しています。', connecting:'共有先のデータを確認しています…',
+      pending:'この端末に保存済み。共有先へ反映待ちです。', saving:'この端末に保存済み。共有先へ保存しています…',
+      synced:'共有先への保存が完了しています。', offline:'通信が戻るまで端末に保存します。接続後に同期します。',
+      conflict:'この端末と共有先に、それぞれ異なる内容があります。',
+      account:'以前とは別のGoogleアカウントです。共有する内容を選んでください。',
+      error:'共有先に接続できません。端末の内容は保持しています。'
+    };
+    $('cloudStatus').textContent = info.detail || messages[info.status] || messages.local;
+    const conflict = info.status === 'conflict' || info.status === 'account' || info.conflict;
+    $('cloudConflict').hidden = !conflict;
+    $('cloudRetryBtn').hidden = !['error','offline'].includes(info.status);
+    if(conflict){
+      let remote = null;
+      try{ remote = info.remote ? JSON.parse(info.remote.payload) : null; }catch(e){}
+      const label = data => data ? `${data.state?.game?.date || '日付未設定'}／${data.state?.game?.opponent || '相手未設定'}／記録${data.history?.length || 0}件` : 'データなし';
+      $('cloudConflictSummary').textContent = `端末：${label(workspacePayload())}　共有先：${label(remote)}`;
+    }
+    const attention = conflict || info.status === 'error';
+    $('saveNote').classList.toggle('cloud-attention', attention);
+    $('saveNote').textContent = conflict ? '共有を確認' : info.status === 'synced' ? '共有済み' : ['pending','saving'].includes(info.status) ? '共有中' : info.status === 'offline' ? '端末保存' : info.status === 'error' ? '共有を確認' : '端末保存';
+  }
+
+  async function ensureWorkspaceCloud(){
+    if(workspaceBridge) return workspaceBridge;
+    if(workspaceCloudPromise) return workspaceCloudPromise;
+    $('cloudLoginBtn').disabled = true;
+    $('cloudLoginBtn').textContent = 'ログイン準備中…';
+    workspaceCloudPromise = (async () => {
+      const { startCloudSync } = await import('./cloud-sync.mjs');
+      if(!['lineup-app-b4f4e.web.app','lineup-app-b4f4e.firebaseapp.com'].includes(location.hostname)) throw new Error('データ共有は正式公開URL（lineup-app-b4f4e.web.app）で利用できます。');
+      let deviceId = localStorage.getItem('lineupWorkspaceDevice');
+      if(!deviceId){ deviceId = crypto.randomUUID(); localStorage.setItem('lineupWorkspaceDevice', deviceId); }
+      return await startCloudSync({
+        deviceId,
+        getPayload:workspacePayload,
+        applyPayload:applyWorkspacePayload,
+        emptyPayload:() => ({ schema:1, state:createDefaultState(), history:[] }),
+        hasLocalData:() => workspaceHadExisting || localStorage.getItem('lineupWorkspaceHasEdits') === '1' || loadSavedOrders().length > 0,
+        markLocalData:() => localStorage.setItem('lineupWorkspaceHasEdits','1'),
+        readMeta:() => { try{ return JSON.parse(localStorage.getItem('lineupWorkspaceSyncMeta') || '{}'); }catch(e){ return {}; } },
+        writeMeta:value => localStorage.setItem('lineupWorkspaceSyncMeta', JSON.stringify(value)),
+        backup:saveWorkspaceRecovery,
+        online:() => navigator.onLine !== false,
+        onStatus:setCloudStatus,
+        onAccount:account => {
+          $('cloudAccount').textContent = account ? `${account.name} ${account.email}`.trim() : '';
+          $('cloudLoginBtn').hidden = !!account;
+          $('cloudLogoutBtn').hidden = !account;
+        }
+      });
+    })();
+    try{ workspaceBridge = await workspaceCloudPromise; return workspaceBridge; }
+    catch(error){
+      workspaceCloudPromise = null;
+      if(!/[\u3040-\u30ff\u3400-\u9fff]/.test(error.message || '')) throw new Error('共有機能を読み込めません。端末保存を続け、通信が戻ってから再試行してください。');
+      throw error;
+    }
+    finally{ $('cloudLoginBtn').disabled = false; $('cloudLoginBtn').textContent = 'Googleでログイン'; }
+  }
+
+  function setupWorkspaceSharing(){
+    workspaceLastContent = JSON.stringify(workspacePayload());
+    workspaceSharingStarted = true;
+    const safe = task => async () => { try{ await task(); }catch(error){ setCloudStatus({ status:'error', detail:error.message }); } };
+    $('saveNote').addEventListener('click', openSettings);
+    $('cloudLoginBtn').addEventListener('click', safe(async () => {
+      const bridge = await ensureWorkspaceCloud();
+      localStorage.setItem('lineupCloudEnabled','1');
+      await bridge.login();
+    }));
+    $('cloudLogoutBtn').addEventListener('click', safe(async () => {
+      await workspaceBridge?.logout();
+      localStorage.removeItem('lineupCloudEnabled');
+    }));
+    $('cloudRetryBtn').addEventListener('click', safe(async () => { const bridge = await ensureWorkspaceCloud(); bridge.retry(); }));
+    $('cloudUseRemoteBtn').addEventListener('click', safe(() => workspaceBridge?.useRemote()));
+    $('cloudUseLocalBtn').addEventListener('click', safe(() => workspaceBridge?.useLocal()));
+    $('workspaceExportBtn').addEventListener('click', () => {
+      downloadBlob(new Blob([JSON.stringify(workspacePayload(), null, 2)], { type:'application/json' }), `lineup-backup-${todayText}.json`);
+    });
+    $('workspaceRecoveryBtn').hidden = !localStorage.getItem('lineupWorkspaceRecovery');
+    $('workspaceRecoveryBtn').addEventListener('click', () => {
+      const text = localStorage.getItem('lineupWorkspaceRecovery') || '[]';
+      downloadBlob(new Blob([JSON.stringify({ format:'lineup-recovery', entries:JSON.parse(text) }, null, 2)], { type:'application/json' }), `lineup-recovery-${todayText}.json`);
+    });
+    $('workspaceImportBtn').addEventListener('click', () => $('workspaceImportFile').click());
+    let importPayload = null;
+    let recoveryEntries = [];
+    const showImportSummary = () => {
+      $('workspaceImportSummary').textContent = `選手${importPayload.state.players.length}人・保存記録${importPayload.history.length}件を読み込みます。現在の内容は切替前データとして端末にバックアップします。ログイン中は共有先にも反映します。`;
+      $('workspaceImportConfirm').hidden = false;
+    };
+    $('workspaceImportFile').addEventListener('change', safe(async () => {
+      const file = $('workspaceImportFile').files?.[0];
+      $('workspaceImportFile').value = '';
+      if(!file) return;
+      if(file.size > 4000000) throw new Error('バックアップのファイルサイズを確認してください。');
+      let parsed;
+      try{ parsed = JSON.parse(await file.text()); }catch(e){ throw new Error('バックアップのJSONファイルを読み取れません。ファイルを確認してください。'); }
+      const { validateWorkspace } = await import('./cloud-sync.mjs');
+      recoveryEntries = [];
+      $('workspaceRecoverySelect').hidden = true;
+      if(parsed.format === 'lineup-recovery'){
+        if(!Array.isArray(parsed.entries) || !parsed.entries.length || parsed.entries.length > 3) throw new Error('切替前データの形式を確認してください。');
+        recoveryEntries = parsed.entries.map(entry => ({ ...entry, payload:validateWorkspace(entry.payload) }));
+        $('workspaceRecoverySelect').innerHTML = recoveryEntries.map((entry,index) => `<option value="${index}">${escapeHtml(`${entry.label || '切替前データ'} ${entry.savedAt || ''}`)}</option>`).join('');
+        $('workspaceRecoverySelect').hidden = false;
+        importPayload = recoveryEntries[0].payload;
+      }else{
+        importPayload = validateWorkspace(parsed);
+      }
+      showImportSummary();
+    }));
+    $('workspaceRecoverySelect').addEventListener('change', () => {
+      importPayload = recoveryEntries[Number($('workspaceRecoverySelect').value)]?.payload || null;
+      if(importPayload) showImportSummary();
+    });
+    $('workspaceImportCancelBtn').addEventListener('click', () => { importPayload = null; $('workspaceImportConfirm').hidden = true; });
+    $('workspaceImportApplyBtn').addEventListener('click', safe(async () => {
+      if(!importPayload) return;
+      saveWorkspaceRecovery(workspacePayload(), '読込前の端末データ');
+      applyWorkspacePayload(importPayload);
+      workspaceLastContent = '';
+      workspaceChanged();
+      importPayload = null; $('workspaceImportConfirm').hidden = true;
+      showToast('バックアップを読み込みました');
+    }));
+    $('settingsBtn').addEventListener('click', safe(() => ensureWorkspaceCloud()));
+    if(localStorage.getItem('lineupCloudEnabled') === '1') safe(() => ensureWorkspaceCloud())();
+  }
+
   function bindEvents(){
     $('saveBtn').addEventListener('click', saveCurrentOrder);
     $('settingsBtn').addEventListener('click', openSettings);
@@ -3938,6 +4183,8 @@ function playerNumberIn(st, id){
     $('orderResetDefenseBtn').addEventListener('click', resetCurrentDefense);
     $('copyMemoBtn').addEventListener('click', copyMemo);
     $('shareBtn').addEventListener('click', shareOrder);
+    $('coachShareBtn').addEventListener('click', shareOrder);
+    $('coachCopyBtn').addEventListener('click', async () => { await copyShareText(buildSimpleShareTextForState(state)); showToast('共有文をコピーしました'); });
     $('shareMemoBtn').addEventListener('click', shareOrder);
     $('historySearch').addEventListener('input', e => {
       historySearchQuery = e.target.value || '';
@@ -3979,6 +4226,7 @@ function playerNumberIn(st, id){
       $(id).addEventListener('input', e => {
         state.game[key] = key === 'innings' ? Number(e.target.value) : e.target.value;
         renderGameSummary();
+        renderCoachPreview();
         saveState();
       });
     });
@@ -3993,6 +4241,7 @@ function playerNumberIn(st, id){
   bindEvents();
   render();
   saveState();
+  setupWorkspaceSharing();
 })();
 </script>
 </body>
