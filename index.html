@@ -396,7 +396,8 @@
     .order-card.has-ultra-defense-chips{--defense-chip-w:26px;--defense-chip-h:29px;--defense-chip-font:11px;--defense-chip-gap:1px}
     .order-card.has-many-defense-chips{--defense-chip-w:25px;--defense-chip-h:26px;--defense-chip-font:11px;--defense-chip-gap:1px}
     .defense-cols,.pos-flow.timeline-defense{display:grid;grid-template-columns:repeat(var(--defense-cols),var(--defense-chip-w));align-items:center;justify-content:flex-start;gap:var(--defense-chip-gap)}
-    .defense-col-head{width:var(--defense-chip-w);min-width:var(--defense-chip-w)}
+    .defense-col-head{width:var(--defense-chip-w);min-width:var(--defense-chip-w);height:29px;display:flex;flex-direction:column;justify-content:center;font-size:9px;line-height:11px;white-space:nowrap}
+    .defense-col-head b{font-size:12px;line-height:15px}
     .pos-flow.timeline-defense{flex-wrap:nowrap;align-content:center;width:100%;padding:5px 6px}
     .pos-flow.timeline-defense .pos-cell{width:var(--defense-chip-w);min-width:var(--defense-chip-w);min-height:var(--defense-chip-h);display:flex;align-items:center;justify-content:center}
     .pos-flow.timeline-defense .pos-cell.empty.current-inning{background:transparent;box-shadow:none}
@@ -2294,7 +2295,7 @@ function playerNumberIn(st, id){
       <div class="defense-grid-head-main">
         <div class="defense-grid-player-spacer"></div>
         <div class="defense-cols" style="--defense-cols:${cols.length}">
-          ${cols.map(col => `<span class="defense-col-head${col.key === activeKey ? ' is-active' : ''}">${escapeHtml(col.label)}</span>`).join('')}
+          ${cols.map(col => `<span class="defense-col-head${col.key === activeKey ? ' is-active' : ''}">${col.inning > 1 ? `<span>想定</span><b>${col.inning - 1}</b>` : '初期'}</span>`).join('')}
         </div>
       </div>
     `;
