@@ -1,4 +1,8 @@
 {
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
   "hosting": {
     "public": ".",
     "ignore": [
@@ -8,6 +12,10 @@
       "**/node_modules/**",
       "README.md",
       "AGENTS.md",
+      "tests/**",
+      "**/*-debug.log",
+      "firestore.rules",
+      "firestore.indexes.json",
       "CODEX_TASK_PROMPT.md",
       "NEXT_STEPS.md",
       "start-local-server.bat"
