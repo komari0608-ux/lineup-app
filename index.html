@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-11-06-cloud-coach-desktop';
+    window.LINEUP_APP_VERSION = '2026-11-06-compact-scenarios';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -479,18 +479,18 @@
     .coach-actions button{width:100%;background:var(--blue);color:var(--panel)}
     #coachPreviewBody{padding:0 16px 14px}
     .coach-game{font-size:13px;color:var(--muted);line-height:1.6}
-    .coach-slot{display:grid;grid-template-columns:25px minmax(0,1fr);gap:7px;padding:8px 0;border-bottom:1px solid var(--border)}
-    .coach-order{color:var(--blue);font-size:20px;padding-top:20px}
-    .coach-person{display:grid;gap:5px;background:var(--soft);padding:10px 12px;border-radius:10px;overflow-wrap:anywhere}
-    .coach-person+.coach-person{margin-top:5px}
-    .coach-person.is-substitute{background:var(--clear-action-bg);border-left:3px solid var(--clear-action-border)}
-    .coach-range{font-size:11px;color:var(--muted)}
-    .coach-person strong{font-size:15px}
-    .coach-positions{font-size:12px;color:var(--muted);line-height:1.5}
-    .coach-change-title{font-size:14px;margin:20px 0 12px}
-    .coach-change{font-size:12px;line-height:1.8;margin:12px 0;overflow-wrap:anywhere}
-    .coach-change>b{color:var(--warn)}
-    .coach-change ul{margin:5px 0 0;padding-left:18px}
+    .coach-table-wrap{overflow-x:auto}
+    .coach-table{width:100%;border-collapse:collapse;font-size:12px;text-align:center;white-space:nowrap}
+    .coach-table th,.coach-table td{padding:9px 4px}
+    .coach-table thead{color:var(--muted);font-size:10px}
+    .coach-table tbody tr.is-group-start{border-top:1px solid var(--border)}
+    .coach-table .coach-name{text-align:left;white-space:normal;overflow-wrap:anywhere;min-width:86px}
+    .coach-table .coach-order{color:var(--blue);font-size:16px;width:22px}
+    .coach-table .is-substitute .coach-name{color:var(--warn)}
+    .coach-cell{display:inline-block;min-width:24px;padding:4px 2px;border-radius:7px;color:var(--muted)}
+    .coach-cell.start{background:var(--soft);color:var(--blue-dark);font-weight:900}
+    .coach-cell.change{background:#ffedd5;color:#9a3412;font-weight:900;border:1px solid #fdba74}
+    .coach-cell.exit{font-size:10px}
     .coach-empty,.sync-note{font-size:12px;line-height:1.65;color:var(--muted);overflow-wrap:anywhere}
     .sync-status{font-size:13px;font-weight:700;line-height:1.6;color:var(--blue-dark)}
     .sync-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
@@ -565,7 +565,7 @@
       <div class="game-summary" id="gameSummary">試合情報未設定</div>
     </header>
 
-    <div class="inning-scroll" id="inningButtons" aria-label="表示回"></div>
+    <div class="inning-scroll" id="inningButtons" aria-label="想定の切り替え"></div>
 
     <div class="workspace-grid">
     <main class="tabs-viewport" id="tabsViewport">
@@ -577,7 +577,7 @@
             <div class="order-head-actions">
               <span class="subhead" id="modeLabel">全員打ち</span>
               <button type="button" class="order-reset-btn" id="orderClearAllChangesBtn" hidden disabled>交代クリア</button>
-              <button type="button" class="order-reset-btn" id="orderResetDefenseBtn" hidden disabled>この回を戻す</button>
+              <button type="button" class="order-reset-btn" id="orderResetDefenseBtn" hidden disabled>この想定を戻す</button>
             </div>
           </div>
           <div class="defense-grid-header" id="defenseGridHeader" aria-hidden="true"></div>
@@ -666,12 +666,15 @@
               <option value="公式戦">公式戦</option>
             </select>
             <input class="limit-field" id="gameLimit" type="number" min="0" inputmode="numeric" placeholder="80分" aria-label="時間" />
-            <select class="innings-field" id="gameInnings" aria-label="想定イニング">
-              <option value="5">5回</option>
-              <option value="6">6回</option>
-              <option value="7">7回</option>
-              <option value="8">8回</option>
-              <option value="9">9回</option>
+            <select class="innings-field" id="gameInnings" aria-label="想定数">
+              <option value="2">想定1まで</option>
+              <option value="3">想定2まで</option>
+              <option value="4">想定3まで</option>
+              <option value="5">想定4まで</option>
+              <option value="6">想定5まで</option>
+              <option value="7">想定6まで</option>
+              <option value="8">想定7まで</option>
+              <option value="9">想定8まで</option>
             </select>
           </div>
         </div>
@@ -1156,7 +1159,7 @@
     const innings = gameInnings;
     st.game.innings = gameInnings;
     const selectedInning = Number(st.selectedInning);
-    st.selectedInning = Math.min(innings, Math.max(0, Number.isFinite(selectedInning) ? selectedInning : 0));
+    st.selectedInning = Math.min(innings, Math.max(0, Number.isFinite(selectedInning) && selectedInning !== 1 ? selectedInning : 0));
     st.defenseChanges ||= {};
     const ids = new Set(st.players.map(p => p.id));
     st.attendanceByPlayerId ||= {};
@@ -1776,7 +1779,7 @@ function playerNumberIn(st, id){
   function defenseColumns(){
     return [
       { key:'start', label:'初', inning:1 },
-      ...changedDefenseInnings().map(inning => ({ key:String(inning), label:String(inning), inning }))
+      ...changedDefenseInnings().map(inning => ({ key:String(inning), label:scenarioLabel(inning), inning }))
     ];
   }
 
@@ -2213,7 +2216,7 @@ function playerNumberIn(st, id){
       g.place,
       g.start,
       g.opponent ? `vs ${g.opponent}` : '',
-      g.innings ? `${g.innings}回` : ''
+      g.innings ? `想定${Math.max(0, g.innings - 1)}まで` : ''
     ].filter(Boolean).join('  ') || '試合情報未設定';
   }
 
@@ -2240,8 +2243,8 @@ function playerNumberIn(st, id){
     $('themeMode').value = currentThemeKey();
     renderDateCalendar();
     const modeText = state.battingMode === 'all' ? '全員打ち' : '9人制';
-    $('modeLabel').textContent = isInitialMode() ? `${modeText}｜初期` : `${modeText}｜${state.selectedInning}回守備`;
-    $('orderTitle').textContent = isInitialMode() ? 'スターティングオーダー' : `${state.selectedInning}回の守備変更`;
+    $('modeLabel').textContent = isInitialMode() ? `${modeText}｜初期` : `${modeText}｜${scenarioLabel(state.selectedInning)}`;
+    $('orderTitle').textContent = isInitialMode() ? 'スターティングオーダー' : `${scenarioLabel(state.selectedInning)}の守備・交代`;
     if(!isInitialMode() && clearAllChangesArmed) resetClearAllChangesConfirm();
     const clearAllBtn = $('orderClearAllChangesBtn');
     const hasChanges = hasRecordedOrderChanges();
@@ -2251,12 +2254,12 @@ function playerNumberIn(st, id){
     clearAllBtn.classList.toggle('is-empty', !hasChanges);
     clearAllBtn.hidden = !isInitialMode();
     clearAllBtn.disabled = !isInitialMode() || !hasChanges;
-    clearAllBtn.setAttribute('aria-label', hasChanges ? '2回以降の守備変更と選手交代をすべてクリア' : 'クリアする守備変更や選手交代はありません');
+    clearAllBtn.setAttribute('aria-label', hasChanges ? 'すべての想定の守備変更と選手交代をクリア' : 'クリアする守備変更や選手交代はありません');
     const resetBtn = $('orderResetDefenseBtn');
-    resetBtn.textContent = 'この回を戻す';
+    resetBtn.textContent = 'この想定を戻す';
     resetBtn.hidden = isInitialMode();
     resetBtn.disabled = isInitialMode();
-    resetBtn.setAttribute('aria-label', isInitialMode() ? '初期モードではこの回を戻すは使えません' : `${state.selectedInning}回の守備変更を戻す`);
+    resetBtn.setAttribute('aria-label', isInitialMode() ? '初期モードではこの想定を戻すは使えません' : `${scenarioLabel(state.selectedInning)}の守備変更を戻す`);
   }
 
   function renderInningButtons(){
@@ -2271,7 +2274,7 @@ function playerNumberIn(st, id){
       wrap.appendChild(btn);
     };
     addButton('初期', 0, 'initial');
-    for(let i=1; i<=maxInnings(); i++) addButton(`${i}回`, i);
+    for(let i=2; i<=maxInnings(); i++) addButton(scenarioLabel(i), i);
   }
 
   function renderDefenseGridHeader(){
@@ -2368,7 +2371,7 @@ function playerNumberIn(st, id){
           const chip = document.createElement('button');
           chip.type = 'button';
           chip.className = 'pos-chip ' + (item.start ? 'start' : 'change') + (short.length > 1 ? ' is-wide' : '') + (isActiveColumn ? ' current-inning' : '');
-          chip.setAttribute('aria-label', `${col.key === 'start' ? '初期' : col.label + '回'}の守備 ${short}`);
+          chip.setAttribute('aria-label', `${col.key === 'start' ? '初期' : scenarioLabel(col.inning)}の守備 ${short}`);
           chip.innerHTML = `<span>${escapeHtml(short)}</span>`;
           bindQuickTap(chip, () => handleDefenseTap(pid), {
             feedbackElement: () => chip.closest('.defense-card') || chip
@@ -2429,7 +2432,7 @@ function playerNumberIn(st, id){
       const cur = getLineupAtIn(st, inning);
       cur.forEach((pid, idx) => {
         if(prev[idx] && prev[idx] !== pid){
-          lines.push(`${inning}回　${idx + 1}番　${displayNameIn(st, prev[idx])} → ${displayNameIn(st, pid)}　${posShort(effectivePositionIn(st, pid, inning))}`);
+          lines.push(`${scenarioLabel(inning)}　${idx + 1}番　${displayNameIn(st, prev[idx])} → ${displayNameIn(st, pid)}　${posShort(effectivePositionIn(st, pid, inning))}`);
         }
       });
     }
@@ -2453,7 +2456,7 @@ function playerNumberIn(st, id){
         .filter(x => x.before !== x.after)
         .filter(x => st.battingMode === 'all' || (x.before !== 'B' && x.after !== 'B'))
         .sort((a,b) => (orderIndex[a.player.id] ?? 999) - (orderIndex[b.player.id] ?? 999));
-      changed.forEach(x => lines.push(`${inning}回　${displayNameIn(st, x.player.id)}　${posShort(x.before)} → ${posShort(x.after)}`));
+      changed.forEach(x => lines.push(`${scenarioLabel(inning)}　${displayNameIn(st, x.player.id)}　${posShort(x.before)} → ${posShort(x.after)}`));
     }
     return lines;
   }
@@ -2783,7 +2786,7 @@ function playerNumberIn(st, id){
       g.place || '場所未入力',
       g.start || '',
       modeLabelForState(st),
-      `${maxInnings(st)}回`,
+      `想定${maxInnings(st) - 1}まで`,
       isDhEnabled(st) ? 'DHあり' : 'DHなし'
     ].filter(Boolean).join(' / ');
   }
@@ -3563,7 +3566,7 @@ function playerNumberIn(st, id){
           return (orderIndex[a.player.id] ?? 999) - (orderIndex[b.player.id] ?? 999);
         })
         .forEach(item => {
-          lines.push(`${current}回 ${shareDisplayNameIn(st, item.player.id)} ${shareChangePosLabel(item.before)} → ${shareChangePosLabel(item.after)}`);
+          lines.push(`${scenarioLabel(current)} ${shareDisplayNameIn(st, item.player.id)} ${shareChangePosLabel(item.before)} → ${shareChangePosLabel(item.after)}`);
         });
     }
     return lines;
@@ -3594,7 +3597,7 @@ function playerNumberIn(st, id){
   function defenseColumnsForState(st){
     return [
       { key:'start', label:'初', inning:1 },
-      ...changedDefenseInningsForState(st).map(inning => ({ key:String(inning), label:String(inning), inning }))
+      ...changedDefenseInningsForState(st).map(inning => ({ key:String(inning), label:scenarioLabel(inning), inning }))
     ];
   }
 
@@ -3655,17 +3658,11 @@ function playerNumberIn(st, id){
     return ids;
   }
 
-  function sharePlanColumnLabel(index, total){
-    if(total <= 1) return '想定';
-    const marks = ['①','②','③','④','⑤','⑥','⑦','⑧','⑨'];
-    return `想定${marks[index] || String(index + 1)}`;
-  }
-
   function defenseColumnsForShareState(st, visibleIds){
     const innings = changedDefenseInningsForShareState(st, visibleIds);
     return [
       { key:'start', label:'初', inning:1 },
-      ...innings.map((inning, index) => ({ key:String(inning), label:sharePlanColumnLabel(index, innings.length), inning }))
+      ...innings.map((inning, index) => ({ key:String(inning), label:scenarioLabel(inning), inning }))
     ];
   }
 
@@ -3746,137 +3743,150 @@ function playerNumberIn(st, id){
     return { slots, changes, unused, end };
   }
 
-  function coachSegmentLabel(segment, end){
-    const start = segment.start === 1 ? '先発' : `${segment.start}回から`;
-    return segment.end < end ? `${start}・${segment.end}回まで` : start;
+  // Storage keeps its existing phase keys; phase 1 is the initial lineup.
+  function scenarioLabel(phase){ return phase <= 1 ? '初期' : `想定${phase - 1}`; }
+
+  function buildCompactCoachTable(st){
+    const plan = buildCoachPlan(st);
+    const columns = [{ inning:1, label:'初期' }, ...plan.changes.map(change => ({ inning:change.inning, label:scenarioLabel(change.inning) }))];
+    const rows = plan.slots.flatMap(slot => {
+      const ids = [...new Set(slot.segments.map(segment => segment.id))];
+      const activeAt = (id, phase) => slot.segments.some(segment => segment.id === id && segment.start <= phase && segment.end >= phase);
+      return ids.map((id, index) => ({
+        id, slot:slot.order, order:index === 0 ? slot.order : null, substitute:index > 0,
+        cells:columns.map(column => {
+          const phase = column.inning;
+          const active = activeAt(id, phase);
+          const before = phase > 1 && activeAt(id, phase - 1);
+          const pos = effectivePositionIn(st, id, phase);
+          if(phase === 1) return { kind:active ? 'start' : 'empty', text:active ? posShort(pos) : '' };
+          if(!active) return { kind:before ? 'exit' : 'empty', text:before ? '交代' : '' };
+          if(!before || pos !== effectivePositionIn(st, id, phase - 1)) return { kind:'change', text:posShort(pos) };
+          return { kind:'same', text:'―' };
+        })
+      }));
+    });
+    return { columns, rows, unused:plan.unused };
   }
 
-  function coachPositionText(segment){
-    return segment.positions.map((item, i) => i === 0 ? shareChangePosLabel(item.pos) : `${item.inning}回:${shareChangePosLabel(item.pos)}`).join(' → ');
+  function compactCoachFooter(st, table){
+    if(st.battingMode === 'all') return '全員打ち：ベンチの選手も打順に入っています。';
+    return table.unused.length ? `控え：${table.unused.map(p => shareDisplayNameIn(st, p.id)).join('、')}` : '';
   }
 
   function buildSimpleShareTextForState(sourceState){
     const st = normalizeState(clone(sourceState));
-    const plan = buildCoachPlan(st);
+    const table = buildCompactCoachTable(st);
     const lines = [shareGameMainLine(st), shareGamePlaceLine(st), `【打順・出場予定｜${st.battingMode === 'nine' ? '9人制' : '全員打ち'}】`].filter(Boolean);
-    plan.slots.forEach(slot => {
-      slot.segments.forEach((segment, i) => {
-        lines.push(`${i === 0 ? `${slot.order}番` : '  →'} ${shareDisplayNameIn(st, segment.id)}［${coachSegmentLabel(segment, plan.end)}］ ${coachPositionText(segment)}`);
-      });
+    table.rows.forEach(row => {
+      const changes = row.cells.flatMap((cell, index) => cell.kind === 'start' || cell.kind === 'change' || cell.kind === 'exit' ? [`${table.columns[index].label}：${cell.text}`] : []);
+      lines.push(`${row.order === null ? '  →' : `${row.order}番`} ${shareDisplayNameIn(st, row.id)}　${changes.join(' / ')}`);
     });
-    lines.push('', '【回ごとの交代・守備変更】');
-    if(!plan.changes.length) lines.push('変更予定なし');
-    plan.changes.forEach(change => {
-      lines.push(`${change.inning}回から`);
-      change.lines.forEach(line => lines.push(`・${line}`));
-    });
-    if(st.battingMode === 'nine' && plan.unused.length){
-      lines.push('', '【控え・出場予定なし】', plan.unused.map(p => shareDisplayNameIn(st, p.id)).join('、'));
-    }
-    if(st.battingMode === 'all') lines.push('', '※全員打ち：ベンチの選手も打順に入っています。');
+    const footer = compactCoachFooter(st, table);
+    if(footer) lines.push('', footer);
     return lines.join('\n');
   }
 
   function renderCoachPreview(){
     const target = $('coachPreviewBody');
     if(!target) return;
-    const plan = buildCoachPlan(state);
+    const table = buildCompactCoachTable(state);
     target.innerHTML = `<p class="coach-game">${escapeHtml(shareGameMainLine(state))}</p>` +
-      plan.slots.map(slot => `<div class="coach-slot"><b class="coach-order">${slot.order}</b><div>${slot.segments.map((segment, i) =>
-        `<div class="coach-person${i ? ' is-substitute' : ''}"><span class="coach-range">${escapeHtml(coachSegmentLabel(segment, plan.end))}</span><strong>${i ? '→ ' : ''}${escapeHtml(shareDisplayNameIn(state, segment.id))}</strong><span class="coach-positions">${escapeHtml(coachPositionText(segment))}</span></div>`
-      ).join('')}</div></div>`).join('') +
-      `<h3 class="coach-change-title">回ごとの交代・守備変更</h3>` +
-      (plan.changes.length ? plan.changes.map(change => `<div class="coach-change"><b>${change.inning}回から</b><ul>${change.lines.map(line => `<li>${escapeHtml(line)}</li>`).join('')}</ul></div>`).join('') : '<p class="coach-empty">変更予定なし</p>') +
-      (state.battingMode === 'nine' && plan.unused.length ? `<p class="coach-empty">控え・出場予定なし：${escapeHtml(plan.unused.map(p => shareDisplayNameIn(state, p.id)).join('、'))}</p>` : '') +
-      (state.battingMode === 'all' ? '<p class="coach-empty">全員打ち：ベンチの選手も打順に入っています。</p>' : '');
+      `<div class="coach-table-wrap"><table class="coach-table"><thead><tr><th>順</th><th class="coach-name">選手</th>${table.columns.map(column => `<th>${escapeHtml(column.label)}</th>`).join('')}</tr></thead><tbody>` +
+      table.rows.map(row => `<tr class="${row.substitute ? 'is-substitute' : 'is-group-start'}"><td class="coach-order">${row.order ?? ''}</td><th scope="row" class="coach-name">${row.substitute ? '→ ' : ''}${escapeHtml(shareDisplayNameIn(state, row.id))}</th>${row.cells.map(cell => `<td><span class="coach-cell ${cell.kind}">${escapeHtml(cell.text)}</span></td>`).join('')}</tr>`).join('') +
+      `</tbody></table></div><p class="coach-empty">橙＝変更・途中出場　―＝変更なし</p>` +
+      (compactCoachFooter(state, table) ? `<p class="coach-empty">${escapeHtml(compactCoachFooter(state, table))}</p>` : '');
   }
 
   async function createOrderImageBlob(sourceState){
     const st = normalizeState(clone(sourceState));
-    const plan = buildCoachPlan(st);
+    const table = buildCompactCoachTable(st);
     const key = currentFontKey(st);
     await waitForLineupFonts();
     const mascot = await loadCanvasImage('assets/icons/lineup-mascot-transparent-original.png');
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    const width = 900, margin = 34, cardW = width - margin * 2;
+    const width = 900, margin = 28, tableW = width - margin * 2, orderW = 46;
+    const nameW = Math.min(300, Math.max(194, tableW - orderW - table.columns.length * 78));
+    const cellW = (tableW - orderW - nameW) / table.columns.length;
+    const cellsX = margin + orderW + nameW;
     const wrap = (text, size, maxWidth, weight = 700) => {
       ctx.font = canvasFont(weight, size, key);
       return wrappedCanvasChars(ctx, text, maxWidth);
     };
-    const slotRows = plan.slots.map(slot => ({ ...slot, segments:slot.segments.map((segment, index) => {
-      const names = wrap(`${index ? '→ ' : ''}${shareDisplayNameIn(st, segment.id)}`, 30, cardW - 140, 900);
-      const positions = wrap(coachPositionText(segment), 25, cardW - 140);
-      return { ...segment, names, positions, height:40 + names.length * 38 + positions.length * 32 + 14 };
-    }) }));
-    slotRows.forEach(slot => slot.height = slot.segments.reduce((n, segment) => n + segment.height, 0) + 12);
-    const changes = plan.changes.map(change => ({ inning:change.inning, lines:change.lines.flatMap(line => wrap(`・${line}`, 27, cardW - 60)) }));
-    const changeH = 78 + (changes.length ? changes.reduce((n, change) => n + 52 + change.lines.length * 37 + 16, 0) : 44);
-    const footer = st.battingMode === 'all' ? '全員打ち：ベンチの選手も打順に入っています。' :
-      `控え・出場予定なし：${plan.unused.length ? plan.unused.map(p => shareDisplayNameIn(st, p.id)).join('、') : 'なし'}`;
-    const footerLines = wrap(footer, 25, cardW - 52);
-    const opponentLines = wrap(shareOpponentLine(st), 34, cardW - (mascot ? 228 : 56), 900);
-    const placeLines = wrap(shareHeaderPlaceLine(st), 25, cardW - 56);
-    const headerH = 112 + opponentLines.length * 43 + placeLines.length * 34;
-    const orderH = 72 + slotRows.reduce((n, slot) => n + slot.height + 10, 0) + 10;
-    const height = margin * 2 + headerH + 22 + orderH + 22 + changeH + 18 + footerLines.length * 34 + 28;
-    // Keep large rosters within mobile canvas limits without dropping any players.
+    const rows = table.rows.map(row => {
+      const names = wrap(`${row.substitute ? '→ ' : ''}${shareDisplayNameIn(st, row.id)}`, 29, nameW - 22, 900);
+      return { ...row, names, height:Math.max(row.substitute ? 51 : 57, names.length * 35 + 14) };
+    });
+    const opponentLines = wrap(shareOpponentLine(st), 33, tableW - 130, 900);
+    const dateLines = wrap(shareDateInningsLine(st), 23, tableW - 38);
+    const placeLines = wrap(shareHeaderPlaceLine(st), 23, tableW - 38);
+    const headerH = 46 + opponentLines.length * 41 + (dateLines.length + placeLines.length) * 31 + 14;
+    const footer = compactCoachFooter(st, table);
+    const footerLines = footer ? wrap(footer, 23, tableW - 20) : [];
+    const tableH = 48 + rows.reduce((sum, row) => sum + row.height, 0);
+    const height = margin * 2 + headerH + 16 + tableH + 46 + footerLines.length * 31;
+    // Bound large-roster canvases without dropping players or scenarios.
     const scale = Math.min(1, 15000 / height, Math.sqrt(14000000 / (width * height)));
     canvas.width = Math.floor(width * scale);
     canvas.height = Math.ceil(height * scale);
     ctx.scale(scale, scale);
-    ctx.fillStyle = '#eaf8f3'; ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = '#edf6fc'; ctx.fillRect(0, 0, width, height);
     let y = margin;
-    drawRoundRect(ctx, margin, y, cardW, headerH, 26);
+    drawRoundRect(ctx, margin, y, tableW, headerH, 18);
     ctx.fillStyle = '#0867bd'; ctx.fill();
-    if(mascot) drawContainedImage(ctx, mascot, width - margin - 198, y + 14, 180, 128);
-    ctx.fillStyle = '#ffffff'; ctx.font = canvasFont(800, 24, key);
-    ctx.fillText('打順・出場予定', margin + 28, y + 38);
-    let ty = y + 84;
-    ctx.font = canvasFont(900, 34, key);
-    opponentLines.forEach(line => { ctx.fillText(line, margin + 28, ty); ty += 43; });
-    ctx.font = canvasFont(800, 25, key);
-    ctx.fillText(shareDateInningsLine(st), margin + 28, ty); ty += 35;
-    placeLines.forEach(line => { ctx.fillText(line, margin + 28, ty); ty += 34; });
-    y += headerH + 22;
-    drawCanvasCard(ctx, margin, y, cardW, orderH, 22);
-    ctx.fillStyle = '#043e76'; ctx.font = canvasFont(900, 28, key);
-    ctx.fillText(`打順ごとの出場予定 ｜ ${st.battingMode === 'nine' ? '9人制' : '全員打ち'}`, margin + 26, y + 44);
-    y += 70;
-    slotRows.forEach(slot => {
-      ctx.fillStyle = '#0867bd'; ctx.font = canvasFont(900, 32, key);
-      ctx.fillText(String(slot.order), margin + 26, y + 56);
-      slot.segments.forEach((segment, index) => {
-        const x = margin + 76;
-        drawRoundRect(ctx, x, y, cardW - 98, segment.height, 14);
-        ctx.fillStyle = index ? '#fff5e7' : '#f1f7fc'; ctx.fill();
-        ctx.fillStyle = index ? '#9a4d00' : '#42617f'; ctx.font = canvasFont(800, 22, key);
-        ctx.fillText(coachSegmentLabel(segment, plan.end), x + 18, y + 29);
-        let textY = y + 67;
-        ctx.fillStyle = '#102033'; ctx.font = canvasFont(900, 30, key);
-        segment.names.forEach(line => { ctx.fillText(line, x + 18, textY); textY += 38; });
-        ctx.fillStyle = '#42617f'; ctx.font = canvasFont(700, 25, key);
-        segment.positions.forEach(line => { ctx.fillText(line, x + 18, textY - 2); textY += 32; });
-        y += segment.height;
+    if(mascot) drawContainedImage(ctx, mascot, width - margin - 107, y + 10, 92, 74);
+    ctx.fillStyle = '#ffffff'; ctx.font = canvasFont(800, 23, key);
+    ctx.fillText(`打順・出場予定 ｜ ${st.battingMode === 'nine' ? '9人制' : '全員打ち'}`, margin + 19, y + 32);
+    let ty = y + 73;
+    ctx.font = canvasFont(900, 33, key);
+    opponentLines.forEach(line => { ctx.fillText(line, margin + 19, ty); ty += 41; });
+    ctx.font = canvasFont(700, 23, key);
+    dateLines.concat(placeLines).forEach(line => { ctx.fillText(line, margin + 19, ty); ty += 31; });
+    y += headerH + 16;
+    drawRoundRect(ctx, margin, y, tableW, tableH, 14);
+    ctx.fillStyle = '#ffffff'; ctx.fill();
+    const centered = (text, x, cy, size, color, weight = 700) => {
+      ctx.fillStyle = color; ctx.font = canvasFont(weight, size, key);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, cy);
+      ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    };
+    centered('順', margin + orderW / 2, y + 25, 21, '#42617f');
+    ctx.fillStyle = '#42617f'; ctx.font = canvasFont(800, 22, key);
+    ctx.fillText('選手', margin + orderW + 10, y + 33);
+    table.columns.forEach((column, i) => centered(column.label, cellsX + cellW * (i + .5), y + 25, Math.min(23, cellW / 2.8), '#42617f'));
+    y += 48;
+    rows.forEach(row => {
+      ctx.fillStyle = row.slot % 2 ? '#f4f8fc' : '#ffffff';
+      ctx.fillRect(margin, y, tableW, row.height);
+      if(!row.substitute){
+        ctx.beginPath(); ctx.moveTo(margin, y); ctx.lineTo(margin + tableW, y);
+        ctx.strokeStyle = '#d8e5f0'; ctx.lineWidth = 1; ctx.stroke();
+        centered(String(row.order), margin + orderW / 2, y + row.height / 2, 29, '#0867bd', 900);
+      }
+      ctx.fillStyle = row.substitute ? '#9a4d00' : '#102033'; ctx.font = canvasFont(900, 29, key);
+      ctx.textBaseline = 'middle';
+      row.names.forEach((line, i) => ctx.fillText(line, margin + orderW + 10, y + row.height / 2 + (i - (row.names.length - 1) / 2) * 35));
+      ctx.textBaseline = 'alphabetic';
+      row.cells.forEach((cell, i) => {
+        const cx = cellsX + cellW * (i + .5), cy = y + row.height / 2;
+        if(cell.kind === 'start' || cell.kind === 'change'){
+          const chipW = Math.min(60, cellW - 12);
+          drawRoundRect(ctx, cx - chipW / 2, cy - 19, chipW, 38, 9);
+          ctx.fillStyle = cell.kind === 'start' ? '#e0effc' : '#ffedd5'; ctx.fill();
+          if(cell.kind === 'change'){ ctx.strokeStyle = '#f5a54e'; ctx.lineWidth = 1.5; ctx.stroke(); }
+          centered(cell.text, cx, cy + 1, 27, cell.kind === 'start' ? '#043e76' : '#9a3412', 900);
+        }else if(cell.text){
+          centered(cell.text, cx, cy, cell.kind === 'exit' ? 21 : 24, '#8495a7');
+        }
       });
-      y += 22;
+      y += row.height;
     });
-    y += 34;
-    drawCanvasCard(ctx, margin, y, cardW, changeH, 22);
-    ctx.fillStyle = '#043e76'; ctx.font = canvasFont(900, 28, key);
-    ctx.fillText('回ごとの交代・守備変更', margin + 26, y + 44);
-    let cy = y + 84;
-    if(!changes.length){ ctx.font = canvasFont(700, 27, key); ctx.fillText('変更予定なし', margin + 28, cy); }
-    changes.forEach(change => {
-      ctx.fillStyle = '#9a4d00'; ctx.font = canvasFont(900, 28, key);
-      ctx.fillText(`${change.inning}回から`, margin + 28, cy); cy += 44;
-      ctx.fillStyle = '#102033'; ctx.font = canvasFont(700, 27, key);
-      change.lines.forEach(line => { ctx.fillText(line, margin + 28, cy); cy += 37; });
-      cy += 24;
-    });
-    y += changeH + 42;
-    ctx.fillStyle = '#42617f'; ctx.font = canvasFont(700, 25, key);
-    footerLines.forEach(line => { ctx.fillText(line, margin + 24, y); y += 34; });
+    ctx.fillStyle = '#64748b'; ctx.font = canvasFont(700, 22, key);
+    ctx.fillText('橙＝変更・途中出場　―＝変更なし', margin + 8, y + 33);
+    y += 46;
+    ctx.font = canvasFont(700, 23, key);
+    footerLines.forEach(line => { ctx.fillText(line, margin + 8, y + 24); y += 31; });
     return new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('画像生成に失敗しました')), 'image/png'));
   }
 
