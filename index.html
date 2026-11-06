@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-11-06-compact-scenarios';
+    window.LINEUP_APP_VERSION = '2026-11-06-desktop-readable-type';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -502,28 +502,74 @@
     .sync-backup-actions{padding-top:10px;border-top:1px solid var(--border);margin-top:16px}
     .save-chip.cloud-attention{display:inline;color:var(--warn);cursor:pointer;font-size:10px;max-width:64px;white-space:normal}
     @media (min-width:1000px){
+      html.font-standard{--font-app:"Noto Sans JP","Yu Gothic UI",Meiryo,var(--font-ui)}
+      html.font-ud-shingo{--font-app:"Lineup UD Shin Go","Noto Sans JP","Yu Gothic UI",Meiryo,var(--font-ui)}
       html,body{overscroll-behavior:auto}
-      .app{max-width:1240px;padding:18px 24px 110px}
+      body{font-size:17px;font-weight:500;font-synthesis:none;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+      .app{max-width:1600px;padding:20px 32px 118px}
       .top{padding:10px 0 12px}
       .titlebar{gap:12px}
-      .title-text{font-size:22px}
-      .save-chip{display:inline;font-size:12px;max-width:none}
-      .game-summary{font-size:14px;margin-top:4px}
-      .workspace-grid{display:grid;grid-template-columns:minmax(500px,1.25fr) minmax(350px,1fr);gap:26px;align-items:start}
+      .title-text{font-size:28px;font-weight:700}
+      .save-chip{display:inline;font-size:14px;font-weight:500;max-width:none}
+      .game-summary{font-size:17px;font-weight:500;margin-top:8px;line-height:1.6}
+      .workspace-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:28px;align-items:start}
       .tabs-viewport{min-height:0}
+      /* Desktop tabs do not need a permanently composited text layer. */
+      .tabs-track{display:block;transform:none!important;transition:none;will-change:auto}
+      .tabs-track>.panel:not(.active){display:none}
       .panel{min-height:0}
-      .coach-preview{display:block;position:sticky;top:112px;max-height:calc(100dvh - 210px);overflow:auto}
+      .coach-preview{display:block;position:static;max-height:none;overflow:hidden}
       .inning-scroll{padding:14px 0;gap:9px}
-      .inning-btn{min-width:48px;height:38px;font-size:14px}
-      .order-card .row-list{gap:9px}
-      .player-card,.defense-card{min-height:54px}
-      .player-card{font-size:18px}
-      .bottom-nav{left:50%;right:auto;transform:translateX(-50%);width:520px;bottom:18px;border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow)}
+      .inning-btn,.inning-btn.initial{min-width:76px;height:46px;padding:0 14px;font-size:18px;font-weight:700}
+      .card-head h2{font-size:19px;font-weight:700;line-height:1.5}
+      .order-card .card-head{padding:12px}
+      .order-head-actions{gap:10px;flex-wrap:wrap}
+      .subhead{font-size:14px;font-weight:500}
+      .order-reset-btn{height:38px;font-size:14px;font-weight:700;padding:0 12px}
+      .order-card .row-list{gap:8px}
+      .order-main,.defense-grid-header{grid-template-columns:40px minmax(0,1fr);gap:10px}
+      .player-main-group,.defense-grid-head-main,.order-card.has-defense-changes .player-main-group{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+      .player-main-group.single-defense{grid-template-columns:minmax(0,1fr) max-content}
+      .order-card .player-card,.order-card .defense-card,.order-card.has-defense-changes:not(.has-many-defense-chips) .player-card,.order-card.has-defense-changes:not(.has-many-defense-chips) .defense-card{min-height:64px}
+      .order-card .player-card,.order-card.has-defense-changes .player-card{font-size:22px;font-weight:700;letter-spacing:0;padding:8px 12px;gap:10px}
+      .order-card .player-number-badge,.order-card.has-defense-changes .player-number-badge{min-width:50px;height:40px;padding:0 6px;font-size:20px;font-weight:700;box-shadow:none}
+      .order-no{font-size:28px;font-weight:700}
+      .order-card .defense-cols,.order-card .pos-flow.timeline-defense{grid-template-columns:repeat(var(--defense-cols),minmax(0,1fr));gap:6px;padding-left:8px;padding-right:8px}
+      .order-card .pos-flow.timeline-defense .pos-cell{width:auto;min-width:0;min-height:42px}
+      /* Override the mobile density rules, including every active chip state. */
+      :is(.order-card,.order-card.has-compact-defense-chips,.order-card.has-ultra-defense-chips,.order-card.has-many-defense-chips) .pos-flow.timeline-defense :is(.pos-chip,.pos-chip.start,.pos-chip.change,.pos-chip.change.current-inning){width:100%;min-width:0;max-width:46px;height:42px;padding:0;font-size:20px;font-weight:700}
+      .order-card.has-many-defense-chips .pos-flow.timeline-defense :is(.pos-chip,.pos-chip.start,.pos-chip.change,.pos-chip.change.current-inning){font-size:16px}
+      .order-card .pos-flow.single-defense .pos-chip{min-width:52px;height:42px;font-size:22px;font-weight:700}
+      .order-card .defense-col-head{width:auto;min-width:0;height:38px;font-size:12px;font-weight:500;line-height:16px}
+      .order-card .defense-col-head b{font-size:16px;font-weight:700;line-height:20px}
+      .bench-wrap summary,.memo-wrap summary{font-size:17px;font-weight:700;padding-top:12px;padding-bottom:12px}
+      .bench-chip{font-size:18px;font-weight:700;min-height:44px}
+      .coach-preview .card-head{padding:14px 18px}
+      .coach-preview button{font-size:17px;font-weight:700;min-height:46px}
+      #coachPreviewBody{padding:0 18px 16px}
+      .coach-game{font-size:16px;line-height:1.7;margin:16px 0}
+      .coach-table{font-size:18px;line-height:1.55}
+      .coach-table th,.coach-table td{padding:11px 5px;font-weight:500}
+      .coach-table thead{font-size:14px}
+      .coach-table .coach-name{font-size:20px;font-weight:700;min-width:142px}
+      .coach-table thead .coach-name{font-size:14px;font-weight:500}
+      .coach-table .coach-order{font-size:22px;font-weight:700;width:32px}
+      .coach-cell{min-width:34px;padding:4px;border-radius:8px}
+      .coach-cell.start,.coach-cell.change{font-weight:700}
+      .coach-cell.exit{font-size:14px}
+      .coach-empty{font-size:15px;line-height:1.7}
+      .bottom-nav{left:0;right:0;transform:none;width:560px;margin-inline:auto;bottom:18px;border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow)}
       .bottom-nav-inner{max-width:none;padding-bottom:0}
+      .nav-btn{font-size:17px;font-weight:700}
       .settings-modal{align-items:center}
       .settings-sheet{max-width:740px;max-height:90dvh}
+      .settings-section h3{font-size:19px;font-weight:700}
+      .game-line input,.game-line select,.date-button,.toolbar select,.toolbar button,.setting-field select{font-size:16px;font-weight:500;min-height:46px}
       .player-names{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-      .player-row input{height:44px}
+      .player-row input{height:46px;font-size:17px;font-weight:500}
+    }
+    @media (min-width:1280px){
+      .workspace-grid{grid-template-columns:minmax(0,1.08fr) minmax(0,1fr)}
     }
 
   </style>
