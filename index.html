@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-11-06-innings-balanced-layout';
+    window.LINEUP_APP_VERSION = '2026-11-06-share-number-badges';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -488,6 +488,9 @@
     .coach-table .coach-name{text-align:left;white-space:normal;overflow-wrap:anywhere;min-width:86px}
     .coach-table .coach-order{color:var(--blue);font-size:16px;width:22px}
     .coach-table .is-substitute .coach-name{color:var(--warn)}
+    .coach-player{display:inline-flex;align-items:center;gap:7px;max-width:100%;vertical-align:middle}
+    .coach-player-name{min-width:0;overflow-wrap:anywhere}
+    .coach-number-badge{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;min-width:29px;min-height:25px;padding:2px 5px;border:1px solid #9bc9f0;border-radius:7px;background:#f5fbff;color:#043e76;font-size:.875em;font-weight:700;line-height:1}
     .coach-cell{display:inline-block;min-width:24px;padding:4px 2px;border-radius:7px;color:var(--muted)}
     .coach-cell.start{background:var(--soft);color:var(--blue-dark);font-weight:900}
     .coach-cell.change{background:#ffedd5;color:#9a3412;font-weight:900;border:1px solid #fdba74}
@@ -3566,7 +3569,12 @@ function playerNumberIn(st, id){
   function shareDisplayNameIn(st, id){
     const name = displayNameIn(st, id);
     const number = playerNumberIn(st, id);
-    return shareShowsNumber(st) && number ? `${name} #${number}` : name;
+    return shareShowsNumber(st) && number ? `${name}（${number}）` : name;
+  }
+
+  function sharePlayerHtml(st, id, prefix = ''){
+    const number = shareShowsNumber(st) ? playerNumberIn(st, id) : '';
+    return `<span class="coach-player"><span class="coach-player-name">${escapeHtml(prefix + displayNameIn(st, id))}</span>${number ? `<span class="coach-number-badge" aria-label="背番号 ${escapeAttr(number)}">${escapeHtml(number)}</span>` : ''}</span>`;
   }
 
   function shareChangePosLabel(pos){
@@ -3716,6 +3724,19 @@ function playerNumberIn(st, id){
     ctx.textBaseline = 'alphabetic';
   }
 
+  function drawCanvasNumberBadge(ctx, number, x, y, w, h, fontKey){
+    ctx.save();
+    drawRoundRect(ctx, x, y, w, h, 9);
+    ctx.fillStyle = '#f5fbff'; ctx.fill();
+    ctx.strokeStyle = '#9bc9f0'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#043e76';
+    const size = fitCanvasFontSize(ctx, number, w - 10, 900, h * .67, 14, fontKey);
+    ctx.font = canvasFont(900, size, fontKey);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(truncateCanvasText(ctx, number, w - 10), x + w / 2, y + h / 2 + 1);
+    ctx.restore();
+  }
+
   // Keep substitutes under their batting slot, including multiple substitutions and re-entry.
   function buildCoachPlan(st){
     const end = maxInnings(st);
@@ -3813,9 +3834,9 @@ function playerNumberIn(st, id){
     const table = buildCompactCoachTable(state);
     target.innerHTML = `<p class="coach-game">${escapeHtml(shareGameMainLine(state))}</p>` +
       `<div class="coach-table-wrap"><table class="coach-table"><thead><tr><th>順</th><th class="coach-name">選手</th>${table.columns.map(column => `<th>${escapeHtml(column.label)}</th>`).join('')}</tr></thead><tbody>` +
-      table.rows.map(row => `<tr class="${row.substitute ? 'is-substitute' : 'is-group-start'}"><td class="coach-order">${row.order ?? ''}</td><th scope="row" class="coach-name">${row.substitute ? '→ ' : ''}${escapeHtml(shareDisplayNameIn(state, row.id))}</th>${row.cells.map(cell => `<td><span class="coach-cell ${cell.kind}">${escapeHtml(cell.text)}</span></td>`).join('')}</tr>`).join('') +
+      table.rows.map(row => `<tr class="${row.substitute ? 'is-substitute' : 'is-group-start'}"><td class="coach-order">${row.order ?? ''}</td><th scope="row" class="coach-name">${sharePlayerHtml(state, row.id, row.substitute ? '→ ' : '')}</th>${row.cells.map(cell => `<td><span class="coach-cell ${cell.kind}">${escapeHtml(cell.text)}</span></td>`).join('')}</tr>`).join('') +
       `</tbody></table></div><p class="coach-empty">橙＝変更・途中出場　―＝変更なし</p>` +
-      (compactCoachFooter(state, table) ? `<p class="coach-empty">${escapeHtml(compactCoachFooter(state, table))}</p>` : '');
+      (state.battingMode === 'all' ? `<p class="coach-empty">${escapeHtml(compactCoachFooter(state, table))}</p>` : table.unused.length ? `<p class="coach-empty">控え：${table.unused.map(p => sharePlayerHtml(state, p.id)).join('、')}</p>` : '');
   }
 
   async function createOrderImageBlob(sourceState){
@@ -3835,17 +3856,31 @@ function playerNumberIn(st, id){
       return wrappedCanvasChars(ctx, text, maxWidth);
     };
     const rows = table.rows.map(row => {
-      const names = wrap(`${row.substitute ? '→ ' : ''}${shareDisplayNameIn(st, row.id)}`, 29, nameW - 22, 900);
-      return { ...row, names, height:Math.max(row.substitute ? 51 : 57, names.length * 35 + 14) };
+      const number = shareShowsNumber(st) ? playerNumberIn(st, row.id) : '';
+      const numberW = number ? Math.min(78, Math.max(46, number.length * 16 + 14)) : 0;
+      const names = wrap(`${row.substitute ? '→ ' : ''}${displayNameIn(st, row.id)}`, 29, nameW - 22 - numberW - (number ? 8 : 0), 900);
+      return { ...row, names, number, numberW, height:Math.max(row.substitute ? 51 : 57, names.length * 35 + 14) };
     });
     const opponentLines = wrap(shareOpponentLine(st), 33, tableW - 130, 900);
     const dateLines = wrap(shareDateInningsLine(st), 23, tableW - 38);
     const placeLines = wrap(shareHeaderPlaceLine(st), 23, tableW - 38);
     const headerH = 46 + opponentLines.length * 41 + (dateLines.length + placeLines.length) * 31 + 14;
-    const footer = compactCoachFooter(st, table);
-    const footerLines = footer ? wrap(footer, 23, tableW - 20) : [];
+    const footerLines = st.battingMode === 'all' ? wrap(compactCoachFooter(st, table), 23, tableW - 20) : [];
+    const reserves = [];
+    let reserveX = 0, reserveY = 0, reserveLineH = 0;
+    if(st.battingMode !== 'all') table.unused.forEach((player, index) => {
+      const number = shareShowsNumber(st) ? playerNumberIn(st, player.id) : '';
+      const numberW = number ? Math.min(68, Math.max(36, number.length * 13 + 12)) : 0;
+      const names = wrap(`${index === 0 ? '控え：' : ''}${displayNameIn(st, player.id)}`, 23, tableW - 20 - numberW - (number ? 8 : 0));
+      const textW = Math.max(...names.map(line => ctx.measureText(line).width));
+      const itemW = textW + numberW + (number ? 8 : 0), itemH = Math.max(36, names.length * 28);
+      if(reserveX && reserveX + itemW > tableW - 20){ reserveX = 0; reserveY += reserveLineH + 4; reserveLineH = 0; }
+      reserves.push({ names, number, numberW, textW, x:reserveX, y:reserveY, height:itemH });
+      reserveX += itemW + 18; reserveLineH = Math.max(reserveLineH, itemH);
+    });
+    const footerH = footerLines.length * 31 + (reserves.length ? reserveY + reserveLineH : 0);
     const tableH = 48 + rows.reduce((sum, row) => sum + row.height, 0);
-    const height = margin * 2 + headerH + 16 + tableH + 46 + footerLines.length * 31;
+    const height = margin * 2 + headerH + 16 + tableH + 46 + footerH;
     // Bound large-roster canvases without dropping players or scenarios.
     const scale = Math.min(1, 15000 / height, Math.sqrt(14000000 / (width * height)));
     canvas.width = Math.floor(width * scale);
@@ -3888,6 +3923,7 @@ function playerNumberIn(st, id){
       ctx.textBaseline = 'middle';
       row.names.forEach((line, i) => ctx.fillText(line, margin + orderW + 10, y + row.height / 2 + (i - (row.names.length - 1) / 2) * 35));
       ctx.textBaseline = 'alphabetic';
+      if(row.number) drawCanvasNumberBadge(ctx, row.number, cellsX - row.numberW - 12, y + row.height / 2 - 18, row.numberW, 36, key);
       row.cells.forEach((cell, i) => {
         const cx = cellsX + cellW * (i + .5), cy = y + row.height / 2;
         if(cell.kind === 'start' || cell.kind === 'change'){
@@ -3907,6 +3943,13 @@ function playerNumberIn(st, id){
     y += 46;
     ctx.font = canvasFont(700, 23, key);
     footerLines.forEach(line => { ctx.fillText(line, margin + 8, y + 24); y += 31; });
+    reserves.forEach(item => {
+      const x = margin + 8 + item.x, cy = y + item.y + item.height / 2;
+      ctx.textBaseline = 'middle';
+      item.names.forEach((line, i) => ctx.fillText(line, x, cy + (i - (item.names.length - 1) / 2) * 28));
+      if(item.number) drawCanvasNumberBadge(ctx, item.number, x + item.textW + 8, cy - 15, item.numberW, 30, key);
+    });
+    ctx.textBaseline = 'alphabetic';
     return new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('画像生成に失敗しました')), 'image/png'));
   }
 
