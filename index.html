@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-11-06-desktop-readable-type';
+    window.LINEUP_APP_VERSION = '2026-11-06-innings-balanced-layout';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -505,71 +505,67 @@
       html.font-standard{--font-app:"Noto Sans JP","Yu Gothic UI",Meiryo,var(--font-ui)}
       html.font-ud-shingo{--font-app:"Lineup UD Shin Go","Noto Sans JP","Yu Gothic UI",Meiryo,var(--font-ui)}
       html,body{overscroll-behavior:auto}
-      body{font-size:17px;font-weight:500;font-synthesis:none;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-      .app{max-width:1600px;padding:20px 32px 118px}
-      .top{padding:10px 0 12px}
+      body{font-size:15px;font-weight:500;font-synthesis:none;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+      .app{max-width:1360px;padding:14px 24px 96px}
+      .top{padding:6px 0 10px}
       .titlebar{gap:12px}
-      .title-text{font-size:28px;font-weight:700}
-      .save-chip{display:inline;font-size:14px;font-weight:500;max-width:none}
-      .game-summary{font-size:17px;font-weight:500;margin-top:8px;line-height:1.6}
-      .workspace-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:28px;align-items:start}
+      .title-text{font-size:22px;font-weight:700}
+      .save-chip{display:inline;font-size:12px;font-weight:500;max-width:none}
+      .game-summary{font-size:14px;font-weight:500;margin-top:4px;line-height:1.5}
+      .workspace-grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:22px;align-items:start}
       .tabs-viewport{min-height:0}
       /* Desktop tabs do not need a permanently composited text layer. */
       .tabs-track{display:block;transform:none!important;transition:none;will-change:auto}
       .tabs-track>.panel:not(.active){display:none}
       .panel{min-height:0}
       .coach-preview{display:block;position:static;max-height:none;overflow:hidden}
-      .inning-scroll{padding:14px 0;gap:9px}
-      .inning-btn,.inning-btn.initial{min-width:76px;height:46px;padding:0 14px;font-size:18px;font-weight:700}
-      .card-head h2{font-size:19px;font-weight:700;line-height:1.5}
-      .order-card .card-head{padding:12px}
-      .order-head-actions{gap:10px;flex-wrap:wrap}
-      .subhead{font-size:14px;font-weight:500}
-      .order-reset-btn{height:38px;font-size:14px;font-weight:700;padding:0 12px}
-      .order-card .row-list{gap:8px}
-      .order-main,.defense-grid-header{grid-template-columns:40px minmax(0,1fr);gap:10px}
-      .player-main-group,.defense-grid-head-main,.order-card.has-defense-changes .player-main-group{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+      .inning-scroll{padding:10px 0;gap:7px}
+      .inning-btn,.inning-btn.initial{min-width:58px;height:36px;padding:0 10px;font-size:15px;font-weight:700}
+      .card-head h2{font-size:16px;font-weight:700;line-height:1.5}
+      .order-card .card-head{padding:8px 10px}
+      .order-head-actions{gap:7px;flex-wrap:wrap}
+      .subhead{font-size:12px;font-weight:500}
+      .order-reset-btn{height:32px;font-size:12px;font-weight:700;padding:0 9px}
+      .order-card .row-list{gap:6px}
+      .order-main,.defense-grid-header{grid-template-columns:32px minmax(0,1fr);gap:8px}
+      .player-main-group,.defense-grid-head-main,.order-card.has-defense-changes .player-main-group{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px}
       .player-main-group.single-defense{grid-template-columns:minmax(0,1fr) max-content}
-      .order-card .player-card,.order-card .defense-card,.order-card.has-defense-changes:not(.has-many-defense-chips) .player-card,.order-card.has-defense-changes:not(.has-many-defense-chips) .defense-card{min-height:64px}
-      .order-card .player-card,.order-card.has-defense-changes .player-card{font-size:22px;font-weight:700;letter-spacing:0;padding:8px 12px;gap:10px}
-      .order-card .player-number-badge,.order-card.has-defense-changes .player-number-badge{min-width:50px;height:40px;padding:0 6px;font-size:20px;font-weight:700;box-shadow:none}
-      .order-no{font-size:28px;font-weight:700}
-      .order-card .defense-cols,.order-card .pos-flow.timeline-defense{grid-template-columns:repeat(var(--defense-cols),minmax(0,1fr));gap:6px;padding-left:8px;padding-right:8px}
-      .order-card .pos-flow.timeline-defense .pos-cell{width:auto;min-width:0;min-height:42px}
+      .order-card .player-card,.order-card .defense-card,.order-card.has-defense-changes:not(.has-many-defense-chips) .player-card,.order-card.has-defense-changes:not(.has-many-defense-chips) .defense-card{min-height:50px}
+      .order-card .player-card,.order-card.has-defense-changes .player-card{font-size:18px;font-weight:700;letter-spacing:0;padding:5px 10px;gap:8px}
+      .order-card .player-number-badge,.order-card.has-defense-changes .player-number-badge{min-width:42px;height:34px;padding:0 5px;font-size:17px;font-weight:700;box-shadow:none}
+      .order-no{font-size:23px;font-weight:700}
+      .order-card .defense-cols,.order-card .pos-flow.timeline-defense{grid-template-columns:repeat(var(--defense-cols),minmax(0,1fr));gap:4px;padding-left:6px;padding-right:6px}
+      .order-card .pos-flow.timeline-defense .pos-cell{width:auto;min-width:0;min-height:34px}
       /* Override the mobile density rules, including every active chip state. */
-      :is(.order-card,.order-card.has-compact-defense-chips,.order-card.has-ultra-defense-chips,.order-card.has-many-defense-chips) .pos-flow.timeline-defense :is(.pos-chip,.pos-chip.start,.pos-chip.change,.pos-chip.change.current-inning){width:100%;min-width:0;max-width:46px;height:42px;padding:0;font-size:20px;font-weight:700}
-      .order-card.has-many-defense-chips .pos-flow.timeline-defense :is(.pos-chip,.pos-chip.start,.pos-chip.change,.pos-chip.change.current-inning){font-size:16px}
-      .order-card .pos-flow.single-defense .pos-chip{min-width:52px;height:42px;font-size:22px;font-weight:700}
-      .order-card .defense-col-head{width:auto;min-width:0;height:38px;font-size:12px;font-weight:500;line-height:16px}
-      .order-card .defense-col-head b{font-size:16px;font-weight:700;line-height:20px}
-      .bench-wrap summary,.memo-wrap summary{font-size:17px;font-weight:700;padding-top:12px;padding-bottom:12px}
-      .bench-chip{font-size:18px;font-weight:700;min-height:44px}
-      .coach-preview .card-head{padding:14px 18px}
-      .coach-preview button{font-size:17px;font-weight:700;min-height:46px}
-      #coachPreviewBody{padding:0 18px 16px}
-      .coach-game{font-size:16px;line-height:1.7;margin:16px 0}
-      .coach-table{font-size:18px;line-height:1.55}
-      .coach-table th,.coach-table td{padding:11px 5px;font-weight:500}
-      .coach-table thead{font-size:14px}
-      .coach-table .coach-name{font-size:20px;font-weight:700;min-width:142px}
-      .coach-table thead .coach-name{font-size:14px;font-weight:500}
-      .coach-table .coach-order{font-size:22px;font-weight:700;width:32px}
-      .coach-cell{min-width:34px;padding:4px;border-radius:8px}
+      :is(.order-card,.order-card.has-compact-defense-chips,.order-card.has-ultra-defense-chips,.order-card.has-many-defense-chips) .pos-flow.timeline-defense :is(.pos-chip,.pos-chip.start,.pos-chip.change,.pos-chip.change.current-inning){width:100%;min-width:0;max-width:38px;height:34px;padding:0;font-size:16px;font-weight:700}
+      .order-card.has-many-defense-chips .pos-flow.timeline-defense :is(.pos-chip,.pos-chip.start,.pos-chip.change,.pos-chip.change.current-inning){font-size:14px}
+      .order-card .pos-flow.single-defense .pos-chip{min-width:44px;height:34px;font-size:18px;font-weight:700}
+      .order-card .defense-col-head{width:auto;min-width:0;height:26px;font-size:12px;font-weight:500;line-height:20px}
+      .bench-wrap summary,.memo-wrap summary{font-size:15px;font-weight:700;padding-top:8px;padding-bottom:8px}
+      .bench-chip{font-size:16px;font-weight:700;min-height:38px}
+      .coach-preview .card-head{padding:10px 14px}
+      .coach-preview button{font-size:15px;font-weight:700;min-height:38px}
+      #coachPreviewBody{padding:0 14px 12px}
+      .coach-game{font-size:14px;line-height:1.6;margin:12px 0}
+      .coach-table{font-size:16px;line-height:1.45}
+      .coach-table th,.coach-table td{padding:8px 4px;font-weight:500}
+      .coach-table thead{font-size:12px}
+      .coach-table .coach-name{font-size:16px;font-weight:700;min-width:116px}
+      .coach-table thead .coach-name{font-size:12px;font-weight:500}
+      .coach-table .coach-order{font-size:19px;font-weight:700;width:26px}
+      .coach-cell{min-width:28px;padding:3px;border-radius:7px}
       .coach-cell.start,.coach-cell.change{font-weight:700}
-      .coach-cell.exit{font-size:14px}
-      .coach-empty{font-size:15px;line-height:1.7}
-      .bottom-nav{left:0;right:0;transform:none;width:560px;margin-inline:auto;bottom:18px;border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow)}
+      .coach-cell.exit{font-size:12px}
+      .coach-empty{font-size:13px;line-height:1.6}
+      .bottom-nav{left:0;right:0;transform:none;width:500px;margin-inline:auto;bottom:12px;border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow)}
       .bottom-nav-inner{max-width:none;padding-bottom:0}
-      .nav-btn{font-size:17px;font-weight:700}
+      .nav-btn{font-size:15px;font-weight:700}
       .settings-modal{align-items:center}
       .settings-sheet{max-width:740px;max-height:90dvh}
-      .settings-section h3{font-size:19px;font-weight:700}
-      .game-line input,.game-line select,.date-button,.toolbar select,.toolbar button,.setting-field select{font-size:16px;font-weight:500;min-height:46px}
+      .settings-section h3{font-size:17px;font-weight:700}
+      .game-line input,.game-line select,.date-button,.toolbar select,.toolbar button,.setting-field select{font-size:15px;font-weight:500;min-height:44px}
       .player-names{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-      .player-row input{height:46px;font-size:17px;font-weight:500}
-    }
-    @media (min-width:1280px){
-      .workspace-grid{grid-template-columns:minmax(0,1.08fr) minmax(0,1fr)}
+      .player-row input{height:44px;font-size:16px;font-weight:500}
     }
 
   </style>
@@ -612,7 +608,7 @@
       <div class="game-summary" id="gameSummary">試合情報未設定</div>
     </header>
 
-    <div class="inning-scroll" id="inningButtons" aria-label="想定の切り替え"></div>
+    <div class="inning-scroll" id="inningButtons" aria-label="イニングの切り替え"></div>
 
     <div class="workspace-grid">
     <main class="tabs-viewport" id="tabsViewport">
@@ -624,7 +620,7 @@
             <div class="order-head-actions">
               <span class="subhead" id="modeLabel">全員打ち</span>
               <button type="button" class="order-reset-btn" id="orderClearAllChangesBtn" hidden disabled>交代クリア</button>
-              <button type="button" class="order-reset-btn" id="orderResetDefenseBtn" hidden disabled>この想定を戻す</button>
+              <button type="button" class="order-reset-btn" id="orderResetDefenseBtn" hidden disabled>この回を戻す</button>
             </div>
           </div>
           <div class="defense-grid-header" id="defenseGridHeader" aria-hidden="true"></div>
@@ -713,15 +709,16 @@
               <option value="公式戦">公式戦</option>
             </select>
             <input class="limit-field" id="gameLimit" type="number" min="0" inputmode="numeric" placeholder="80分" aria-label="時間" />
-            <select class="innings-field" id="gameInnings" aria-label="想定数">
-              <option value="2">想定1まで</option>
-              <option value="3">想定2まで</option>
-              <option value="4">想定3まで</option>
-              <option value="5">想定4まで</option>
-              <option value="6">想定5まで</option>
-              <option value="7">想定6まで</option>
-              <option value="8">想定7まで</option>
-              <option value="9">想定8まで</option>
+            <select class="innings-field" id="gameInnings" aria-label="イニング数">
+              <option value="1">1回</option>
+              <option value="2">2回</option>
+              <option value="3">3回</option>
+              <option value="4">4回</option>
+              <option value="5">5回</option>
+              <option value="6">6回</option>
+              <option value="7">7回</option>
+              <option value="8">8回</option>
+              <option value="9">9回</option>
             </select>
           </div>
         </div>
@@ -1206,7 +1203,7 @@
     const innings = gameInnings;
     st.game.innings = gameInnings;
     const selectedInning = Number(st.selectedInning);
-    st.selectedInning = Math.min(innings, Math.max(0, Number.isFinite(selectedInning) && selectedInning !== 1 ? selectedInning : 0));
+    st.selectedInning = Math.min(innings, Math.max(0, Number.isFinite(selectedInning) ? selectedInning : 0));
     st.defenseChanges ||= {};
     const ids = new Set(st.players.map(p => p.id));
     st.attendanceByPlayerId ||= {};
@@ -1826,7 +1823,7 @@ function playerNumberIn(st, id){
   function defenseColumns(){
     return [
       { key:'start', label:'初', inning:1 },
-      ...changedDefenseInnings().map(inning => ({ key:String(inning), label:scenarioLabel(inning), inning }))
+      ...changedDefenseInnings().map(inning => ({ key:String(inning), label:`${inning}回`, inning }))
     ];
   }
 
@@ -2263,7 +2260,7 @@ function playerNumberIn(st, id){
       g.place,
       g.start,
       g.opponent ? `vs ${g.opponent}` : '',
-      g.innings ? `想定${Math.max(0, g.innings - 1)}まで` : ''
+      g.innings ? `${g.innings}回` : ''
     ].filter(Boolean).join('  ') || '試合情報未設定';
   }
 
@@ -2290,8 +2287,8 @@ function playerNumberIn(st, id){
     $('themeMode').value = currentThemeKey();
     renderDateCalendar();
     const modeText = state.battingMode === 'all' ? '全員打ち' : '9人制';
-    $('modeLabel').textContent = isInitialMode() ? `${modeText}｜初期` : `${modeText}｜${scenarioLabel(state.selectedInning)}`;
-    $('orderTitle').textContent = isInitialMode() ? 'スターティングオーダー' : `${scenarioLabel(state.selectedInning)}の守備・交代`;
+    $('modeLabel').textContent = isInitialMode() ? `${modeText}｜初期` : `${modeText}｜${state.selectedInning}回守備`;
+    $('orderTitle').textContent = isInitialMode() ? 'スターティングオーダー' : `${state.selectedInning}回の守備・交代`;
     if(!isInitialMode() && clearAllChangesArmed) resetClearAllChangesConfirm();
     const clearAllBtn = $('orderClearAllChangesBtn');
     const hasChanges = hasRecordedOrderChanges();
@@ -2301,12 +2298,12 @@ function playerNumberIn(st, id){
     clearAllBtn.classList.toggle('is-empty', !hasChanges);
     clearAllBtn.hidden = !isInitialMode();
     clearAllBtn.disabled = !isInitialMode() || !hasChanges;
-    clearAllBtn.setAttribute('aria-label', hasChanges ? 'すべての想定の守備変更と選手交代をクリア' : 'クリアする守備変更や選手交代はありません');
+    clearAllBtn.setAttribute('aria-label', hasChanges ? '2回以降の守備変更と選手交代をすべてクリア' : 'クリアする守備変更や選手交代はありません');
     const resetBtn = $('orderResetDefenseBtn');
-    resetBtn.textContent = 'この想定を戻す';
+    resetBtn.textContent = 'この回を戻す';
     resetBtn.hidden = isInitialMode();
     resetBtn.disabled = isInitialMode();
-    resetBtn.setAttribute('aria-label', isInitialMode() ? '初期モードではこの想定を戻すは使えません' : `${scenarioLabel(state.selectedInning)}の守備変更を戻す`);
+    resetBtn.setAttribute('aria-label', isInitialMode() ? '初期モードではこの回を戻すは使えません' : `${state.selectedInning}回の守備変更を戻す`);
   }
 
   function renderInningButtons(){
@@ -2321,7 +2318,7 @@ function playerNumberIn(st, id){
       wrap.appendChild(btn);
     };
     addButton('初期', 0, 'initial');
-    for(let i=2; i<=maxInnings(); i++) addButton(scenarioLabel(i), i);
+    for(let i=1; i<=maxInnings(); i++) addButton(`${i}回`, i);
   }
 
   function renderDefenseGridHeader(){
@@ -2341,7 +2338,7 @@ function playerNumberIn(st, id){
       <div class="defense-grid-head-main">
         <div class="defense-grid-player-spacer"></div>
         <div class="defense-cols" style="--defense-cols:${cols.length}">
-          ${cols.map(col => `<span class="defense-col-head${col.key === activeKey ? ' is-active' : ''}">${col.inning > 1 ? `<span>想定</span><b>${col.inning - 1}</b>` : '初期'}</span>`).join('')}
+          ${cols.map(col => `<span class="defense-col-head${col.key === activeKey ? ' is-active' : ''}">${col.inning > 1 ? escapeHtml(col.label) : '初期'}</span>`).join('')}
         </div>
       </div>
     `;
@@ -2418,7 +2415,7 @@ function playerNumberIn(st, id){
           const chip = document.createElement('button');
           chip.type = 'button';
           chip.className = 'pos-chip ' + (item.start ? 'start' : 'change') + (short.length > 1 ? ' is-wide' : '') + (isActiveColumn ? ' current-inning' : '');
-          chip.setAttribute('aria-label', `${col.key === 'start' ? '初期' : scenarioLabel(col.inning)}の守備 ${short}`);
+          chip.setAttribute('aria-label', `${col.key === 'start' ? '初期' : `${col.inning}回`}の守備 ${short}`);
           chip.innerHTML = `<span>${escapeHtml(short)}</span>`;
           bindQuickTap(chip, () => handleDefenseTap(pid), {
             feedbackElement: () => chip.closest('.defense-card') || chip
@@ -2479,7 +2476,7 @@ function playerNumberIn(st, id){
       const cur = getLineupAtIn(st, inning);
       cur.forEach((pid, idx) => {
         if(prev[idx] && prev[idx] !== pid){
-          lines.push(`${scenarioLabel(inning)}　${idx + 1}番　${displayNameIn(st, prev[idx])} → ${displayNameIn(st, pid)}　${posShort(effectivePositionIn(st, pid, inning))}`);
+          lines.push(`${inning}回　${idx + 1}番　${displayNameIn(st, prev[idx])} → ${displayNameIn(st, pid)}　${posShort(effectivePositionIn(st, pid, inning))}`);
         }
       });
     }
@@ -2503,7 +2500,7 @@ function playerNumberIn(st, id){
         .filter(x => x.before !== x.after)
         .filter(x => st.battingMode === 'all' || (x.before !== 'B' && x.after !== 'B'))
         .sort((a,b) => (orderIndex[a.player.id] ?? 999) - (orderIndex[b.player.id] ?? 999));
-      changed.forEach(x => lines.push(`${scenarioLabel(inning)}　${displayNameIn(st, x.player.id)}　${posShort(x.before)} → ${posShort(x.after)}`));
+      changed.forEach(x => lines.push(`${inning}回　${displayNameIn(st, x.player.id)}　${posShort(x.before)} → ${posShort(x.after)}`));
     }
     return lines;
   }
@@ -2833,7 +2830,7 @@ function playerNumberIn(st, id){
       g.place || '場所未入力',
       g.start || '',
       modeLabelForState(st),
-      `想定${maxInnings(st) - 1}まで`,
+      `${maxInnings(st)}回`,
       isDhEnabled(st) ? 'DHあり' : 'DHなし'
     ].filter(Boolean).join(' / ');
   }
@@ -3591,32 +3588,8 @@ function playerNumberIn(st, id){
 
   function shareChangeLinesForState(st, inning){
     const end = Math.min(maxInnings(st), Math.max(1, Number(inning || 1)));
-    if(end <= 1) return [];
-    const orderIndex = Object.fromEntries((st.battingOrder || []).map((id, i) => [id, i]));
-    const lines = [];
-    for(let current=2; current<=end; current++){
-      const beforeLineup = getLineupAtIn(st, current - 1);
-      const currentLineup = getLineupAtIn(st, current);
-      const activeIds = new Set([...beforeLineup, ...currentLineup, ...(st.players || []).map(p => p.id)]);
-      (st.players || [])
-        .filter(p => activeIds.has(p.id))
-        .map(p => ({
-          player: p,
-          before: effectivePositionIn(st, p.id, current - 1),
-          after: effectivePositionIn(st, p.id, current)
-        }))
-        .filter(item => item.before !== item.after)
-        .sort((a,b) => {
-          const aCur = currentLineup.indexOf(a.player.id);
-          const bCur = currentLineup.indexOf(b.player.id);
-          if(aCur !== -1 || bCur !== -1) return (aCur === -1 ? 999 : aCur) - (bCur === -1 ? 999 : bCur);
-          return (orderIndex[a.player.id] ?? 999) - (orderIndex[b.player.id] ?? 999);
-        })
-        .forEach(item => {
-          lines.push(`${scenarioLabel(current)} ${shareDisplayNameIn(st, item.player.id)} ${shareChangePosLabel(item.before)} → ${shareChangePosLabel(item.after)}`);
-        });
-    }
-    return lines;
+    return buildCoachPlan(st).changes.filter(change => change.inning <= end)
+      .flatMap((change, index) => change.lines.map(line => `${shareScenarioLabel(index)} ${line}`));
   }
 
   function sameLineupIn(a, b){
@@ -3644,7 +3617,7 @@ function playerNumberIn(st, id){
   function defenseColumnsForState(st){
     return [
       { key:'start', label:'初', inning:1 },
-      ...changedDefenseInningsForState(st).map(inning => ({ key:String(inning), label:scenarioLabel(inning), inning }))
+      ...changedDefenseInningsForState(st).map(inning => ({ key:String(inning), label:`${inning}回`, inning }))
     ];
   }
 
@@ -3709,7 +3682,7 @@ function playerNumberIn(st, id){
     const innings = changedDefenseInningsForShareState(st, visibleIds);
     return [
       { key:'start', label:'初', inning:1 },
-      ...innings.map((inning, index) => ({ key:String(inning), label:scenarioLabel(inning), inning }))
+      ...innings.map((inning, index) => ({ key:String(inning), label:shareScenarioLabel(index), inning }))
     ];
   }
 
@@ -3790,12 +3763,12 @@ function playerNumberIn(st, id){
     return { slots, changes, unused, end };
   }
 
-  // Storage keeps its existing phase keys; phase 1 is the initial lineup.
-  function scenarioLabel(phase){ return phase <= 1 ? '初期' : `想定${phase - 1}`; }
+  // Inning keys stay unchanged. Only shared output uses consecutive scenario labels.
+  function shareScenarioLabel(index){ return `想定${index + 1}`; }
 
   function buildCompactCoachTable(st){
     const plan = buildCoachPlan(st);
-    const columns = [{ inning:1, label:'初期' }, ...plan.changes.map(change => ({ inning:change.inning, label:scenarioLabel(change.inning) }))];
+    const columns = [{ inning:1, label:'初期' }, ...plan.changes.map((change, index) => ({ inning:change.inning, label:shareScenarioLabel(index) }))];
     const rows = plan.slots.flatMap(slot => {
       const ids = [...new Set(slot.segments.map(segment => segment.id))];
       const activeAt = (id, phase) => slot.segments.some(segment => segment.id === id && segment.start <= phase && segment.end >= phase);

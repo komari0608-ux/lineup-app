@@ -20,7 +20,7 @@ export function editor(){
     startSwapAnimation = ({commit}) => commit();
     thisUnused();
   })();`.replace('thisUnused();', `globalThis.api = {
-      createDefaultState, normalizeState, ensureStructures, buildCoachPlan, buildCompactCoachTable, buildSimpleShareTextForState, scenarioLabel,
+      createDefaultState, normalizeState, ensureStructures, buildCoachPlan, buildCompactCoachTable, buildSimpleShareTextForState,
       handlePlayerTap, handleDefenseTap, substituteNineMode, getLineupAt, effectivePosition,
       saveState, loadState, saveSavedOrders, loadSavedOrders, workspacePayload,
       createOrderImageBlob,
@@ -72,12 +72,13 @@ test('multiple replacements and re-entry stay under one of nine batting slots', 
   assert.equal(plan.slots.length,9);
   assert.deepEqual(JSON.parse(JSON.stringify(plan.slots[0].segments.map(s => [s.id,s.start,s.end]))),[['p1',1,2],['p10',3,4],['p1',5,6]]);
   const text = api.buildSimpleShareTextForState(api.get());
-  assert.match(text,/1番 はると　初期：三 \/ 想定2：交代 \/ 想定4：三/);
-  assert.match(text,/→ ゆうと　想定2：三 \/ 想定4：交代/);
+  assert.match(text,/1番 はると　初期：三 \/ 想定1：交代 \/ 想定2：三/);
+  assert.match(text,/→ ゆうと　想定1：三 \/ 想定2：交代/);
   assert.doesNotMatch(text,/10番/);
   assert.doesNotMatch(text,/回|メモ/);
   const table = api.buildCompactCoachTable(api.get());
-  assert.deepEqual(Array.from(table.columns, c => c.label), ['初期','想定2','想定4']);
+  assert.deepEqual(Array.from(table.columns, c => c.label), ['初期','想定1','想定2']);
+  assert.deepEqual(Array.from(table.columns, c => c.inning), [1,3,5]);
   assert.equal(table.rows.length,10);
   assert.deepEqual(Array.from(table.rows.filter(r => r.slot === 1), r => [r.id,r.order]), [['p1',1],['p10',null]]);
   assert.deepEqual(Array.from(table.rows[0].cells, c => c.kind), ['start','exit','change']);
@@ -92,7 +93,7 @@ test('all-batting defense changes retain all batters and never imply leaving the
   assert.ok(plan.slots.every(slot => slot.segments.length === 1));
   const text = api.buildSimpleShareTextForState(api.get());
   assert.match(text,/全員打ち：ベンチの選手も打順/);
-  assert.match(text,/10番 ゆうと　初期：ベ \/ 想定2：三/);
+  assert.match(text,/10番 ゆうと　初期：ベ \/ 想定1：三/);
   assert.ok(api.buildCompactCoachTable(api.get()).rows.every(row => !row.substitute));
 });
 
@@ -102,22 +103,41 @@ test('only actual changes create share columns; unchanged positions remain reada
   assert.deepEqual(Array.from(api.buildCompactCoachTable(api.get()).columns, c => c.label), ['初期']);
   api.selected(4); api.handleDefenseTap('p1'); api.handleDefenseTap('p2');
   const table = api.buildCompactCoachTable(api.get());
-  assert.deepEqual(Array.from(table.columns, c => c.label), ['初期','想定3']);
+  assert.deepEqual(Array.from(table.columns, c => c.label), ['初期','想定1']);
+  assert.equal(table.columns[1].inning,4);
   assert.equal(table.rows[0].cells[1].kind,'change');
   assert.equal(table.rows[2].cells[1].text,'―');
   assert.equal(table.unused[0].id,'p10');
   assert.doesNotMatch(api.buildSimpleShareTextForState(api.get()),/10番/);
 });
 
-test('legacy initial selection and saved phase keys keep their intended positions', () => {
+test('first-inning selection stays separate from initial batting-order editing after reload', () => {
   const api = nine();
   api.substituteNineMode('p1','p10',3);
   const saved = JSON.parse(JSON.stringify(api.get())); saved.selectedInning = 1;
   api.set(saved);
-  assert.equal(api.get().selectedInning,0);
-  assert.equal(api.scenarioLabel(3),'想定2');
+  assert.equal(api.get().selectedInning,1);
+  const before = [...api.getLineupAt(1)];
+  api.handlePlayerTap('p1'); api.handlePlayerTap('p2');
+  assert.deepEqual([...api.getLineupAt(1)],before);
   assert.equal(api.getLineupAt(3)[0],'p10');
   assert.equal(api.getLineupAt(2)[0],'p1');
+});
+
+test('fifth and ninth innings remain editable while shared scenarios are consecutive', () => {
+  const api = nine();
+  api.get().game.innings = 9; api.ensureStructures();
+  api.selected(5); api.handleDefenseTap('p1'); api.handleDefenseTap('p2');
+  const fifthPosition = api.effectivePosition('p1',5);
+  api.selected(9); api.handleDefenseTap('p1'); api.handleDefenseTap('p2');
+  assert.equal(api.effectivePosition('p1',8),fifthPosition);
+  assert.notEqual(api.effectivePosition('p1',9),fifthPosition);
+  api.saveState(); api.set(api.loadState());
+  assert.equal(api.get().selectedInning,9);
+  assert.equal(api.get().game.innings,9);
+  const table = api.buildCompactCoachTable(api.get());
+  assert.deepEqual(Array.from(table.columns, c => [c.inning,c.label]), [[1,'初期'],[5,'想定1'],[9,'想定2']]);
+  assert.doesNotMatch(api.buildSimpleShareTextForState(api.get()),/[1-9]回/);
 });
 
 test('absent players are excluded and share output does not depend on the selected inning', () => {
