@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-11-06-share-number-badges';
+    window.LINEUP_APP_VERSION = '2026-11-14-inning-history-auto-sync';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -904,6 +904,9 @@
   let workspaceHydrating = false;
   let workspaceSharingStarted = false;
   let workspaceLastContent = '';
+  let workspaceRetryTimer = null;
+  let workspaceRetryAttempts = 0;
+  let workspaceComposing = false;
   let state = loadState();
   let currentTab = 'order';
   let expandedHistoryId = null;
@@ -1185,6 +1188,7 @@
       if(!st.startPositions[p.id]) st.startPositions[p.id] = i < 9 ? String(i + 1) : 'B';
     });
     migrateDefenseBoards(st);
+    delete st.defense;
     st.lineupByInning ||= {};
     ensureStructures(st);
     return st;
@@ -1208,6 +1212,7 @@
     const selectedInning = Number(st.selectedInning);
     st.selectedInning = Math.min(innings, Math.max(0, Number.isFinite(selectedInning) ? selectedInning : 0));
     st.defenseChanges ||= {};
+    st.inningCheckpoints = recordedInnings(st);
     const ids = new Set(st.players.map(p => p.id));
     st.attendanceByPlayerId ||= {};
     Object.keys(st.attendanceByPlayerId).forEach(id => {
@@ -1736,18 +1741,12 @@ function playerNumberIn(st, id){
   }
 
   function effectivePosition(playerId, inning){
-    let pos = state.startPositions[playerId] || 'B';
-    const limit = Math.min(maxInnings(), Math.max(1, Number(inning || 1)));
-    const changes = state.defenseChanges[playerId] || {};
-    for(let i=2; i<=limit; i++){
-      if(changes[i]) pos = changes[i];
-    }
-    return pos || 'B';
+    return effectivePositionIn(state, playerId, inning);
   }
 
   function effectivePositionIn(st, playerId, inning){
     let pos = st.startPositions?.[playerId] || 'B';
-    const limit = Math.min(maxInnings(st), Math.max(1, Number(inning || 1)));
+    const limit = Math.min(ABSOLUTE_MAX_INNINGS, Math.max(1, Number(inning || 1)));
     const changes = st.defenseChanges?.[playerId] || {};
     for(let i=2; i<=limit; i++){
       if(changes[i]) pos = changes[i];
@@ -1771,12 +1770,11 @@ function playerNumberIn(st, id){
     if(!canSetPosition(pos)) return;
     inning = Math.min(maxInnings(), Math.max(1, Number(inning || 1)));
     const beforePos = effectivePosition(playerId, inning);
-    if(swap && isFieldPos(pos)){
-      const otherId = playerAtPosition(pos, inning, playerId);
-      if(otherId) setRawChange(otherId, inning, beforePos || 'B');
-    }
-    setRawChange(playerId, inning, pos);
-    cleanupRedundantChanges();
+    const otherId = swap && isFieldPos(pos) ? playerAtPosition(pos, inning, playerId) : null;
+    editInningSnapshot(inning, snapshot => {
+      if(otherId) snapshot.positions[otherId] = beforePos || 'B';
+      snapshot.positions[playerId] = pos;
+    });
   }
 
   function setStartPosition(playerId, pos){
@@ -1849,16 +1847,56 @@ function playerNumberIn(st, id){
   }
 
   function getLineupAt(inning){
-    ensureStructures();
-    inning = Math.min(maxInnings(), Math.max(1, Number(inning || 1)));
-    if(state.battingMode === 'all') return state.battingOrder.slice();
-    return (state.lineupByInning[inning] || state.lineupByInning[1] || state.battingOrder.slice(0,lineupLimit())).slice();
+    return getLineupAtIn(state, inning);
   }
 
   function getLineupAtIn(st, inning){
-    inning = Math.min(maxInnings(st), Math.max(1, Number(inning || 1)));
+    inning = Math.min(ABSOLUTE_MAX_INNINGS, Math.max(1, Number(inning || 1)));
     if(st.battingMode === 'all') return (st.battingOrder || []).slice();
-    return (st.lineupByInning?.[inning] || st.lineupByInning?.[1] || (st.battingOrder || []).slice(0,lineupLimit(st))).slice();
+    for(let i=inning; i>=1; i--) if(st.lineupByInning?.[i]) return st.lineupByInning[i].slice();
+    return (st.battingOrder || []).slice(0,lineupLimit(st));
+  }
+
+  // Read-only reconstruction. Legacy lineup/defense fields remain the saved format.
+  function inningSnapshot(st, inning){
+    return { lineup:getLineupAtIn(st, inning), positions:Object.fromEntries(st.players.map(p => [p.id,effectivePositionIn(st,p.id,inning)])) };
+  }
+
+  function recordedInnings(st){
+    const points = new Set(Array.isArray(st.inningCheckpoints) ? st.inningCheckpoints : []);
+    Object.values(st.defenseChanges || {}).forEach(changes => Object.keys(changes || {}).forEach(i => points.add(Number(i))));
+    for(let i=2; i<=ABSOLUTE_MAX_INNINGS; i++){
+      if(st.battingMode === 'nine' && !sameLineup(getLineupAtIn(st,i),getLineupAtIn(st,i-1))) points.add(i);
+    }
+    return [...points].filter(i => Number.isInteger(i) && i>=2 && i<=ABSOLUTE_MAX_INNINGS).sort((a,b) => a-b);
+  }
+
+  function editInningSnapshot(inning, edit){
+    inning = Math.min(maxInnings(), Math.max(1,Number(inning || 1)));
+    const snapshots = Array.from({length:ABSOLUTE_MAX_INNINGS}, (_,i) => inningSnapshot(state,i+1));
+    const checkpoints = recordedInnings(state);
+    const next = clone(snapshots[inning-1]);
+    if(edit(next) === false) return false;
+    // An existing later checkpoint is a complete state, not an instruction tied
+    // to a player who might have been replaced by this past edit.
+    const end = checkpoints.find(i => i>inning) || ABSOLUTE_MAX_INNINGS+1;
+    for(let i=inning; i<end; i++) snapshots[i-1] = clone(next);
+    state.startPositions = clone(snapshots[0].positions);
+    state.defenseChanges = {};
+    state.lineupByInning = {};
+    snapshots.forEach((snapshot,index) => {
+      const i = index+1;
+      if(state.battingMode === 'nine') state.lineupByInning[i] = snapshot.lineup.slice();
+      if(i === 1) return;
+      state.players.forEach(p => {
+        if(snapshot.positions[p.id] !== snapshots[index-1].positions[p.id]){
+          state.defenseChanges[p.id] ||= {};
+          state.defenseChanges[p.id][i] = snapshot.positions[p.id];
+        }
+      });
+    });
+    state.inningCheckpoints = [...new Set([...checkpoints,...(inning>1 ? [inning] : [])])].sort((a,b) => a-b);
+    return true;
   }
 
   function handlePlayerTap(playerId){
@@ -2026,16 +2064,11 @@ function playerNumberIn(st, id){
     const inId = a >= 0 ? idB : idA;
     const slot = a >= 0 ? a : b;
     const outPos = effectivePosition(outId, inning);
-    for(let i=inning; i<=maxInnings(); i++){
-      const line = getLineupAt(i);
-      const idx = line.indexOf(outId);
-      if(idx >= 0) line[idx] = inId;
-      else if(!line.includes(inId)) line[slot] = inId;
-      state.lineupByInning[i] = line.slice(0,lineupLimit());
-    }
-    setRawChange(outId, inning, 'B');
-    setRawChange(inId, inning, outPos || 'B');
-    return true;
+    return editInningSnapshot(inning, snapshot => {
+      snapshot.lineup[slot] = inId;
+      snapshot.positions[outId] = 'B';
+      snapshot.positions[inId] = outPos || 'B';
+    });
   }
 
   function substituteAllBattingDefenseOnly(idA, idB, inning){
@@ -2049,9 +2082,10 @@ function playerNumberIn(st, id){
     const benchId = aBench ? idA : idB;
     const fieldPos = effectivePosition(fieldId, inning);
     if(fieldPos === 'DH' && !isDhEnabled()) return false;
-    setRawChange(fieldId, inning, 'B');
-    setRawChange(benchId, inning, fieldPos || 'B');
-    return true;
+    return editInningSnapshot(inning, snapshot => {
+      snapshot.positions[fieldId] = 'B';
+      snapshot.positions[benchId] = fieldPos || 'B';
+    });
   }
 
   function handleDefenseTap(playerId){
@@ -2098,20 +2132,17 @@ function playerNumberIn(st, id){
     const posB = effectivePosition(idB, inning);
     if(posA === posB) return false;
     if(!isDhEnabled() && (posA === 'DH' || posB === 'DH')) return false;
-    if(inning <= 1){
-      state.startPositions[idA] = posB;
-      state.startPositions[idB] = posA;
-      return true;
-    }
-    setRawChange(idA, inning, posB);
-    setRawChange(idB, inning, posA);
-    return true;
+    return editInningSnapshot(inning, snapshot => {
+      snapshot.positions[idA] = posB;
+      snapshot.positions[idB] = posA;
+    });
   }
 
   function setBattingMode(mode){
     state.battingMode = mode;
     state.selectedInning = 0;
     state.defenseChanges = {};
+    state.inningCheckpoints = [];
     state.lineupByInning = {};
     if(mode === 'nine') state.lineupByInning[1] = state.battingOrder.slice(0,lineupLimit());
     selectedSwapId = null;
@@ -2141,6 +2172,7 @@ function playerNumberIn(st, id){
 
   function resetDefense(){
     state.defenseChanges = {};
+    state.inningCheckpoints = [];
     resetInitialDefensePositions();
     state.lineupByInning = {};
     if(state.battingMode === 'nine') state.lineupByInning[1] = state.battingOrder.slice(0,lineupLimit());
@@ -2164,11 +2196,9 @@ function playerNumberIn(st, id){
       return;
     }
     const inning = activeInning();
-    Object.keys(state.defenseChanges || {}).forEach(pid => {
-      if(!state.defenseChanges[pid]) return;
-      delete state.defenseChanges[pid][inning];
-      if(Object.keys(state.defenseChanges[pid]).length === 0) delete state.defenseChanges[pid];
-    });
+    if(inning <= 1) return;
+    const previous = inningSnapshot(state,inning-1);
+    editInningSnapshot(inning, snapshot => Object.assign(snapshot,previous));
     ensureStructures();
     saveState();
     render();
@@ -2216,6 +2246,7 @@ function playerNumberIn(st, id){
     }
     resetClearAllChangesConfirm();
     state.defenseChanges = {};
+    state.inningCheckpoints = [];
     if(state.battingMode === 'nine'){
       const baseLine = (state.lineupByInning?.[1] || state.battingOrder.slice(0, lineupLimit())).slice(0, lineupLimit());
       state.lineupByInning = { 1: baseLine };
@@ -2229,7 +2260,6 @@ function playerNumberIn(st, id){
   }
 
   function render(){
-    ensureStructures();
     applyLineupFont();
     applyAppTheme();
     renderHeader();
@@ -2311,6 +2341,7 @@ function playerNumberIn(st, id){
 
   function renderInningButtons(){
     const wrap = $('inningButtons');
+    const scrollLeft = wrap.scrollLeft;
     wrap.innerHTML = '';
     const addButton = (label, value, extraClass='') => {
       const btn = document.createElement('button');
@@ -2322,6 +2353,7 @@ function playerNumberIn(st, id){
     };
     addButton('初期', 0, 'initial');
     for(let i=1; i<=maxInnings(); i++) addButton(`${i}回`, i);
+    wrap.scrollLeft = scrollLeft;
   }
 
   function renderDefenseGridHeader(){
@@ -3332,10 +3364,15 @@ function playerNumberIn(st, id){
       const full = row.querySelector('.full-input');
       const number = row.querySelector('.number-input');
       const del = row.querySelector('button');
-      color.addEventListener('input', () => { p.color = color.value; saveState(); refreshOrderViewsAfterPlayerEdit(); });
-      nick.addEventListener('input', () => { p.nickname = nick.value; saveState(); refreshOrderViewsAfterPlayerEdit(); });
-      full.addEventListener('input', () => { p.fullName = full.value; saveState(); refreshOrderViewsAfterPlayerEdit(); });
-      number.addEventListener('input', () => { p.number = number.value.replace(/\D/g, ''); number.value = p.number; saveState(); refreshOrderViewsAfterPlayerEdit(); });
+      const editPlayer = (key,value) => {
+        const current = playerById(p.id);
+        if(!current) return;
+        current[key] = value; saveState(); refreshOrderViewsAfterPlayerEdit();
+      };
+      color.addEventListener('input', () => editPlayer('color',color.value));
+      nick.addEventListener('input', () => editPlayer('nickname',nick.value));
+      full.addEventListener('input', () => editPlayer('fullName',full.value));
+      number.addEventListener('input', () => { number.value = number.value.replace(/\D/g, ''); editPlayer('number',number.value); });
       del.addEventListener('click', () => deletePlayer(p.id));
       panel.appendChild(row);
     });
@@ -3364,7 +3401,7 @@ function playerNumberIn(st, id){
     const nick = nickInput.value.trim();
     const full = fullInput.value.trim();
     if(!nick && !full) return;
-    const id = `p${Date.now().toString(36)}`;
+    const id = `p${globalThis.crypto?.randomUUID?.() || Date.now().toString(36)+Math.random().toString(36).slice(2)}`;
     const color = DEFAULT_COLORS[state.players.length % DEFAULT_COLORS.length];
     state.players.push({ id, nickname:nick || full, fullName:full, number:'', color, status:'' });
     state.battingOrder.push(id);
@@ -4045,7 +4082,6 @@ function playerNumberIn(st, id){
 
   function workspacePayload(){
     const snapshot = clone(state);
-    snapshot.selectedInning = 0;
     return { schema:1, state:snapshot, history:loadSavedOrders().map(entry => ({
       id:entry.id, createdAt:entry.createdAt, updatedAt:entry.updatedAt,
       savedOrderKey:entry.savedOrderKey, state:{ ...entry.state, selectedInning:0 }
@@ -4064,8 +4100,8 @@ function playerNumberIn(st, id){
   }
 
   function applyWorkspacePayload(payload){
+    const previous = state;
     const nextState = normalizeState(clone(payload.state));
-    nextState.selectedInning = Math.min(maxInnings(nextState), state.selectedInning || 0);
     const nextHistory = payload.history.map(normalizeSavedOrder).filter(Boolean);
     // Verify serializability before changing either storage key.
     const stateText = JSON.stringify(nextState), historyText = JSON.stringify(nextHistory);
@@ -4074,18 +4110,43 @@ function playerNumberIn(st, id){
       localStorage.setItem(STORAGE_KEY, stateText);
       localStorage.setItem(HISTORY_KEY, historyText);
     }catch(error){
-      if(oldState !== null) localStorage.setItem(STORAGE_KEY, oldState);
-      if(oldHistory !== null) localStorage.setItem(HISTORY_KEY, oldHistory);
+      if(oldState !== null) localStorage.setItem(STORAGE_KEY, oldState); else localStorage.removeItem(STORAGE_KEY);
+      if(oldHistory !== null) localStorage.setItem(HISTORY_KEY, oldHistory); else localStorage.removeItem(HISTORY_KEY);
       throw new Error('端末の空き容量が不足しています。内容の切り替えを中止しました。');
     }
     workspaceHydrating = true;
     try{
       state = nextState;
-      selectedSwapId = null; selectedDefense = null; expandedHistoryId = null;
-      clearSwapAnimationState();
-      render(); renderHistory(); saveState();
+      selectedSwapId = null; selectedDefense = null;
+      renderSyncedWorkspace(previous,oldHistory !== historyText);
+      saveState();
       workspaceLastContent = JSON.stringify(workspacePayload());
     }finally{ workspaceHydrating = false; }
+  }
+
+  function workspaceCanApply(){
+    const active = document.activeElement;
+    const typing = active?.matches?.('input,textarea,select') && !active.readOnly && active.getClientRects().length > 0;
+    return !typing && !workspaceComposing && !isSwapAnimating && !selectedSwapId && !selectedDefense;
+  }
+
+  function renderSyncedWorkspace(previous, historyChanged){
+    const changed = keys => keys.some(key => JSON.stringify(previous[key]) !== JSON.stringify(state[key]));
+    applyLineupFont(); applyAppTheme(); renderHeader();
+    if(changed(['selectedInning','game'])) renderInningButtons();
+    if(changed(['players','settings','battingMode','battingOrder','startPositions','defenseChanges','lineupByInning','attendanceByPlayerId','selectedInning']) || previous.game.innings !== state.game.innings){
+      renderDefenseGridHeader(); renderOrder(); renderBench(); renderMemo();
+    }else if(changed(['game','team'])) renderMemo();
+    if(changed(['players','settings'])){
+      const drafts = ['newNick','newFull'].map(id => [id,$(id)?.value || '']);
+      renderPlayers();
+      drafts.forEach(([id,value]) => { if($(id)) $(id).value = value; });
+    }
+    if(historyChanged){
+      if(!loadSavedOrders().some(entry => entry.id === expandedHistoryId)) expandedHistoryId = null;
+      renderHistory();
+    }
+    bindFormControlTapGuards();
   }
 
   function saveWorkspaceRecovery(payload, label){
@@ -4103,7 +4164,7 @@ function playerNumberIn(st, id){
       local:'この端末に保存しています。', connecting:'共有先のデータを確認しています…',
       pending:'この端末に保存済み。共有先へ反映待ちです。', saving:'この端末に保存済み。共有先へ保存しています…',
       synced:'共有先への保存が完了しています。', offline:'通信が戻るまで端末に保存します。接続後に同期します。',
-      conflict:'この端末と共有先に、それぞれ異なる内容があります。',
+      conflict:'同じ項目に異なる変更があります。両方の内容を保持しています。設定で使う内容を選んでください。',
       account:'以前とは別のGoogleアカウントです。共有する内容を選んでください。',
       error:'共有先に接続できません。端末の内容は保持しています。'
     };
@@ -4128,7 +4189,7 @@ function playerNumberIn(st, id){
     $('cloudLoginBtn').disabled = true;
     $('cloudLoginBtn').textContent = 'ログイン準備中…';
     workspaceCloudPromise = (async () => {
-      const { startCloudSync } = await import('./cloud-sync.mjs');
+      const { startCloudSync } = await import(`./cloud-sync.mjs?v=${window.LINEUP_APP_VERSION}`);
       if(!['lineup-app-b4f4e.web.app','lineup-app-b4f4e.firebaseapp.com'].includes(location.hostname)) throw new Error('データ共有は正式公開URL（lineup-app-b4f4e.web.app）で利用できます。');
       let deviceId = localStorage.getItem('lineupWorkspaceDevice');
       if(!deviceId){ deviceId = crypto.randomUUID(); localStorage.setItem('lineupWorkspaceDevice', deviceId); }
@@ -4136,6 +4197,7 @@ function playerNumberIn(st, id){
         deviceId,
         getPayload:workspacePayload,
         applyPayload:applyWorkspacePayload,
+        canApply:workspaceCanApply,
         emptyPayload:() => ({ schema:1, state:createDefaultState(), history:[] }),
         hasLocalData:() => workspaceHadExisting || localStorage.getItem('lineupWorkspaceHasEdits') === '1' || loadSavedOrders().length > 0,
         markLocalData:() => localStorage.setItem('lineupWorkspaceHasEdits','1'),
@@ -4145,15 +4207,27 @@ function playerNumberIn(st, id){
         online:() => navigator.onLine !== false,
         onStatus:setCloudStatus,
         onAccount:account => {
+          if(account) localStorage.setItem('lineupCloudEnabled','1');
           $('cloudAccount').textContent = account ? `${account.name} ${account.email}`.trim() : '';
           $('cloudLoginBtn').hidden = !!account;
           $('cloudLogoutBtn').hidden = !account;
         }
       });
     })();
-    try{ workspaceBridge = await workspaceCloudPromise; return workspaceBridge; }
+    try{
+      workspaceBridge = await workspaceCloudPromise;
+      workspaceRetryAttempts = 0;
+      clearTimeout(workspaceRetryTimer);
+      return workspaceBridge;
+    }
     catch(error){
       workspaceCloudPromise = null;
+      if(localStorage.getItem('lineupCloudEnabled') === '1'){
+        clearTimeout(workspaceRetryTimer);
+        workspaceRetryTimer = setTimeout(() => {
+          if(navigator.onLine !== false) ensureWorkspaceCloud().catch(error => setCloudStatus({status:'error',detail:error.message}));
+        },Math.min(30000,1000*2**Math.min(workspaceRetryAttempts++,5)));
+      }
       if(!/[\u3040-\u30ff\u3400-\u9fff]/.test(error.message || '')) throw new Error('共有機能を読み込めません。端末保存を続け、通信が戻ってから再試行してください。');
       throw error;
     }
@@ -4172,7 +4246,8 @@ function playerNumberIn(st, id){
     }));
     $('cloudLogoutBtn').addEventListener('click', safe(async () => {
       await workspaceBridge?.logout();
-      localStorage.removeItem('lineupCloudEnabled');
+      localStorage.setItem('lineupCloudEnabled','0');
+      clearTimeout(workspaceRetryTimer);
     }));
     $('cloudRetryBtn').addEventListener('click', safe(async () => { const bridge = await ensureWorkspaceCloud(); bridge.retry(); }));
     $('cloudUseRemoteBtn').addEventListener('click', safe(() => workspaceBridge?.useRemote()));
@@ -4199,7 +4274,7 @@ function playerNumberIn(st, id){
       if(file.size > 4000000) throw new Error('バックアップのファイルサイズを確認してください。');
       let parsed;
       try{ parsed = JSON.parse(await file.text()); }catch(e){ throw new Error('バックアップのJSONファイルを読み取れません。ファイルを確認してください。'); }
-      const { validateWorkspace } = await import('./cloud-sync.mjs');
+      const { validateWorkspace } = await import(`./cloud-sync.mjs?v=${window.LINEUP_APP_VERSION}`);
       recoveryEntries = [];
       $('workspaceRecoverySelect').hidden = true;
       if(parsed.format === 'lineup-recovery'){
@@ -4228,6 +4303,19 @@ function playerNumberIn(st, id){
       showToast('バックアップを読み込みました');
     }));
     $('settingsBtn').addEventListener('click', safe(() => ensureWorkspaceCloud()));
+    document.addEventListener('compositionstart', () => { workspaceComposing = true; });
+    document.addEventListener('compositionend', () => { workspaceComposing = false; workspaceBridge?.resume(); });
+    const reconnect = safe(async () => {
+      if(localStorage.getItem('lineupCloudEnabled') === '1' && !workspaceBridge) await ensureWorkspaceCloud();
+    });
+    window.addEventListener('online', reconnect);
+    window.addEventListener('pageshow', reconnect);
+    document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') reconnect(); });
+    if(localStorage.getItem('lineupCloudEnabled') === null){
+      try{
+        if(JSON.parse(localStorage.getItem('lineupWorkspaceSyncMeta') || '{}').owner) localStorage.setItem('lineupCloudEnabled','1');
+      }catch(e){}
+    }
     if(localStorage.getItem('lineupCloudEnabled') === '1') safe(() => ensureWorkspaceCloud())();
   }
 
