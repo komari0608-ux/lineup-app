@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-import { WorkspaceSync, canonical, validateWorkspace } from '../cloud-sync.mjs';
+import { WorkspaceSync, canonical, validateWorkspace, mergeWorkspaces } from '../cloud-sync.mjs';
 
 const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const mainScript = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)][1][1];
@@ -22,6 +22,7 @@ export function editor(){
   })();`.replace('thisUnused();', `globalThis.api = {
       createDefaultState, normalizeState, ensureStructures, buildCoachPlan, buildCompactCoachTable, buildSimpleShareTextForState,
       handlePlayerTap, handleDefenseTap, substituteNineMode, getLineupAt, effectivePosition,
+      swapDefensePositionsAtInning, resetCurrentDefense, applyWorkspacePayload,
       saveState, loadState, saveSavedOrders, loadSavedOrders, workspacePayload,
       createOrderImageBlob,
       set:st => { state = normalizeState(st); selectedSwapId = null; selectedDefense = null; },
@@ -266,4 +267,151 @@ test('invalid backups and unsafe player IDs are rejected before changing state',
   const value=payload(); value.state.players[0].id='__proto__';
   assert.throws(() => validateWorkspace(value));
   assert.throws(() => validateWorkspace({schema:1,state:{},history:[]}));
+});
+
+test('viewing an inning is pure even when legacy data contains redundant changes', () => {
+  const api = nine();
+  api.get().defenseChanges.p1 = { 4:api.effectivePosition('p1',1) };
+  const before = JSON.stringify(api.get());
+  for(const inning of [6,2,3,1,6]) api.getLineupAt(inning);
+  assert.equal(JSON.stringify(api.get()),before);
+});
+
+test('editing the past preserves a later replacement and re-entry checkpoint', () => {
+  const api = nine();
+  api.substituteNineMode('p1','p10',3);
+  api.substituteNineMode('p10','p1',5);
+  const later = [3,4,5,6].map(i => ({ line:[...api.getLineupAt(i)], positions:api.get().players.map(p => api.effectivePosition(p.id,i)) }));
+  api.substituteNineMode('p2','p10',2);
+  assert.equal(api.getLineupAt(1)[1],'p2');
+  assert.equal(api.getLineupAt(2)[1],'p10');
+  assert.deepEqual([3,4,5,6].map(i => ({ line:[...api.getLineupAt(i)], positions:api.get().players.map(p => api.effectivePosition(p.id,i)) })),later);
+});
+
+test('resetting an inning restores both lineup and defense without losing later history', () => {
+  const api = nine(); api.substituteNineMode('p1','p10',3); api.substituteNineMode('p10','p1',5);
+  api.selected(3); api.resetCurrentDefense();
+  assert.equal(api.getLineupAt(3)[0],'p1');
+  assert.equal(api.effectivePosition('p1',3),api.effectivePosition('p1',2));
+  assert.equal(api.effectivePosition('p10',3),'B');
+  assert.equal(api.getLineupAt(5)[0],'p1');
+});
+
+test('selected inning is included in automatic sharing', () => {
+  const api = nine(); api.selected(4);
+  assert.equal(api.workspacePayload().state.selectedInning,4);
+});
+
+test('reconnect with unchanged cloud automatically uploads unsent local edits', async t => {
+  const base=payload();
+  const f=fixture(t,{local:payload('未送信'),remote:remoteData(base),meta:{owner:'user',revision:1,baseData:canonical(base)}});
+  await f.sync.connect('user'); await f.sync.flush();
+  assert.equal(f.sync.conflict,false);
+  assert.equal(JSON.parse(f.remote.payload).state.game.opponent,'未送信');
+});
+
+test('independent field and player edits merge automatically after a write race', async t => {
+  const base=payload(), local=payload(), remote=payload();
+  local.state.game.place='PC球場'; local.state.players[0].number='12';
+  remote.state.game.opponent='スマホ対戦相手'; remote.state.players[1].nickname='スマホ選手';
+  const f=fixture(t,{local,remote:remoteData(remote,2),meta:{owner:'user',revision:1,baseData:canonical(base)}});
+  await f.sync.connect('user'); await f.sync.flush();
+  assert.equal(f.sync.conflict,false); assert.equal(f.remote.revision,3);
+  assert.equal(f.local.state.game.place,'PC球場'); assert.equal(f.local.state.game.opponent,'スマホ対戦相手');
+  assert.equal(f.local.state.players[0].number,'12'); assert.equal(f.local.state.players[1].nickname,'スマホ選手');
+});
+
+test('disjoint simultaneous defense changes and substitutions merge into a valid inning', () => {
+  const a=nine(), b=nine(), base=JSON.parse(JSON.stringify(a.workspacePayload()));
+  a.substituteNineMode('p1','p10',3); b.swapDefensePositionsAtInning('p3','p4',3);
+  const merged=mergeWorkspaces(base,JSON.parse(JSON.stringify(a.workspacePayload())),JSON.parse(JSON.stringify(b.workspacePayload())));
+  assert.deepEqual(merged.conflicts,[]);
+  a.set(merged.payload.state);
+  assert.equal(a.getLineupAt(3)[0],'p10');
+  assert.equal(a.effectivePosition('p1',3),'B'); assert.equal(a.effectivePosition('p10',3),'5');
+  assert.equal(a.effectivePosition('p3',3),'2'); assert.equal(a.effectivePosition('p4',3),'8');
+  assert.equal(a.getLineupAt(2)[0],'p1');
+});
+
+test('overlapping substitutions never create duplicate players or lose either local version', () => {
+  const a=nine(), b=nine(), base=JSON.parse(JSON.stringify(a.workspacePayload()));
+  a.substituteNineMode('p1','p10',3); b.substituteNineMode('p2','p10',3);
+  const local=JSON.parse(JSON.stringify(a.workspacePayload())), remote=JSON.parse(JSON.stringify(b.workspacePayload()));
+  const before=canonical([base,local,remote]);
+  assert.ok(mergeWorkspaces(base,local,remote).conflicts.length);
+  assert.equal(canonical([base,local,remote]),before);
+});
+
+test('separate saved records merge by ID, and conflicting edits to one record are protected', () => {
+  const base=payload(), local=payload(), remote=payload();
+  local.history=[{id:'pc-record',state:payload('PC').state}]; remote.history=[{id:'phone-record',state:payload('スマホ').state}];
+  const merged=mergeWorkspaces(base,local,remote);
+  assert.deepEqual(merged.conflicts,[]); assert.equal(merged.payload.history.length,2);
+  base.history=[{id:'one',state:payload().state}];
+  local.history=[{id:'one',state:payload('PC').state}]; remote.history=[{id:'one',state:payload('スマホ').state}];
+  assert.ok(mergeWorkspaces(base,local,remote).conflicts.includes('history.one'));
+});
+
+test('simultaneous navigation converges without blocking later edits', () => {
+  const base=payload(), local=payload(), remote=payload();
+  local.state.selectedInning=2; remote.state.selectedInning=5;
+  const merged=mergeWorkspaces(base,local,remote);
+  assert.deepEqual(merged.conflicts,[]); assert.equal(merged.payload.state.selectedInning,5);
+});
+
+test('focused input defers remote rendering, then merges current typing when editing ends', async t => {
+  const base=payload(), f=fixture(t,{local:payload(),remote:remoteData(base)});
+  let busy=true;
+  f.sync.o.canApply=() => !busy;
+  await f.sync.connect('user');
+  const remote=payload(); remote.state.players[1].number='21';
+  f.sync.receive(remoteData(remote,2));
+  f.local.state.game.opponent='入力中の文字'; f.sync.changed();
+  assert.equal(f.local.state.players[1].number,'');
+  busy=false; f.sync.resume(); await f.sync.flush();
+  assert.equal(f.sync.conflict,false);
+  assert.equal(f.local.state.players[1].number,'21'); assert.equal(f.local.state.game.opponent,'入力中の文字');
+});
+
+test('newer remote snapshot received during an in-flight write is merged after acknowledgement', async t => {
+  const f=fixture(t,{remote:remoteData(payload()),local:payload()}); await f.sync.connect('user');
+  let finish;
+  f.adapter.commit=(uid,expected,data) => new Promise(resolve => { finish=() => resolve({ok:true,remote:remoteData(JSON.parse(data),2)}); });
+  f.local.state.game.place='PC'; f.sync.changed(); const pending=f.sync.flush();
+  const next=JSON.parse(canonical(f.local)); next.state.game.opponent='スマホ';
+  f.sync.receive(remoteData(next,3));
+  f.local.state.players[0].number='30';
+  finish(); await pending;
+  assert.equal(f.sync.conflict,false); assert.equal(f.meta.revision,3);
+  assert.equal(f.local.state.game.opponent,'スマホ'); assert.equal(f.local.state.players[0].number,'30');
+});
+
+test('temporary write errors retry without another edit or manual sharing', async t => {
+  const f=fixture(t,{remote:remoteData(payload()),local:payload()});
+  f.sync.o.retryDelay=5; f.sync.o.delay=1;
+  await f.sync.connect('user');
+  const commit=f.adapter.commit; let attempts=0;
+  f.adapter.commit=(...args) => { if(++attempts===1) throw new Error('temporary'); return commit(...args); };
+  f.local.state.game.place='復旧'; f.sync.changed();
+  await new Promise(resolve => setTimeout(resolve,80));
+  assert.equal(attempts,2); assert.equal(f.status.status,'synced');
+});
+
+test('ended snapshot subscriptions automatically reconnect', async t => {
+  const f=fixture(t,{remote:remoteData(payload()),local:payload()});
+  f.sync.o.retryDelay=5; let attempts=0;
+  f.adapter.watch=(uid,next,fail) => { if(++attempts===1) queueMicrotask(() => fail(new Error('temporary'))); else next(f.remote); return () => {}; };
+  await f.sync.connect('user');
+  await new Promise(resolve => setTimeout(resolve,80));
+  assert.equal(attempts,2); assert.equal(f.status.status,'synced');
+});
+
+test('legacy migration preserves inning states and hidden later innings after reload', () => {
+  const api=nine(); api.get().game.innings=9; api.ensureStructures();
+  api.substituteNineMode('p1','p10',8);
+  api.get().game.innings=6; api.ensureStructures();
+  api.swapDefensePositionsAtInning('p2','p3',2); api.saveState(); api.set(api.loadState());
+  api.get().game.innings=9; api.ensureStructures();
+  assert.equal(api.getLineupAt(8)[0],'p10');
+  assert.equal(api.effectivePosition('p2',8),'6');
 });
