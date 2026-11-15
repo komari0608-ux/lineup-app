@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-11-14-inning-history-auto-sync';
+    window.LINEUP_APP_VERSION = '2026-11-15-new-game-dark-mode';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -112,7 +112,7 @@
       --text:#eaf3ff;
       --text-muted:#a8b7cc;
       --primary:#4aa8ff;
-      --primary-strong:#1f7edb;
+      --primary-strong:#1768b7;
       --border:rgba(170,205,255,.22);
       --danger-soft:rgba(255,107,107,.14);
       --focus-ring:rgba(74,168,255,.20);
@@ -258,6 +258,12 @@
     .toolbar{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}
     .toolbar button{grid-column:1 / -1;padding:0 9px;font-weight:950;white-space:nowrap}
     .inning-scroll{display:flex;gap:6px;overflow-x:auto;padding:8px 0 8px;margin-bottom:3px;-webkit-overflow-scrolling:touch;scroll-padding-inline:6px}
+    .inning-toolbar{display:flex;align-items:center;gap:10px;min-width:0}
+    .inning-toolbar[hidden]{display:none!important}
+    .inning-toolbar .inning-scroll{flex:1;min-width:0}
+    .new-game-btn{flex:0 0 auto;min-height:44px;padding:0 10px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--blue-dark);font-size:12px;font-weight:800;white-space:nowrap;touch-action:manipulation}
+    .new-game-btn:active{background:var(--soft)}
+    button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
     .inning-btn{border:1px solid var(--line);background:#fff;min-width:42px;height:34px;border-radius:999px;font-size:12px;font-weight:950;color:var(--ink);touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
     .inning-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
     .inning-btn.initial{min-width:52px;background:#eef8ff;border-color:#b9d7ef}.inning-btn.initial.active{background:var(--blue-dark);border-color:var(--blue-dark);color:#fff}
@@ -416,10 +422,11 @@
     html[data-theme="dark"] input::placeholder,html[data-theme="dark"] textarea::placeholder{color:#7f93ad}
     html[data-theme="dark"] .game-line input:focus,html[data-theme="dark"] .game-line select:focus,html[data-theme="dark"] .date-button:focus,html[data-theme="dark"] .toolbar select:focus,html[data-theme="dark"] .player-row input:focus,html[data-theme="dark"] textarea:focus,html[data-theme="dark"] .setting-field select:focus,html[data-theme="dark"] .history-search:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--focus-ring)}
     html[data-theme="dark"] .settings-btn{background:#102039;color:#dbeeff;border-color:rgba(170,205,255,.28)}
+    html[data-theme="dark"] .order-reset-btn{background:#102039;color:#dbeeff;border-color:#527ca5}
     html[data-theme="dark"] .share-btn{background:rgba(53,199,138,.14);color:#8cf0be;border-color:rgba(53,199,138,.38)}
     html[data-theme="dark"] .save-btn,html[data-theme="dark"] .mini-chip.active,html[data-theme="dark"] .inning-btn.active,html[data-theme="dark"] .settings-actions .primary,html[data-theme="dark"] .memo-actions .primary,html[data-theme="dark"] .history-actions button.primary,html[data-theme="dark"] .save-choice-actions button.primary{background:var(--primary-strong);border-color:var(--primary-strong);color:#fff}
     html[data-theme="dark"] .header-mascot{filter:drop-shadow(0 4px 8px rgba(0,0,0,.28))}
-    html[data-theme="dark"] .inning-btn{background:#102039;border-color:var(--line);color:var(--ink)}
+    html[data-theme="dark"] .inning-btn:not(.active){background:#102039;border-color:var(--line);color:var(--ink)}
     html[data-theme="dark"] .inning-btn.initial{background:#122844;border-color:rgba(74,168,255,.32);color:#dbeeff}
     html[data-theme="dark"] .inning-btn.initial.active{background:#0e5da6;border-color:#2f9bff;color:#fff}
     html[data-theme="dark"] .player-card,html[data-theme="dark"] .defense-card{background:#102039;color:var(--ink);border-color:rgba(139,196,239,.42);box-shadow:0 2px 9px rgba(0,0,0,.20)}
@@ -437,7 +444,7 @@
     html[data-theme="dark"] .defense-col-head{color:#91a9c5}
     html[data-theme="dark"] .defense-col-head.is-active{background:rgba(74,168,255,.14);color:#dbeeff}
     html[data-theme="dark"] .bench-chip{background:#102039;border-color:rgba(139,196,239,.40);color:var(--ink)}
-    html[data-theme="dark"] .bench-chip.is-absent{background:#0c1728;border-color:rgba(170,205,255,.14);color:#7f93ad;opacity:.64}
+    html[data-theme="dark"] .bench-chip.is-absent{background:#0c1728;border-color:rgba(170,205,255,.14);color:#9baec6;opacity:1}
     html[data-theme="dark"] .bench-chip.is-absent.selected,html[data-theme="dark"] .bench-chip.is-absent.is-selected{background:#101a2a;box-shadow:0 0 0 2px rgba(168,183,204,.42)}
     html[data-theme="dark"] .dot{box-shadow:0 0 0 2px #102039,0 0 0 3px rgba(255,255,255,.14)}
     html[data-theme="dark"] .editor-box,html[data-theme="dark"] .save-choice-game,html[data-theme="dark"] .dh-row{background:#0d1a2d;border-color:var(--line);color:var(--ink)}
@@ -445,7 +452,7 @@
     html[data-theme="dark"] .editor-head .close-edit,html[data-theme="dark"] .modal-close{background:#172840;color:#d9e8ff}
     html[data-theme="dark"] .memo-actions button,html[data-theme="dark"] .settings-actions button,html[data-theme="dark"] .history-actions button,html[data-theme="dark"] .save-choice-actions button{background:#102039;color:#dbeeff;border-color:var(--line)}
     html[data-theme="dark"] .mini-chip.danger,html[data-theme="dark"] .icon-del{background:rgba(255,107,107,.14);border-color:rgba(255,107,107,.28);color:#ffb4ad}
-    html[data-theme="dark"] .add-row button{background:#138f61;color:#fff}
+    html[data-theme="dark"] .add-row button{background:#11754e;color:#fff}
     html[data-theme="dark"] .history-sort button{background:#102039;color:#dbeeff;border-color:var(--line)}
     html[data-theme="dark"] .history-sort button.is-active{background:#145fa8;border-color:#4aa8ff;color:#fff;box-shadow:0 4px 12px rgba(74,168,255,.14)}
     html[data-theme="dark"] .history-delete-action{background:#2a1014}
@@ -463,7 +470,7 @@
     html[data-theme="dark"] .calendar-day.is-sunday:not(.is-selected),html[data-theme="dark"] .calendar-day.is-holiday:not(.is-selected){color:#ff9b9b;background:rgba(255,107,107,.10)}
     html[data-theme="dark"] .calendar-holiday-label{background:rgba(255,107,107,.22);color:#ffd0ca}
     html[data-theme="dark"] .calendar-day.is-today{border-color:#8fd0ff;background:rgba(74,168,255,.14)}
-    html[data-theme="dark"] .calendar-day.is-selected{background:#1f7edb;border-color:#4aa8ff;color:#fff;box-shadow:0 4px 12px rgba(74,168,255,.18)}
+    html[data-theme="dark"] .calendar-day.is-selected{background:var(--primary-strong);border-color:#4aa8ff;color:#fff;box-shadow:0 4px 12px rgba(74,168,255,.18)}
     html[data-theme="dark"] .bottom-nav{background:rgba(7,17,31,.94);border-top-color:rgba(170,205,255,.18)}
     html[data-theme="dark"] .nav-btn{color:#8fa2bb}
     html[data-theme="dark"] .nav-btn.active{background:rgba(74,168,255,.16);color:#dbeeff}
@@ -491,9 +498,12 @@
     .coach-player{display:inline-flex;align-items:center;gap:7px;max-width:100%;vertical-align:middle}
     .coach-player-name{min-width:0;overflow-wrap:anywhere}
     .coach-number-badge{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;min-width:29px;min-height:25px;padding:2px 5px;border:1px solid #9bc9f0;border-radius:7px;background:#f5fbff;color:#043e76;font-size:.875em;font-weight:700;line-height:1}
+    html[data-theme="dark"] .coach-number-badge{background:#0b223b;color:#d9efff;border-color:#4aa8ff}
+    html[data-theme="dark"] .coach-actions button{background:var(--primary-strong);color:#fff}
     .coach-cell{display:inline-block;min-width:24px;padding:4px 2px;border-radius:7px;color:var(--muted)}
     .coach-cell.start{background:var(--soft);color:var(--blue-dark);font-weight:900}
     .coach-cell.change{background:#ffedd5;color:#9a3412;font-weight:900;border:1px solid #fdba74}
+    html[data-theme="dark"] .coach-cell.change{background:#2d2431;color:#ffd9ad;border-color:#ffb86b}
     .coach-cell.exit{font-size:10px}
     .coach-empty,.sync-note{font-size:12px;line-height:1.65;color:var(--muted);overflow-wrap:anywhere}
     .sync-status{font-size:13px;font-weight:700;line-height:1.6;color:var(--blue-dark)}
@@ -611,7 +621,10 @@
       <div class="game-summary" id="gameSummary">試合情報未設定</div>
     </header>
 
-    <div class="inning-scroll" id="inningButtons" aria-label="イニングの切り替え"></div>
+    <div class="inning-toolbar" id="inningToolbar">
+      <div class="inning-scroll" id="inningButtons" aria-label="イニングの切り替え"></div>
+      <button class="new-game-btn" id="newGameBtn" type="button" aria-label="新規作成">＋ 新規作成</button>
+    </div>
 
     <div class="workspace-grid">
     <main class="tabs-viewport" id="tabsViewport">
@@ -690,6 +703,7 @@
         <h2 id="settingsTitle">設定</h2>
         <button class="modal-close" type="button" id="settingsCloseBtn" aria-label="閉じる">×</button>
       </div>
+      <p class="sync-note" id="newGameSettingsNote" hidden>登録選手と初期オーダーを引き継ぎました。試合情報を設定してください。</p>
 
       <section class="settings-section" aria-label="試合情報">
         <h3>試合情報</h3>
@@ -818,6 +832,20 @@
     </div>
   </div>
 
+  <div class="save-choice-modal" id="newGameModal" hidden>
+    <div class="save-choice-sheet" role="dialog" aria-modal="true" aria-labelledby="newGameTitle" aria-describedby="newGameNote">
+      <h2 id="newGameTitle">作成中のオーダーを保存しますか？</h2>
+      <p class="save-choice-note" id="newGameNote">記録に保存していない変更があります。</p>
+      <div class="save-choice-game" id="newGameSummary"></div>
+      <p class="save-choice-note" id="newGameError" role="alert" hidden></p>
+      <div class="save-choice-actions">
+        <button class="primary" type="button" id="newGameSaveBtn">保存して作成</button>
+        <button type="button" id="newGameDiscardBtn">保存せず作成</button>
+        <button class="cancel" type="button" id="newGameCancelBtn">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
   <nav class="bottom-nav" aria-label="画面切替">
     <div class="bottom-nav-inner">
       <button class="nav-btn active" data-tab="order" type="button"><span class="icon">☷</span><span>オーダー</span></button>
@@ -907,6 +935,8 @@
   let workspaceRetryTimer = null;
   let workspaceRetryAttempts = 0;
   let workspaceComposing = false;
+  // Theme is a device preference, never a property restored by a match or sync.
+  let preferredTheme = readStoredTheme();
   let state = loadState();
   let currentTab = 'order';
   let expandedHistoryId = null;
@@ -970,7 +1000,7 @@
     }
   }
   function currentFontKey(st = state){ return validFontKey(st?.settings?.fontFamily || readStoredLineupFont()); }
-  function currentThemeKey(st = state){ return validThemeKey(st?.settings?.themeMode || readStoredTheme()); }
+  function currentThemeKey(){ return preferredTheme; }
   function resolveTheme(key = currentThemeKey()){
     if(key === 'dark') return 'dark';
     if(key === 'light') return 'light';
@@ -985,8 +1015,7 @@
   }
   function setAppTheme(value){
     const key = validThemeKey(value);
-    state.settings ||= {};
-    state.settings.themeMode = key;
+    preferredTheme = key;
     try{ localStorage.setItem(THEME_KEY, key); }catch(e){}
     applyAppTheme();
     saveState();
@@ -1094,13 +1123,18 @@
       currentSavedOrderKey: ''
     };
     ensureStructures(st);
+    st.newOrderBaseline = orderContentKey(st);
     return st;
   }
 
   function loadState(){
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
-      if(raw) return normalizeState(JSON.parse(raw));
+      if(raw){
+        const stored = JSON.parse(raw);
+        if(localStorage.getItem(THEME_KEY) === null && stored.settings?.themeMode) preferredTheme = validThemeKey(stored.settings.themeMode);
+        return normalizeState(stored);
+      }
       for(const key of MIGRATION_KEYS){
         const old = localStorage.getItem(key);
         if(old) return normalizeState(JSON.parse(old));
@@ -1159,7 +1193,9 @@
     st.settings.displayMode ||= 'nick';
     st.settings.dhEnabled = st.settings.dhEnabled === true;
     st.settings.fontFamily = validFontKey(st.settings.fontFamily || readStoredLineupFont());
-    st.settings.themeMode = validThemeKey(st.settings.themeMode || readStoredTheme());
+    // Retain legacy metadata unchanged so older open clients cannot cause a
+    // remove/restore sync loop. Only preferredTheme controls this device's UI.
+    st.settings.themeMode = validThemeKey(st.settings.themeMode || 'auto');
     st.battingMode = st.battingMode === 'nine' ? 'nine' : 'all';
     const selectedInning = Number(st.selectedInning);
     st.selectedInning = Number.isFinite(selectedInning) ? selectedInning : 0;
@@ -1312,7 +1348,11 @@
     showToast._t = setTimeout(() => toast.classList.remove('show'), 1400);
   }
 
-  function openSettings(){
+  function openSettings(options = {}){
+    const isNew = options.newGame === true;
+    $('settingsTitle').textContent = isNew ? '新規作成・試合設定' : '設定';
+    $('newGameSettingsNote').hidden = !isNew;
+    $('settingsDoneBtn').textContent = isNew ? '作成を続ける' : '閉じる';
     $('settingsModal').hidden = false;
     document.body.classList.add('modal-open');
     bindFormControlTapGuards($('settingsModal'));
@@ -2651,6 +2691,7 @@ function playerNumberIn(st, id){
     const id = options.id || newSavedOrderId(now);
     const key = options.savedOrderKey || savedOrderKeyForState(state);
     const snapshot = normalizeState(clone(options.sourceState || state));
+    delete snapshot.newOrderBaseline;
     snapshot.currentSavedOrderId = id;
     snapshot.currentSavedOrderKey = key;
     return normalizeSavedOrder({
@@ -2674,9 +2715,10 @@ function playerNumberIn(st, id){
   }
 
   function finishSavedOrderWrite(entry, list){
+    // Do not mark the draft as saved unless the record write actually succeeds.
+    saveSavedOrders([entry, ...list.filter(item => item.id !== entry.id)]);
     state.currentSavedOrderId = entry.id;
     state.currentSavedOrderKey = entry.savedOrderKey;
-    saveSavedOrders([entry, ...list.filter(item => item.id !== entry.id)]);
     saveState(false);
     swipedHistoryId = null;
     renderMemo();
@@ -2746,6 +2788,101 @@ function playerNumberIn(st, id){
       return;
     }
     saveOrderAsNew(list, key);
+  }
+
+  function orderContentKey(st){
+    // Compare game content, ignoring the viewing cursor and display preferences.
+    const content = {
+      team:st.team, game:st.game, players:st.players, battingMode:st.battingMode,
+      battingOrder:st.battingOrder, dhEnabled:st.settings?.dhEnabled === true,
+      startPositions:st.startPositions, defenseChanges:st.defenseChanges,
+      lineupByInning:st.lineupByInning, attendanceByPlayerId:st.attendanceByPlayerId,
+      inningCheckpoints:st.inningCheckpoints
+    };
+    const stable = value => Array.isArray(value) ? value.map(stable) : value && typeof value === 'object'
+      ? Object.fromEntries(Object.keys(value).sort().map(key => [key,stable(value[key])])) : value;
+    return JSON.stringify(stable(content));
+  }
+
+  function hasUnsavedOrderChanges(){
+    const linked = loadSavedOrders().find(entry => entry.id === state.currentSavedOrderId);
+    const baseline = linked ? orderContentKey(linked.state) : state.newOrderBaseline;
+    // Existing unsaved drafts without a baseline are always protected.
+    return !baseline || orderContentKey(state) !== baseline;
+  }
+
+  function createNewOrderState(source){
+    const next = normalizeState(clone(source));
+    const now = new Date();
+    next.game.date = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0,10);
+    next.game.opponent = '';
+    next.game.start = '';
+    next.selectedInning = 0;
+    next.currentSavedOrderId = '';
+    next.currentSavedOrderKey = '';
+    next.defenseChanges = {};
+    next.lineupByInning = {};
+    next.inningCheckpoints = [];
+    next.attendanceByPlayerId = {};
+    ensureStructures(next);
+    next.newOrderBaseline = orderContentKey(next);
+    return next;
+  }
+
+  function closeNewGameChoice(restoreFocus = true){
+    $('newGameModal').hidden = true;
+    document.body.classList.remove('save-choice-open');
+    if(restoreFocus) $('newGameBtn').focus();
+    workspaceBridge?.resume();
+  }
+
+  function beginNewOrder(){
+    const next = createNewOrderState(state);
+    // A failed local write must leave the current game and its dialog intact.
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    state = next;
+    selectedSwapId = null; selectedDefense = null;
+    clearTapFeedback(); clearSwapAnimationState(); resetClearAllChangesConfirm();
+    currentTab = 'order'; expandedHistoryId = null; swipedHistoryId = null;
+    closeDateCalendar(); calendarMonth = null;
+    render();
+    workspaceChanged();
+    closeNewGameChoice(false);
+    openSettings({newGame:true});
+    $('settingsModal').scrollTop = 0;
+    $('settingsModal').querySelector('.settings-sheet').scrollTop = 0;
+    $('settingsCloseBtn').focus({preventScroll:true});
+  }
+
+  function requestNewOrder(){
+    if(isSwapAnimating) return;
+    if(!hasUnsavedOrderChanges()){
+      try{ beginNewOrder(); }catch(error){ showToast('新規作成できません。端末の空き容量を確認してください。'); }
+      return;
+    }
+    selectedSwapId = null; selectedDefense = null; render();
+    $('newGameSummary').textContent = savedOrderGameLabelForState(state);
+    $('newGameError').hidden = true;
+    $('newGameModal').hidden = false;
+    document.body.classList.add('save-choice-open');
+    $('newGameSaveBtn').focus();
+  }
+
+  function handleNewOrderChoice(save){
+    if($('newGameModal').hidden) return;
+    try{
+      if(save){
+        const list = loadSavedOrders();
+        const key = savedOrderKeyForState(state);
+        const linked = list.find(entry => entry.id === state.currentSavedOrderId && entry.savedOrderKey === key);
+        if(linked) overwriteSavedOrder(linked.id,key);
+        else saveOrderAsNew(list,key);
+      }
+      beginNewOrder();
+    }catch(error){
+      $('newGameError').textContent = '保存・新規作成できませんでした。作成中の内容は保持しています。端末の空き容量を確認してください。';
+      $('newGameError').hidden = false;
+    }
   }
 
   function formatSavedAt(value){
@@ -3391,7 +3528,7 @@ function playerNumberIn(st, id){
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === currentTab));
     setTabsTrackPosition(0, false);
     const isOrderTab = currentTab === 'order';
-    $('inningButtons').hidden = !isOrderTab;
+    $('inningToolbar').hidden = !isOrderTab;
     if(currentTab === 'history') renderHistory();
   }
 
@@ -4127,7 +4264,7 @@ function playerNumberIn(st, id){
   function workspaceCanApply(){
     const active = document.activeElement;
     const typing = active?.matches?.('input,textarea,select') && !active.readOnly && active.getClientRects().length > 0;
-    return !typing && !workspaceComposing && !isSwapAnimating && !selectedSwapId && !selectedDefense;
+    return !typing && !workspaceComposing && !isSwapAnimating && !selectedSwapId && !selectedDefense && !pendingSaveChoice && $('newGameModal').hidden;
   }
 
   function renderSyncedWorkspace(previous, historyChanged){
@@ -4320,6 +4457,11 @@ function playerNumberIn(st, id){
   }
 
   function bindEvents(){
+    $('newGameBtn').addEventListener('click', requestNewOrder);
+    $('newGameSaveBtn').addEventListener('click', () => handleNewOrderChoice(true));
+    $('newGameDiscardBtn').addEventListener('click', () => handleNewOrderChoice(false));
+    $('newGameCancelBtn').addEventListener('click', () => closeNewGameChoice());
+    $('newGameModal').addEventListener('click', e => { if(e.target === $('newGameModal')) closeNewGameChoice(); });
     $('saveBtn').addEventListener('click', saveCurrentOrder);
     $('settingsBtn').addEventListener('click', openSettings);
     $('settingsCloseBtn').addEventListener('click', closeSettings);
@@ -4330,8 +4472,14 @@ function playerNumberIn(st, id){
     $('saveNewBtn').addEventListener('click', () => handleSaveChoice('new'));
     $('saveCancelBtn').addEventListener('click', closeSaveChoice);
     document.addEventListener('keydown', e => {
+      if(!$('newGameModal').hidden && e.key === 'Tab'){
+        const first = $('newGameSaveBtn'), last = $('newGameCancelBtn');
+        if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+        else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+      }
       if(e.key !== 'Escape') return;
-      if(!$('saveChoiceModal').hidden) closeSaveChoice();
+      if(!$('newGameModal').hidden) closeNewGameChoice();
+      else if(!$('saveChoiceModal').hidden) closeSaveChoice();
       else if(!$('settingsModal').hidden) closeSettings();
     });
     $('battingMode').addEventListener('change', e => setBattingMode(e.target.value));
