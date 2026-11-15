@@ -202,7 +202,7 @@ try{
   await pc.locator('#newGameCancelBtn').click(); await match(pc,s=>s.game.opponent==='確認中に届いた変更');
   await pc.locator('#newGameBtn').click(); await pc.locator('#newGameSaveBtn').click();
   await phone.waitForFunction(()=>JSON.parse(localStorage.getItem('lineupPlannerSavedOrders') || '[]').length===2);
-  await match(phone,s=>s.game.opponent==='' && s.selectedInning===0 && Object.keys(s.defenseChanges).length===0);
+  await match(phone,s=>s.game.opponent==='' && s.game.place==='' && s.game.start==='' && s.game.limit==='' && s.game.format==='時間制' && s.game.innings===6 && s.selectedInning===0 && Object.keys(s.defenseChanges).length===0);
   await pc.locator('#settingsDoneBtn').click();
   await settled(pc); await settled(phone);
   assert.equal(await pc.locator('html').getAttribute('data-theme'),'dark'); assert.equal(await phone.locator('html').getAttribute('data-theme'),'light');

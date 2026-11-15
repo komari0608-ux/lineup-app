@@ -420,6 +420,8 @@ test('legacy migration preserves inning states and hidden later innings after re
 
 test('new game preserves the roster and initial order while resetting match-specific progress', () => {
   const api=nine(); api.get().players[0].number='12'; api.get().game.opponent='前の相手';
+  Object.assign(api.get().game,{date:'2020-01-02',place:'前の球場',start:'09:45',limit:'105',format:'公式戦',innings:9});
+  api.ensureStructures();
   api.get().attendanceByPlayerId.p10='absent'; api.get().currentSavedOrderId='previous';
   api.swapDefensePositionsAtInning('p2','p3',2); api.selected(4);
   const before=JSON.stringify(api.get()), next=api.createNewOrderState(api.get());
@@ -427,7 +429,9 @@ test('new game preserves the roster and initial order while resetting match-spec
   assert.deepEqual(next.players,api.get().players); assert.deepEqual(next.battingOrder,api.get().battingOrder);
   assert.deepEqual(next.startPositions,api.get().startPositions);
   assert.equal(next.game.opponent,''); assert.equal(next.game.start,'');
-  assert.equal(next.game.place,api.get().game.place); assert.equal(next.battingMode,'nine');
+  assert.equal(next.game.place,''); assert.equal(next.game.limit,'');
+  assert.equal(next.game.format,'時間制'); assert.equal(next.game.innings,6);
+  assert.notEqual(next.game.date,'2020-01-02'); assert.equal(next.battingMode,'nine');
   assert.equal(next.selectedInning,0); assert.equal(next.currentSavedOrderId,'');
   assert.equal(Object.keys(next.defenseChanges).length,0); assert.equal(next.inningCheckpoints.length,0);
   assert.equal(Object.keys(next.attendanceByPlayerId).length,0);

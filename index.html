@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>打順プランナー</title>
   <script>
-    window.LINEUP_APP_VERSION = '2026-11-15-new-game-dark-mode';
+    window.LINEUP_APP_VERSION = '2026-11-15-compact-new-match';
     console.log('lineup-app version', window.LINEUP_APP_VERSION);
     (() => {
       const SPLASH_KEY = 'lineupSplashSeen';
@@ -229,6 +229,9 @@
     .game-summary{min-height:18px;color:var(--blue-dark);font-size:12px;font-weight:900;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .gamebox{display:grid;gap:6px;background:#f6fbf8;border:1px solid #d3ebe1;border-radius:12px;padding:8px}
     .game-line{display:grid;gap:6px}
+    .game-field{display:grid;gap:4px;min-width:0}
+    .game-field-label{color:var(--muted);font-size:11px;font-weight:800;line-height:1.3}
+    .game-field input,.game-field select,.game-field .date-button{width:100%}
     .game-line-main{grid-template-columns:minmax(0,1fr) minmax(92px,.68fr)}
     .game-line-teams{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
     .game-line-rule{grid-template-columns:minmax(0,1fr) minmax(68px,.56fr) minmax(74px,.62fr)}
@@ -261,7 +264,7 @@
     .inning-toolbar{display:flex;align-items:center;gap:10px;min-width:0}
     .inning-toolbar[hidden]{display:none!important}
     .inning-toolbar .inning-scroll{flex:1;min-width:0}
-    .new-game-btn{flex:0 0 auto;min-height:44px;padding:0 10px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--blue-dark);font-size:12px;font-weight:800;white-space:nowrap;touch-action:manipulation}
+    .new-game-btn{flex:0 0 auto;min-width:44px;min-height:44px;padding:0 8px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--blue-dark);font-size:12px;font-weight:800;white-space:nowrap;touch-action:manipulation}
     .new-game-btn:active{background:var(--soft)}
     button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
     .inning-btn{border:1px solid var(--line);background:#fff;min-width:42px;height:34px;border-radius:999px;font-size:12px;font-weight:950;color:var(--ink);touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
@@ -623,7 +626,7 @@
 
     <div class="inning-toolbar" id="inningToolbar">
       <div class="inning-scroll" id="inningButtons" aria-label="イニングの切り替え"></div>
-      <button class="new-game-btn" id="newGameBtn" type="button" aria-label="新規作成">＋ 新規作成</button>
+      <button class="new-game-btn" id="newGameBtn" type="button" aria-label="新規作成" title="新しい試合を作成">新規</button>
     </div>
 
     <div class="workspace-grid">
@@ -710,33 +713,54 @@
         <div class="gamebox" aria-label="試合情報">
           <div class="game-line game-line-main">
             <input id="gameDate" type="hidden" />
-            <button class="date-field date-button" id="gameDateBtn" type="button" aria-label="日付" aria-expanded="false" aria-controls="dateCalendar"></button>
-            <input class="time-field" id="gameStart" type="time" aria-label="開始時間" />
+            <div class="game-field">
+              <label class="game-field-label" for="gameDateBtn">試合日</label>
+              <button class="date-field date-button" id="gameDateBtn" type="button" aria-label="日付" aria-expanded="false" aria-controls="dateCalendar"></button>
+            </div>
+            <label class="game-field">
+              <span class="game-field-label">開始時間</span>
+              <input class="time-field" id="gameStart" type="time" step="60" aria-label="開始時間" />
+            </label>
           </div>
           <div class="calendar-panel" id="dateCalendar" hidden></div>
           <div class="game-line game-line-teams">
-            <input class="place-field" id="gamePlace" type="text" placeholder="場所" aria-label="場所" />
-            <input class="opponent-field" id="gameOpponent" type="text" placeholder="対戦相手" aria-label="対戦相手" />
+            <label class="game-field">
+              <span class="game-field-label">場所</span>
+              <input class="place-field" id="gamePlace" type="text" placeholder="会場名を入力" aria-label="場所" />
+            </label>
+            <label class="game-field">
+              <span class="game-field-label">対戦相手</span>
+              <input class="opponent-field" id="gameOpponent" type="text" placeholder="チーム名を入力" aria-label="対戦相手" />
+            </label>
           </div>
           <div class="game-line game-line-rule">
-            <select class="format-field" id="gameFormat" aria-label="試合形式">
-              <option value="時間制">時間制</option>
-              <option value="イニング制">イニング制</option>
-              <option value="練習試合">練習試合</option>
-              <option value="公式戦">公式戦</option>
-            </select>
-            <input class="limit-field" id="gameLimit" type="number" min="0" inputmode="numeric" placeholder="80分" aria-label="時間" />
-            <select class="innings-field" id="gameInnings" aria-label="イニング数">
-              <option value="1">1回</option>
-              <option value="2">2回</option>
-              <option value="3">3回</option>
-              <option value="4">4回</option>
-              <option value="5">5回</option>
-              <option value="6">6回</option>
-              <option value="7">7回</option>
-              <option value="8">8回</option>
-              <option value="9">9回</option>
-            </select>
+            <label class="game-field">
+              <span class="game-field-label">試合形式</span>
+              <select class="format-field" id="gameFormat" aria-label="試合形式">
+                <option value="時間制">時間制</option>
+                <option value="イニング制">イニング制</option>
+                <option value="練習試合">練習試合</option>
+                <option value="公式戦">公式戦</option>
+              </select>
+            </label>
+            <label class="game-field">
+              <span class="game-field-label">制限時間(分)</span>
+              <input class="limit-field" id="gameLimit" type="number" min="0" inputmode="numeric" placeholder="未入力" aria-label="制限時間（分）" />
+            </label>
+            <label class="game-field">
+              <span class="game-field-label">イニング数</span>
+              <select class="innings-field" id="gameInnings" aria-label="イニング数">
+                <option value="1">1回</option>
+                <option value="2">2回</option>
+                <option value="3">3回</option>
+                <option value="4">4回</option>
+                <option value="5">5回</option>
+                <option value="6">6回</option>
+                <option value="7">7回</option>
+                <option value="8">8回</option>
+                <option value="9">9回</option>
+              </select>
+            </label>
           </div>
         </div>
       </section>
@@ -2350,7 +2374,7 @@ function playerNumberIn(st, id){
     $('gamePlace').value = g.place || '';
     $('gameStart').value = g.start || '';
     $('gameFormat').value = g.format || '時間制';
-    $('gameLimit').value = g.limit || '';
+    $('gameLimit').value = g.limit ?? '';
     $('gameInnings').value = String(g.innings || 6);
     $('gameOpponent').value = g.opponent || '';
     $('battingMode').value = state.battingMode;
@@ -2814,9 +2838,11 @@ function playerNumberIn(st, id){
   function createNewOrderState(source){
     const next = normalizeState(clone(source));
     const now = new Date();
-    next.game.date = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0,10);
-    next.game.opponent = '';
-    next.game.start = '';
+    // Each fixture starts with fresh match details, independent of the last game.
+    next.game = {
+      date:new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0,10),
+      place:'', start:'', opponent:'', limit:'', format:'時間制', innings:6
+    };
     next.selectedInning = 0;
     next.currentSavedOrderId = '';
     next.currentSavedOrderKey = '';

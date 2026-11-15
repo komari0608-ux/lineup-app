@@ -51,8 +51,21 @@ try{
     assert.equal(await p.locator('#newGameModal').isVisible(),false);
     assert.equal(await p.locator('#settingsModal').isVisible(),true);
     assert.equal(await p.locator('#settingsTitle').innerText(),'新規作成・試合設定');
+    for(const field of ['gamePlace','gameOpponent','gameStart','gameLimit']) assert.equal(await p.locator(`#${field}`).inputValue(),'');
+    assert.equal(await p.locator('#gameFormat').inputValue(),'時間制');
+    assert.equal(await p.locator('#gameInnings').inputValue(),'6');
+    await p.locator('#gameDateBtn').click(); await p.locator('.calendar-day').first().click();
+    await p.locator('#gameStart').fill('09:35');
+    await p.locator('#gamePlace').fill('前回の会場');
+    await p.locator('#gameLimit').fill('95');
+    await p.locator('#gameFormat').selectOption('公式戦');
+    await p.locator('#gameInnings').selectOption('8');
     await p.locator('#gameOpponent').fill('保存テスト'); await p.locator('#settingsDoneBtn').click();
     const draft=await read(p);
+    assert.ok(draft.game.date.endsWith('-01'));
+    assert.equal(draft.game.start,'09:35'); assert.equal(draft.game.place,'前回の会場');
+    assert.equal(draft.game.limit,'95'); assert.equal(draft.game.format,'公式戦'); assert.equal(draft.game.innings,8);
+    await p.reload(); assert.deepEqual((await read(p)).game,draft.game);
     await p.locator('#newGameBtn').click(); assert.equal(await p.locator('#newGameModal').isVisible(),true);
     await p.keyboard.press('Shift+Tab'); assert.equal(await p.locator('#newGameCancelBtn').evaluate(el=>el===document.activeElement),true);
     await p.keyboard.press('Escape'); assert.deepEqual(await read(p),draft);
@@ -60,6 +73,15 @@ try{
 
     await p.locator('#newGameBtn').click(); await p.locator('#newGameSaveBtn').click();
     let saved=await records(p); assert.equal(saved.length,1); assert.equal(saved[0].state.game.opponent,'保存テスト');
+    assert.deepEqual(saved[0].state.game,draft.game);
+    for(const field of ['gamePlace','gameOpponent','gameStart','gameLimit']) assert.equal(await p.locator(`#${field}`).inputValue(),'');
+    assert.equal(await p.locator('#gameFormat').inputValue(),'時間制');
+    assert.equal(await p.locator('#gameInnings').inputValue(),'6');
+    assert.equal(await p.locator('.game-field-label:visible').count(),7);
+    if(process.env.LINEUP_SCREENSHOTS){
+      await mkdir(process.env.LINEUP_SCREENSHOTS,{recursive:true});
+      await p.screenshot({path:path.join(process.env.LINEUP_SCREENSHOTS,`${label}-new-settings.png`),animations:'disabled'});
+    }
     assert.equal((await read(p)).game.opponent,''); assert.deepEqual((await read(p)).players,base.players);
     await p.locator('#settingsDoneBtn').click();
     await theme(p,'dark');
@@ -122,7 +144,7 @@ try{
       await contrast(p,'.nav-btn.active,.player-row input,.add-row button,.history-summary,.sync-status');
     }
     await p.locator('#settingsBtn').click(); await p.locator('#gameDateBtn').click();
-    await contrast(p,'.settings-section h3,.setting-field,select,input:not([type="hidden"]),.calendar-day,.calendar-nav,.settings-actions button,.sync-actions button');
+    await contrast(p,'.settings-section h3,.setting-field,.game-field-label,select,input:not([type="hidden"]),.calendar-day,.calendar-nav,.settings-actions button,.sync-actions button');
     if(process.env.LINEUP_SCREENSHOTS){
       await mkdir(process.env.LINEUP_SCREENSHOTS,{recursive:true});
       await p.screenshot({path:path.join(process.env.LINEUP_SCREENSHOTS,`${label}-dark-settings.png`)});
@@ -136,7 +158,10 @@ try{
     if(label==='mobile') await p.setViewportSize({width:320,height:740});
     await p.locator('[data-tab="order"]').click();
     assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
-    const box=await p.locator('#newGameBtn').boundingBox(); assert.ok(box.height>=44 && box.x>=0 && box.x+box.width<=(label==='mobile'?320:1440));
+    const box=await p.locator('#newGameBtn').boundingBox(); assert.ok(box.width<=52 && box.height>=44 && box.x>=0 && box.x+box.width<=(label==='mobile'?320:1440));
+    assert.equal(await p.locator('#newGameBtn').innerText(),'新規');
+    await p.locator('#settingsBtn').click();
+    assert.equal(await p.locator('.gamebox').evaluate(el=>el.scrollWidth<=el.clientWidth),true);
     log(`${label}: dark contrast, every tab, reload/offline persistence and explicit Light switch pass; new button fits the viewport`);
     await ctx.close();
   }
