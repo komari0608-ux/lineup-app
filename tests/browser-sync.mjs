@@ -184,6 +184,30 @@ try{
   assert.deepEqual(await Promise.all([pc.evaluate(() => testSync.meta.revision),phone.evaluate(() => testSync.meta.revision)]),revisions);
   log('Idle synchronization creates no repeated writes or update loop');
 
+  await pc.locator('#settingsBtn').click(); await pc.locator('#themeMode').selectOption('dark'); await pc.locator('#settingsDoneBtn').click();
+  await phone.locator('#settingsBtn').click(); await phone.locator('#themeMode').selectOption('light'); await phone.locator('#settingsDoneBtn').click();
+  await new Promise(resolve => setTimeout(resolve,600));
+  assert.deepEqual(await Promise.all([pc.evaluate(() => testSync.meta.revision),phone.evaluate(() => testSync.meta.revision)]),revisions);
+  await settings(phone,'gamePlace','テーマ保持の同期確認'); await match(pc,s=>s.game.place==='テーマ保持の同期確認');
+  assert.equal(await pc.locator('html').getAttribute('data-theme'),'dark');
+  assert.equal(await phone.locator('html').getAttribute('data-theme'),'light');
+  await pc.reload(); await settled(pc); assert.equal(await pc.locator('html').getAttribute('data-theme'),'dark');
+  log('Dark/light preferences stay device-local through remote edits and reload, without theme-only writes');
+
+  await pc.locator('#newGameBtn').click(); assert.equal(await pc.locator('#newGameModal').isVisible(),true);
+  const beforeChoice=await read(pc);
+  await settings(phone,'gameOpponent','確認中に届いた変更'); await settled(phone);
+  await new Promise(resolve=>setTimeout(resolve,400));
+  assert.equal((await read(pc)).game.opponent,beforeChoice.game.opponent);
+  await pc.locator('#newGameCancelBtn').click(); await match(pc,s=>s.game.opponent==='確認中に届いた変更');
+  await pc.locator('#newGameBtn').click(); await pc.locator('#newGameSaveBtn').click();
+  await phone.waitForFunction(()=>JSON.parse(localStorage.getItem('lineupPlannerSavedOrders') || '[]').length===2);
+  await match(phone,s=>s.game.opponent==='' && s.selectedInning===0 && Object.keys(s.defenseChanges).length===0);
+  await pc.locator('#settingsDoneBtn').click();
+  await settled(pc); await settled(phone);
+  assert.equal(await pc.locator('html').getAttribute('data-theme'),'dark'); assert.equal(await phone.locator('html').getAttribute('data-theme'),'light');
+  log('Remote edits wait during the new-game choice; saved record and new game then sync automatically to the other device');
+
   for(const p of [pc,phone]) assert.equal(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth),true);
   const out=process.env.LINEUP_SCREENSHOTS;
   if(out){await mkdir(out,{recursive:true}); await pc.screenshot({path:path.join(out,'desktop.png'),fullPage:true}); await phone.screenshot({path:path.join(out,'mobile.png'),fullPage:true});}

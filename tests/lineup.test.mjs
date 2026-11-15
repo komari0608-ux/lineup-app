@@ -6,12 +6,12 @@ import { WorkspaceSync, canonical, validateWorkspace, mergeWorkspaces } from '..
 
 const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const mainScript = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)][1][1];
-export function editor(){
-  const storage = new Map();
+export function editor(initialStorage = {}){
+  const storage = new Map(Object.entries(initialStorage));
   const node = { textContent:'', classList:{ toggle(){} }, hidden:false };
   const context = { console, setTimeout, clearTimeout, TextEncoder,
     localStorage:{ getItem:key => storage.get(key) ?? null, setItem:(key,value) => storage.set(key,String(value)) },
-    document:{ getElementById:() => node }, window:{ matchMedia:() => ({ matches:false }) }
+    document:{ getElementById:() => node, documentElement:{dataset:{}}, querySelector:() => null }, window:{ matchMedia:() => ({ matches:false }) }
   };
   vm.createContext(context);
   const source = mainScript.replace(/  setupStartupSplash\(\);[\s\S]*?\n\}\)\(\);\s*$/, `
@@ -25,6 +25,8 @@ export function editor(){
       swapDefensePositionsAtInning, resetCurrentDefense, applyWorkspacePayload,
       saveState, loadState, saveSavedOrders, loadSavedOrders, workspacePayload,
       createOrderImageBlob,
+      createNewOrderState, createSavedOrderSnapshot, hasUnsavedOrderChanges, orderContentKey,
+      currentThemeKey, setAppTheme,
       set:st => { state = normalizeState(st); selectedSwapId = null; selectedDefense = null; },
       get:() => state,
       selected:inning => { state.selectedInning = inning; selectedSwapId = null; selectedDefense = null; }
@@ -414,4 +416,73 @@ test('legacy migration preserves inning states and hidden later innings after re
   api.get().game.innings=9; api.ensureStructures();
   assert.equal(api.getLineupAt(8)[0],'p10');
   assert.equal(api.effectivePosition('p2',8),'6');
+});
+
+test('new game preserves the roster and initial order while resetting match-specific progress', () => {
+  const api=nine(); api.get().players[0].number='12'; api.get().game.opponent='前の相手';
+  api.get().attendanceByPlayerId.p10='absent'; api.get().currentSavedOrderId='previous';
+  api.swapDefensePositionsAtInning('p2','p3',2); api.selected(4);
+  const before=JSON.stringify(api.get()), next=api.createNewOrderState(api.get());
+  assert.equal(JSON.stringify(api.get()),before);
+  assert.deepEqual(next.players,api.get().players); assert.deepEqual(next.battingOrder,api.get().battingOrder);
+  assert.deepEqual(next.startPositions,api.get().startPositions);
+  assert.equal(next.game.opponent,''); assert.equal(next.game.start,'');
+  assert.equal(next.game.place,api.get().game.place); assert.equal(next.battingMode,'nine');
+  assert.equal(next.selectedInning,0); assert.equal(next.currentSavedOrderId,'');
+  assert.equal(Object.keys(next.defenseChanges).length,0); assert.equal(next.inningCheckpoints.length,0);
+  assert.equal(Object.keys(next.attendanceByPlayerId).length,0);
+  api.set(next); assert.equal(api.hasUnsavedOrderChanges(),false);
+  api.saveState(); api.set(api.loadState()); assert.equal(api.hasUnsavedOrderChanges(),false);
+});
+
+test('only game content changes require saving; navigation and appearance never dirty a saved order', () => {
+  const {api}=editor(); assert.equal(api.hasUnsavedOrderChanges(),false);
+  api.get().game.opponent='対戦相手'; assert.equal(api.hasUnsavedOrderChanges(),true);
+  const record=api.createSavedOrderSnapshot(); api.saveSavedOrders([record]);
+  api.get().currentSavedOrderId=record.id;
+  assert.equal(api.hasUnsavedOrderChanges(),false);
+  api.selected(3); api.get().settings.displayMode='full'; api.get().settings.fontFamily='biz-ud'; api.setAppTheme('dark');
+  assert.equal(api.hasUnsavedOrderChanges(),false);
+  api.swapDefensePositionsAtInning('p1','p2',3); assert.equal(api.hasUnsavedOrderChanges(),true);
+  api.swapDefensePositionsAtInning('p1','p2',3);
+  api.get().players[0].number='10'; assert.equal(api.hasUnsavedOrderChanges(),true);
+  assert.equal(record.state.newOrderBaseline,undefined);
+});
+
+test('legacy unsaved drafts and drafts with a deleted linked record still require a save choice', () => {
+  const {api}=editor(); delete api.get().newOrderBaseline;
+  assert.equal(api.hasUnsavedOrderChanges(),true);
+  const record=api.createSavedOrderSnapshot(); api.saveSavedOrders([record]);
+  api.get().currentSavedOrderId=record.id; assert.equal(api.hasUnsavedOrderChanges(),false);
+  api.saveSavedOrders([]); assert.equal(api.hasUnsavedOrderChanges(),true);
+});
+
+test('new games never mutate saved snapshots and distinct matches do not share dirty tracking', () => {
+  const {api}=editor(); const record=api.createSavedOrderSnapshot(); api.saveSavedOrders([record]);
+  const saved=JSON.stringify(api.loadSavedOrders());
+  api.set(api.createNewOrderState(api.get())); api.get().game.opponent='別の試合';
+  assert.equal(api.hasUnsavedOrderChanges(),true);
+  assert.equal(JSON.stringify(api.loadSavedOrders()),saved);
+});
+
+test('explicit local theme survives old snapshots, reload and shared state without synchronizing theme changes', () => {
+  const {api,storage}=editor(); const old=api.createDefaultState(); old.settings.themeMode='light';
+  api.setAppTheme('dark'); api.set(old);
+  assert.equal(api.currentThemeKey(),'dark');
+  api.saveState();
+  const reopened=editor(Object.fromEntries(storage)); assert.equal(reopened.api.currentThemeKey(),'dark');
+  const record=api.createSavedOrderSnapshot(); api.saveSavedOrders([record]);
+  const before=JSON.stringify(api.workspacePayload()); api.setAppTheme('light');
+  assert.equal(JSON.stringify(api.workspacePayload()),before);
+  // Preserve legacy shared metadata, without letting it control local appearance
+  // or repeatedly deleting/restoring it against an older open client.
+  assert.equal(api.workspacePayload().state.settings.themeMode,'light');
+  assert.equal(api.workspacePayload().history[0].state.settings.themeMode,'light');
+});
+
+test('legacy theme is migrated only when no device theme preference exists', () => {
+  const {api}=editor(); const old=api.createDefaultState(); old.settings.themeMode='dark';
+  const data={lineupPlannerV10OrderInlineGame:JSON.stringify(old)};
+  assert.equal(editor(data).api.currentThemeKey(),'dark');
+  assert.equal(editor({...data,lineupPlannerTheme:'light'}).api.currentThemeKey(),'light');
 });
